@@ -1,0 +1,312 @@
+<template>
+    <div class="main-container slds-p-around_medium">
+        
+        <!-- 1. BARRA DE NAVEGACIÓN SUPERIOR (Restaurada y Limpia) -->
+        <div class="slds-grid slds-grid_align-spread slds-m-bottom_medium slds-grid_vertical-align-center">
+            <div class="slds-col">
+                <!-- Botón oculto por solicitud -->
+                <!-- <lightning-button label="VOLVER AL CONTRATO" 
+                    icon-name="utility:back" 
+                    variant="brand-outline"
+                    onclick={handleBackToContract}>
+                </lightning-button> -->
+            </div>
+            <div class="slds-col">
+                <h1 class="slds-text-heading_medium slds-text-title_bold">Generar ODTs - Contrato Nº: {contractFolio}</h1>
+            </div>
+            <div class="slds-col slds-text-align_right">
+                <lightning-button label={saveButtonLabel} variant="brand" icon-name="utility:record_create" onclick={handleGenerateODTs} disabled={isSaving}></lightning-button>
+            </div>
+        </div>
+
+        <!-- LOADING SPINNER -->
+        <template if:true={isLoading}>
+            <div class="slds-p-around_large slds-text-align_center">
+                <lightning-spinner alternative-text="Cargando..." size="medium"></lightning-spinner>
+                <p class="slds-m-top_medium">Cargando información técnica...</p>
+            </div>
+        </template>
+
+        <template if:false={isLoading}>
+            <!-- 2. DATOS DEL CONTRATO (Vista Consolidada) -->
+            <div class="slds-box slds-theme_shade slds-m-bottom_medium">
+                <div class="slds-grid slds-grid_vertical-align-center slds-m-bottom_x-small">
+                    <lightning-icon icon-name="standard:contract" size="small" class="slds-m-right_small"></lightning-icon>
+                    <h2 class="slds-text-heading_small slds-text-title_bold">Contexto del Contrato</h2>
+                </div>
+                <p class="slds-text-color_weak slds-m-bottom_small">Información general del presupuesto y vigencia sincronizada.</p>
+                <div class="slds-grid slds-wrap slds-gutters">
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
+                        <span class="slds-text-title_bold">Cliente:</span>
+                        <p>{contractData.cliente}</p>
+                        <span class="slds-text-title_bold slds-m-top_small d-block">Línea de Negocio:</span>
+                        <p>{contractData.lineaNegocio}</p>
+                    </div>
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
+                        <span class="slds-text-title_bold">Vigencia:</span>
+                        <p>{contractData.fechaInicio} - {contractData.fechaFin}</p>
+                        <span class="slds-text-title_bold slds-m-top_small d-block">Servicios Vendidos:</span>
+                        <p>{contractData.tratamientos}</p>
+                    </div>
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3 slds-grid slds-grid_vertical-align-end slds-grid_align-end">
+                        <lightning-button label="Consultar Presupuesto PDF" icon-name="utility:preview" variant="neutral" onclick={handleViewQuote}></lightning-button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. CONFIGURACIÓN DE SEDE Y RESTRICCIONES -->
+            <div class="slds-box slds-theme_default slds-m-bottom_medium">
+                <div class="slds-grid slds-grid_align-spread slds-m-bottom_small">
+                    <div>
+                        <h2 class="slds-text-heading_small slds-text-title_bold" style="color: #0070d2;">Configuración de Sede y Disponibilidad</h2>
+                        <p class="slds-text-color_weak">Define la dirección de ejecución y los límites de horario permitidos por el cliente.</p>
+                    </div>
+                    <span class="slds-badge slds-theme_info">Sede Seleccionada: {contractData.sedeSeleccionada}</span>
+                </div>
+                
+                <div class="slds-grid slds-wrap slds-gutters">
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                        <lightning-input label="Dirección de Ejecución del Servicio" value={contractData.direccionSede} data-field="executionAddress" onchange={handleSedeChange} placeholder="Especifique la dirección exacta..."></lightning-input>
+                    </div>
+                    <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4">
+                        <lightning-combobox label="Prioridad de Atención" value={contractData.prioridad} options={priorityOptions} onchange={handlePriorityChange}></lightning-combobox>
+                    </div>
+                    <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4">
+                        <lightning-combobox label="Territorio Logístico" value={contractData.territoryId} options={territoryOptions} onchange={handleTerritoryChange}></lightning-combobox>
+                    </div>
+                </div>
+
+                <div class="slds-m-top_medium">
+                    <h3 class="slds-text-title_bold slds-m-bottom_none">Días y Turnos de Visita</h3>
+                    <p class="slds-text-body_small slds-text-color_weak slds-m-bottom_small">Selecciona los días habilitados para programar citas.</p>
+                    <template for:each={sedesList} for:item="sede">
+                        <div key={sede.id} class="slds-grid slds-wrap slds-grid_vertical-align-center">
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_2-of-3 slds-grid slds-grid_vertical-align-center slds-m-bottom_x-small">
+                                <span>Rango Horario:</span>
+                                <lightning-input type="time" variant="label-hidden" value={sede.startTime} data-field="startTime" data-sede-id={sede.id} onchange={handleSedeChange} class="slds-m-horizontal_x-small"></lightning-input>
+                                <span> a </span>
+                                <lightning-input type="time" variant="label-hidden" value={sede.endTime} data-field="endTime" data-sede-id={sede.id} onchange={handleSedeChange} class="slds-m-horizontal_x-small"></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1">
+                                <div class="slds-grid slds-wrap">
+                                    <template for:each={daysOfWeek} for:item="day">
+                                        <lightning-input key={day.label} type="checkbox" label={day.label} checked={day.checked} data-day={day.label} onchange={handleDayChange} class="slds-m-right_medium"></lightning-input>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- 4. LISTA DE TRATAMIENTOS Y PROGRAMACIÓN DETALLADA -->
+            <template for:each={treatmentsWithTechOptions} for:item="tra">
+                <div key={tra.id} class="slds-box slds-theme_default slds-m-bottom_medium">
+                    <!-- CABECERA DE TRATAMIENTO REDISEÑADA -->
+                    <div class="slds-grid slds-grid_align-spread slds-m-bottom_small slds-grid_vertical-align-center">
+                        <div class="slds-grid slds-grid_vertical-align-center">
+                            <lightning-icon icon-name="standard:service_report" size="small" class="slds-m-right_small"></lightning-icon>
+                            <div>
+                                <h3 class="slds-text-heading_small slds-text-title_bold">Definición Técnica: {tra.name}</h3>
+                                <div class="slds-grid slds-grid_vertical-align-center">
+                                    <lightning-icon icon-name="utility:location" size="xx-small" class="slds-m-right_xx-small" variant="info"></lightning-icon>
+                                    <p class="slds-text-color_weak"><span class="slds-text-title_bold">Zonas:</span> {tra.zonas}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <lightning-button label="ZONAS" icon-name="utility:location" variant="brand-outline" data-tra-id={tra.id} onclick={handleOpenZoneBrowser}></lightning-button>
+                    </div>
+
+                    <!-- CONFIGURACION GENERAL DEL TRATAMIENTO -->
+                    <div class="slds-box slds-box_x-small slds-theme_shade slds-m-bottom_medium" style="border-radius: 8px;">
+                        <div class="slds-grid slds-gutters slds-grid_vertical-align-center">
+                            <div class="slds-col slds-size_1-of-2 slds-large-size_1-of-4">
+                                <lightning-input type="number" label="Personal Requerido" value={tra.numTecnicos} data-field="numTecnicos" data-tra-id={tra.id} onchange={handleTraConfigChange}></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2 slds-large-size_1-of-4">
+                                <lightning-input type="number" label="Duración (Minutos)" value={tra.duration} data-field="duration" data-tra-id={tra.id} onchange={handleTraConfigChange}></lightning-input>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="slds-grid slds-wrap slds-gutters">
+                        <!-- TABLA DE PROGRAMACIÓN (GRID EXPANDIDO A 100%) -->
+                        <div class="slds-col slds-size_1-of-1">
+                            <div class="slds-grid slds-grid_align-spread slds-m-bottom_x-small slds-grid_vertical-align-center">
+                                <div>
+                                    <h4 class="slds-text-title_bold">Programa tus Citas</h4>
+                                    <p class="slds-text-body_small slds-text-color_weak">Ajusta fechas y horarios específicos por cada visita.</p>
+                                </div>
+                                <lightning-button-icon icon-name="utility:sync" variant="border-filled" data-tra-id={tra.id} onclick={handleSyncAllRows} title="Replicar la configuración de la primera cita a todas las demás"></lightning-button-icon>
+                            </div>
+
+                            <div class="slds-scrollable_x">
+                                <table class="slds-table slds-table_bordered slds-table_cell-buffer slds-table_fixed-layout">
+                                    <thead>
+                                        <tr class="slds-line-height_reset">
+                                            <th class="" scope="col" style="width: 3rem;">#</th>
+                                            <th class="" scope="col" style="width: 8rem;">Fecha</th>
+                                            <th class="" scope="col" style="width: 7rem;">Hora Inicio</th>
+                                            <th class="" scope="col">Técnicos Asignados</th>
+                                            <th class="" scope="col" style="width: 8rem;">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template for:each={tra.schedulingRows} for:item="row" for:index="idx">
+                                            <tr key={row.label} class="slds-hint-parent">
+                                                <td>{idx + 1}</td>
+                                                <td>
+                                                    <lightning-input type="date" variant="label-hidden" value={row.date} data-field="date" data-row-index={idx} data-tra-id={tra.id} onchange={handleRowChange}></lightning-input>
+                                                </td>
+                                                <td>
+                                                    <lightning-input type="time" variant="label-hidden" value={row.startTime} data-field="startTime" data-row-index={idx} data-tra-id={tra.id} onchange={handleRowChange}></lightning-input>
+                                                </td>
+                                                <!-- Min Traslado moved to Modal -->
+                                                <td>
+                                                    <div class="slds-cell-wrap slds-grid slds-wrap slds-grid_vertical-align-center" style="min-width: 150px; gap: 4px;">
+                                                        <template if:true={row.hasTechs}>
+                                                            <template for:each={row.techPills} for:item="pill">
+                                                                <lightning-pill key={pill.id} name={pill.id} label={pill.label} onremove={handleRemovePill} data-row-index={idx} data-tra-id={tra.id}></lightning-pill>
+                                                            </template>
+                                                        </template>
+                                                        <lightning-button-icon icon-name="utility:add" variant="border-filled" onclick={openTechModal} data-row-index={idx} data-tra-id={tra.id} title="Asignar Técnicos"></lightning-button-icon>
+                                                    </div>
+                                                </td>
+                                                <td class="slds-text-align_right">
+                                                    <lightning-button label="Añadir Nota" icon-name="utility:note" variant={row.notesVariant} onclick={handleRowChange} data-field="showNotes" data-row-index={idx} data-tra-id={tra.id}></lightning-button>
+                                                </td>
+                                            </tr>
+                                            <!-- Fila Expandible para Notas -->
+                                            <template if:true={row.showNotes}>
+                                                <tr key={row.label} class="slds-hint-parent">
+                                                    <td colspan="6" class="slds-theme_shade">
+                                                        <lightning-textarea label="Instrucciones del Planificador para el Técnico" value={row.notes} data-field="notes" data-row-index={idx} data-tra-id={tra.id} onchange={handleRowChange} placeholder="Indica detalles importantes para esta cita específica..."></lightning-textarea>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- 5. CRONOGRAMA GANTT -->
+            <div class="slds-box slds-theme_default slds-m-bottom_medium">
+                <div class="slds-grid slds-grid_align-spread slds-m-bottom_small slds-grid_vertical-align-center">
+                    <div>
+                        <h2 class="slds-text-heading_small slds-text-title_bold">Cronograma Operativo Proyectado</h2>
+                        <p class="slds-text-color_weak">Valida visualmente la distribución de tus servicios en el tiempo.</p>
+                    </div>
+                    <lightning-button-group>
+                        <lightning-button label="Vista Diaria" value="days" variant={daysVariant} onclick={handleGanttViewChange}></lightning-button>
+                        <lightning-button label="Vista Semanal" value="weeks" variant={weeksVariant} onclick={handleGanttViewChange}></lightning-button>
+                        <lightning-button label="Vista Mensual" value="months" variant={monthsVariant} onclick={handleGanttViewChange}></lightning-button>
+                    </lightning-button-group>
+                </div>
+
+                <div class="gantt-main-container slds-scrollable_x">
+                    <div class="gantt-timeline-header">
+                        <template for:each={ganttAxisLabels} for:item="axis">
+                            <div key={axis.id} class="gantt-header-tick" style={axis.style}>
+                                <span class="tick-label">{axis.label}</span>
+                                <span class="tick-sublabel">{axis.subLabel}</span>
+                            </div>
+                        </template>
+                    </div>
+                    <div class="gantt-body" style={ganttBodyStyle}>
+                        <div class="gantt-grid">
+                            <template for:each={ganttAxisLabels} for:item="axis">
+                                <div key={axis.id} class="grid-line" style={axis.style}></div>
+                            </template>
+                            <div class="today-line" style={todayMarkerStyle}><span class="today-tag">HOY</span></div>
+                        </div>
+                        <div class="gantt-items-layer">
+                            <template for:each={ganttItems} for:item="item">
+                                <div key={item.id} class="gantt-pro-card" style={item.style} title={item.fullLabel}>
+                                    <div class="pro-card-header">
+                                        <span class="pro-tra-name">{item.name}</span>
+                                        <span class="pro-time">{item.timeStr}</span>
+                                    </div>
+                                    <div class="pro-card-body">
+                                        <span class="pro-info-text">{item.techs}</span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- NAVEGADOR DE ZONAS (DRAWER) -->
+        <c-tech-zone-browser-drawer 
+            account-id={accountId} 
+            current-business-lines={contractData.lineaNegocio}
+            planned-treatments={firstSedeTreatments}
+            onzoneselected={handleZoneSelection}>
+        </c-tech-zone-browser-drawer>
+        
+        <!-- MODAL DE SELECCIÓN DE TÉCNICOS -->
+        <template if:true={isTechModalOpen}>
+            <section role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="modal-heading-01" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Cerrar" onclick={closeTechModal}>
+                            <lightning-icon icon-name="utility:close" alternative-text="close" variant="inverse" size="small"></lightning-icon>
+                            <span class="slds-assistive-text">Cerrar</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Asignar Técnicos a Cita</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <lightning-dual-listbox 
+                            name="tecnicos"
+                            label="Selecciona los Técnicos"
+                            source-label="Disponibles"
+                            selected-label="Asignados"
+                            options={tecnicosOptions}
+                            value={currentModalTechs}
+                            onchange={handleModalTechChange}
+                            size="6"
+                            disable-reordering>
+                        </lightning-dual-listbox>
+
+                        <template if:true={selectedModalTechsData.length}>
+                            <h3 class="slds-text-heading_small slds-m-top_large slds-m-bottom_small slds-text-title_bold" style="color:#0070d2;">Tiempos Logísticos Individuales</h3>
+                            <div class="slds-scrollable_x">
+                                <table class="slds-table slds-table_bordered slds-table_cell-buffer slds-table_fixed-layout">
+                                    <thead>
+                                        <tr>
+                                            <th>Técnico</th>
+                                            <th style="width: 100px;">Ida (Min)</th>
+                                            <th style="width: 100px;">Espera (Min)</th>
+                                            <th style="width: 100px;">Regreso (Min)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template for:each={selectedModalTechsData} for:item="tech">
+                                            <tr key={tech.id}>
+                                                <td class="slds-cell-wrap"><strong>{tech.label}</strong></td>
+                                                <td><lightning-input type="number" variant="label-hidden" value={tech.ida} data-id={tech.id} data-field="ida" onchange={handleTechTimeChange} placeholder="0"></lightning-input></td>
+                                                <td><lightning-input type="number" variant="label-hidden" value={tech.espera} data-id={tech.id} data-field="espera" onchange={handleTechTimeChange} placeholder="0"></lightning-input></td>
+                                                <td><lightning-input type="number" variant="label-hidden" value={tech.regreso} data-id={tech.id} data-field="regreso" onchange={handleTechTimeChange} placeholder="0"></lightning-input></td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </template>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" onclick={closeTechModal}>Cancelar</button>
+                        <button class="slds-button slds-button_brand" onclick={saveTechModal}>Guardar Asignación</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open" role="presentation"></div>
+        </template>
+
+    </div>
+</template>

@@ -1,0 +1,167 @@
+<template>
+    <div class="dashboard-wrapper">
+
+        <template if:true={isLoading}>
+            <div class="slds-is-relative slds-p-around_medium">
+                <lightning-spinner alternative-text="Cargando..." size="small"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:true={hasError}>
+            <div class="slds-notify slds-notify_alert slds-theme_error slds-p-around_x-small">
+                <lightning-icon icon-name="utility:error" size="x-small" variant="inverse" class="slds-m-right_x-small"></lightning-icon>
+                Error cargando datos del cliente.
+            </div>
+        </template>
+
+        <template if:false={isLoading}>
+            <div class="dashboard-bar">
+
+                <!-- OPORTUNIDADES -->
+                <div class="dash-card" data-type="opp" onclick={handleCardClick} title="Ver oportunidades">
+                    <div class="dash-icon">
+                        <lightning-icon icon-name="standard:opportunity" size="small"></lightning-icon>
+                    </div>
+                    <div class="dash-content">
+                        <span class="dash-label">Oportunidades</span>
+                        <div class="dash-badges">
+                            <span class="badge badge-green tooltip-wrap">
+                                {oppOpen}
+                                <span class="tooltip-box">Abiertas (En curso)</span>
+                            </span>
+                            <span class="badge badge-orange tooltip-wrap">
+                                {oppWon}
+                                <span class="tooltip-box">Ganadas</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="dash-chevron">›</div>
+                </div>
+
+                <div class="dash-divider"></div>
+
+                <!-- PRESUPUESTOS -->
+                <div class="dash-card" data-type="quote" onclick={handleCardClick} title="Ver presupuestos">
+                    <div class="dash-icon">
+                        <lightning-icon icon-name="standard:quotes" size="small"></lightning-icon>
+                    </div>
+                    <div class="dash-content">
+                        <span class="dash-label">Presupuestos</span>
+                        <div class="dash-badges">
+                            <span class="badge badge-green tooltip-wrap">
+                                {quoteActive}
+                                <span class="tooltip-box">Aprobados</span>
+                            </span>
+                            <span class="badge badge-orange tooltip-wrap">
+                                {quotePending}
+                                <span class="tooltip-box">En proceso (Borrador / Pendiente)</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="dash-chevron">›</div>
+                </div>
+
+                <div class="dash-divider"></div>
+
+                <!-- CONTRATOS -->
+                <div class="dash-card" data-type="contract" onclick={handleCardClick} title="Ver contratos">
+                    <div class="dash-icon">
+                        <lightning-icon icon-name="standard:contract" size="small"></lightning-icon>
+                    </div>
+                    <div class="dash-content">
+                        <span class="dash-label">Contratos</span>
+                        <div class="dash-badges">
+                            <span class="badge badge-green tooltip-wrap">
+                                {scActive}
+                                <span class="tooltip-box">Activados</span>
+                            </span>
+                            <span class="badge badge-orange tooltip-wrap">
+                                {scInactive}
+                                <span class="tooltip-box">Borrador / En proceso de aprobación</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="dash-chevron">›</div>
+                </div>
+
+                <div class="dash-divider"></div>
+
+                <!-- ÓRDENES DE TRABAJO -->
+                <div class="dash-card" data-type="wo" onclick={handleCardClick} title="Ver Número de visitas">
+                    <div class="dash-icon">
+                        <lightning-icon icon-name="standard:work_order" size="small"></lightning-icon>
+                    </div>
+                    <div class="dash-content">
+                        <!-- En realidad son Órdenes de Trabajo, pero se nombra Número de visitas porque el cliente se confunde al estar acostumbrado a otra integración -->
+                        <span class="dash-label">Número de visitas</span>
+                        <div class="dash-badges">
+                            <span class="badge badge-green tooltip-wrap">
+                                {woOpen}
+                                <span class="tooltip-box">Abiertas (Nuevas / En ejecución)</span>
+                            </span>
+                            <span class="badge badge-orange tooltip-wrap">
+                                {woClosed}
+                                <span class="tooltip-box">Completadas / Cerradas</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="dash-chevron">›</div>
+                </div>
+
+            </div>
+        </template>
+
+        <!-- PANEL MODAL -->
+        <template if:true={isPanelOpen}>
+            <div class="panel-backdrop" onclick={closePanel}>
+                <div class="panel-container" onclick={stopPropagation}>
+
+                    <div class="panel-header">
+                        <div class="panel-header-left">
+                            <div class="panel-header-icon">
+                                <lightning-icon icon-name={panelIcon} size="small" variant="inverse"></lightning-icon>
+                            </div>
+                            <span class="panel-header-title">{panelTitle}</span>
+                            <span class="panel-header-count">{panelCount}</span>
+                        </div>
+                        <button class="panel-close" onclick={closePanel} title="Cerrar">
+                            <lightning-icon icon-name="utility:close" size="x-small" variant="inverse"></lightning-icon>
+                        </button>
+                    </div>
+
+                    <div class="panel-body">
+                        <template if:true={isPanelLoading}>
+                            <div class="panel-loading">
+                                <lightning-spinner alternative-text="Cargando..." size="medium"></lightning-spinner>
+                            </div>
+                        </template>
+
+                        <template if:false={isPanelLoading}>
+                            <template if:true={hasRecords}>
+                                <lightning-datatable
+                                    key-field="Id"
+                                    data={panelRecords}
+                                    columns={panelColumns}
+                                    sorted-by={sortedBy}
+                                    sorted-direction={sortDirection}
+                                    onsort={handleSort}
+                                    hide-checkbox-column>
+                                </lightning-datatable>
+                            </template>
+
+                            <template if:false={hasRecords}>
+                                <div class="panel-empty">
+                                    <lightning-icon icon-name="utility:list" size="large" class="panel-empty-icon"></lightning-icon>
+                                    <p class="panel-empty-title">Sin registros</p>
+                                    <p class="panel-empty-text">No hay {panelTitle} registrados para esta cuenta.</p>
+                                </div>
+                            </template>
+                        </template>
+                    </div>
+
+                </div>
+            </div>
+        </template>
+
+    </div>
+</template>

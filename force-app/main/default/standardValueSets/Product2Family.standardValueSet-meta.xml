@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<StandardValueSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <sorted>false</sorted>
+    <standardValue>
+        <fullName>None</fullName>
+        <default>false</default>
+        <label>None</label>
+    </standardValue>
+    <standardValue>
+        <fullName>SELLADORES</fullName>
+        <default>false</default>
+        <label>SELLADORES</label>
+    </standardValue>
+    <standardValue>
+        <fullName>AMBIENTAL</fullName>
+        <default>false</default>
+        <label>AMBIENTAL</label>
+    </standardValue>
+    <standardValue>
+        <fullName>HH</fullName>
+        <default>false</default>
+        <label>HH</label>
+    </standardValue>
+    <standardValue>
+        <fullName>RETARDANTE</fullName>
+        <default>false</default>
+        <label>RETARDANTE</label>
+    </standardValue>
+    <standardValue>
+        <fullName>GENERAL</fullName>
+        <default>false</default>
+        <label>GENERAL</label>
+    </standardValue>
+</StandardValueSet>

@@ -1,0 +1,195 @@
+<template>
+    <section class={drawerClass} role="dialog" aria-modal="true">
+        <!-- TOP BAR: HEADER ONLY (CLEAN MODE) -->
+        <div class="premium-top-bar">
+            <div class="top-bar-content">
+                <div class="header-main">
+                    <div class="slds-grid slds-grid_vertical-align-center">
+                        <lightning-icon icon-name="standard:service_territory_location" size="small" class="slds-m-right_small icon-main-color"></lightning-icon>
+                        <div>
+                            <h2 class="drawer-title">Puntos de control</h2>
+                        </div>
+                    </div>
+                    <div class="slds-grid slds-grid_vertical-align-center">
+                        <!-- BOTÓN DE CONFIRMACIÓN -->
+                        <lightning-button 
+                            label="CONFIRMAR SELECCIÓN" 
+                            variant="success" 
+                            icon-name="utility:check"
+                            onclick={handleConfirmSelection}
+                            disabled={isSelectionEmpty}
+                            class="slds-m-left_large btn-confirm">
+                        </lightning-button>
+
+                        <lightning-button-icon 
+                            icon-name="utility:close" 
+                            variant="bare" 
+                            onclick={closeDrawer} 
+                            class="slds-m-left_large close-btn"
+                            size="large">
+                        </lightning-button-icon>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEWPORT: INTEGRATED FILTERS + TABLE -->
+        <div class="content-body">
+            <!-- SECTION 1: TABLE WITH EMBEDDED FILTERS -->
+            <div class="section-table">
+                <div class="table-wrapper">
+                    <!-- HEADER FILTERS (ESTÉTICOS E INTEGRADOS SOBRE CABECERAS) -->
+                    <div class="embedded-filter-bar slds-p-vertical_small">
+                        <div class="filter-flex-row">
+                            <div class="filter-col flex-6">
+                                <lightning-input label="ZONA" variant="label-hidden" placeholder="Filtrar Zona..." value={filterZona} data-field="zona" onchange={handleColumnFilterChange} class="table-header-input"></lightning-input>
+                            </div>
+                            <div class="filter-col flex-6">
+                                <lightning-input label="TIPO" variant="label-hidden" placeholder="Filtrar Tipo..." value={filterTipo} data-field="tipo" onchange={handleColumnFilterChange} class="table-header-input"></lightning-input>
+                            </div>
+                        </div>
+                    </div>
+
+                    <template if:true={isLoading}>
+                        <div class="loading-overlay">
+                            <lightning-spinner alternative-text="Sincronizando..." size="medium" variant="brand"></lightning-spinner>
+                        </div>
+                    </template>
+                    
+                    <lightning-datatable
+                        key-field="Id"
+                        data={pagedZones}
+                        columns={columns}
+                        onrowselection={handleRowSelection}
+                        selected-rows={selectedRowsIds}
+                        class="premium-table datatable-no-border">
+                    </lightning-datatable>
+
+                    <!-- TABLE FOOTER: PAGINACIÓN INTEGRADA -->
+                    <div class="table-pagination-footer slds-p-vertical_small">
+                        <div class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+                            <div class="slds-text-color_weak slds-text-body_small">
+                                Mostrando página {currentPage} de {totalPages} ({zones.length} registros)
+                            </div>
+                            <div class="slds-grid slds-grid_vertical-align-center">
+                                <lightning-button 
+                                    label="Anterior" 
+                                    icon-name="utility:chevronleft" 
+                                    onclick={handlePrevPage} 
+                                    disabled={isFirstPage}
+                                    variant="neutral"
+                                    class="slds-m-right_small compact-nav-btn">
+                                </lightning-button>
+                                <div class="compact-page-indicator slds-m-right_small">{currentPage}</div>
+                                <lightning-button 
+                                    label="Siguiente" 
+                                    icon-name="utility:chevronright" 
+                                    icon-position="right"
+                                    onclick={handleNextPage} 
+                                    disabled={isLastPage}
+                                    variant="neutral"
+                                    class="compact-nav-btn">
+                                </lightning-button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <template if:false={zones.length}>
+                        <template if:false={isLoading}>
+                            <div class="empty-state">
+                                <lightning-icon icon-name="utility:search" size="large" variant="light"></lightning-icon>
+                                <p>No se encontraron resultados para los criterios aplicados.</p>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+            </div>
+
+            <!-- ZONE 2: WORK ORDER SCOPE SECTION (TABLE MODE) -->
+            <div class="section-details slds-p-vertical_large">
+                <div class="top-bar-content">
+                    <div class="detail-card">
+                        <header class="detail-card-header slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+                            <div>
+                                <h3 class="slds-text-title_bold text-slate-800">DISTRIBUCIÓN DE PUNTOS DE CONTROL</h3>
+                                <p class="slds-text-body_small text-slate-400">Selecciona los servicios donde se replicará esta configuración técnica.</p>
+                            </div>
+                            <div class="slds-grid slds-grid_vertical-align-center">
+                                <div class="slds-m-right_medium slds-grid slds-grid_vertical-align-center">
+                                    <span class="slds-text-body_small slds-m-right_x-small">Seleccionar Todo</span>
+                                    <lightning-input 
+                                        type="toggle" 
+                                        label="Seleccionar Todo" 
+                                        variant="label-hidden" 
+                                        checked={isAllTreatmentsSelected}
+                                        onchange={handleToggleAllTreatments}>
+                                    </lightning-input>
+                                </div>
+                                <span class="slds-badge slds-theme_info">{selectedTreatmentsCount} Servicios</span>
+                            </div>
+                        </header>
+                        <div class="detail-card-body slds-p-around_none">
+                            <template if:true={hasTreatments}>
+                                <div class="table-scroll">
+                                    <table class="slds-table slds-table_bordered slds-table_fixed-layout custom-scope-table">
+                                        <thead>
+                                            <tr class="slds-line-height_reset">
+                                                <th class="slds-text-title_caps" scope="col" style="width: 3.25rem;">
+                                                    <div class="slds-truncate slds-p-left_small">Sel</div>
+                                                </th>
+                                                <th class="slds-text-title_caps" scope="col">
+                                                    <div class="slds-truncate">Tratamiento (Cód. Producto)</div>
+                                                </th>
+                                                <th class="slds-text-title_caps" scope="col" style="width: 150px;">
+                                                    <div class="slds-truncate">Fecha</div>
+                                                </th>
+                                                <th class="slds-text-title_caps" scope="col" style="width: 200px;">
+                                                    <div class="slds-truncate">¿Puntos Asignados?</div>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template for:each={treatmentList} for:item="tra">
+                                                <tr key={tra.id} class={tra.rowClass} onclick={handleTreatmentClick} data-id={tra.id}>
+                                                    <td class="slds-p-left_small">
+                                                        <lightning-input type="checkbox" checked={tra.selected} variant="label-hidden" data-id={tra.id} onchange={handleTreatmentToggle}></lightning-input>
+                                                    </td>
+                                                    <td>
+                                                        <div class="slds-grid slds-grid_vertical-align-center">
+                                                            <div class="treatment-name-cell">
+                                                                <p class="main-text">{tra.name}</p>
+                                                                <p class="sub-text">Cód: {tra.code}</p>
+                                                            </div>
+                                                            <template if:true={tra.isMain}>
+                                                                <span class="slds-badge slds-m-left_small badge-origin">ORIGEN</span>
+                                                            </template>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="slds-truncate text-slate-600">{tra.fecha}</div>
+                                                    </td>
+                                                    <td>
+                                                        <span class={tra.statusClass}>{tra.hasPoints}</span>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </template>
+                            <template if:false={hasTreatments}>
+                                <div class="slds-align_absolute-center slds-p-around_large text-slate-400">
+                                    No hay tratamientos disponibles.
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <template if:true={isOpen}>
+        <div class="slds-backdrop slds-backdrop_open" onclick={closeDrawer}></div>
+    </template>
+</template>

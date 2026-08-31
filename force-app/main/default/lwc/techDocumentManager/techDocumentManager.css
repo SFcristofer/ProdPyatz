@@ -1,0 +1,134 @@
+.premium-container {
+    background: #ffffff;
+    border-radius: 8px;
+}
+
+/* HEADER */
+.main-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #080707;
+}
+
+.sub-title {
+    color: #6e6e6e;
+    font-size: 0.85rem;
+}
+
+.percentage {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #0176d3;
+}
+
+.count {
+    font-size: 0.75rem;
+    color: #6e6e6e;
+    margin-left: 8px;
+}
+
+/* DOC ROWS */
+.doc-row {
+    background: #fdfdfd;
+    border: 1px solid #dddbda;
+    border-radius: 4px;
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+    transition: background 0.2s;
+}
+
+.doc-row:hover {
+    background: #f3f3f3;
+}
+
+.doc-row.completed {
+    background: #fafffa;
+    border-color: #45c65a;
+}
+
+.doc-label {
+    font-weight: 600;
+    color: #3e3e3c;
+    display: block;
+    margin-bottom: 2px;
+}
+
+/* BADGES */
+.custom-badge {
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 10px;
+    display: inline-block;
+}
+
+.custom-badge.pending {
+    background: #ecebea;
+    color: #3e3e3c;
+}
+
+.custom-badge.success {
+    background: #45c65a;
+    color: white;
+}
+
+/* FILE UPLOAD STYLING */
+/* Este estilo apunta al botón real de Salesforce para hacerlo ver como un botón de acción */
+.upload-button-styled :dangerous-internal-shadow-root .slds-file-selector__button {
+    background: #0176d3 !important;
+    border: 1px solid #0176d3 !important;
+    color: white !important;
+    border-radius: 4px !important;
+    font-size: 0.75rem !important;
+    padding: 0 12px !important;
+    height: 28px !important;
+}
+
+.upload-button-styled :dangerous-internal-shadow-root .slds-file-selector__text {
+    display: none; /* Ocultamos el texto feo "Upload Files" */
+}
+
+/* Cambiamos el texto del botón por algo más corto usando un pseudo-elemento si es posible, 
+   o simplemente lo dejamos como el botón estándar que ahora es clickable */
+.upload-button-styled :dangerous-internal-shadow-root .slds-file-selector__button::after {
+    content: "Adjuntar";
+    margin-left: 4px;
+}
+
+.completed .upload-button-styled :dangerous-internal-shadow-root .slds-file-selector__button {
+    background: #45c65a !important;
+    border-color: #45c65a !important;
+}
+
+.completed .upload-button-styled :dangerous-internal-shadow-root .slds-file-selector__button::after {
+    content: "Cambiar";
+}
+
+.btn-delete {
+    --slds-c-button-icon-color-foreground: #ea001e;
+}
+
+.doc-row.completed.enterprise {
+    background: #f0f7ff;
+    border-color: #0176d3;
+    border-left: 4px solid #0176d3;
+}
+
+.custom-badge.enterprise {
+    background: #0176d3;
+    color: white;
+}
+
+.enterprise .doc-label {
+    color: #0176d3;
+}
+
+.enterprise .upload-button-styled :dangerous-internal-shadow-root .slds-file-selector__button {
+    background: #0176d3 !important;
+    border-color: #0176d3 !important;
+}
+
+/* Progress Bar */
+.custom-progress {
+    --slds-c-progress-bar-color-foreground: #0176d3;
+}

@@ -1,0 +1,131 @@
+:host {
+    --pyatz-blue: #0070d2;
+    --pyatz-border: #dddbda;
+}
+
+.main-container {
+    background-color: white;
+}
+
+/* Restricción de anchos para inputs pequeños */
+.input-tiny {
+    width: 60px;
+    display: inline-block;
+}
+
+.d-block {
+    display: block;
+}
+
+/* Ajustes de Tabla */
+.slds-table td {
+    vertical-align: middle;
+}
+
+/* GANTT CHART (Ajustado para no superponerse) */
+.gantt-main-container {
+    border: 1px solid #edf2f7;
+    border-radius: 8px;
+    background: #f8fafc;
+    position: relative;
+    overflow-x: auto;
+}
+
+.gantt-timeline-header, .gantt-body {
+    min-width: 2500px;
+    position: relative;
+}
+
+.gantt-timeline-header {
+    height: 50px;
+    background: #ffffff;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.gantt-header-tick {
+    position: absolute;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 5px;
+}
+
+.tick-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: #4a5568;
+    text-transform: uppercase;
+}
+
+.tick-sublabel {
+    font-size: 11px;
+    font-weight: 800;
+    color: #2d3748;
+}
+
+.gantt-body {
+    height: 300px;
+    position: relative;
+}
+
+.grid-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background-color: #edf2f7;
+}
+
+.today-line {
+    border-left: 2px dashed #f56565 !important;
+    height: 100%;
+    position: absolute;
+    z-index: 5;
+}
+
+.today-tag {
+    position: absolute;
+    top: 0;
+    left: 4px;
+    background: #f56565;
+    color: white;
+    font-size: 8px;
+    padding: 1px 3px;
+    border-radius: 2px;
+}
+
+/* CARDS GANTT */
+.gantt-pro-card {
+    position: absolute;
+    width: 150px;
+    background: white;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 10;
+}
+
+.pro-card-header {
+    padding: 4px 6px;
+    background: #f1f5f9;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 10px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+}
+
+.pro-card-body {
+    padding: 4px 6px;
+    font-size: 9px;
+    color: #4a5568;
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+    .slds-medium-size_1-of-3 {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+}

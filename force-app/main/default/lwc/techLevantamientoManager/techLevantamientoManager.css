@@ -1,0 +1,281 @@
+:host {
+    --slate-50: #f8fafc; --slate-100: #f1f5f9; --slate-200: #e2e8f0; --slate-600: #475569; --slate-700: #334155; --slate-900: #0f172a;
+    --indigo-600: #4f46e5; --indigo-700: #4338ca; --brand-pyatz: #1e293b; --green-soft: #dcfce7; --orange-soft: #ffedd5; --red-soft: #fee2e2;
+}
+
+.main-container { 
+    background: white; 
+    border: 1px solid var(--slate-200); 
+    border-radius: 12px; 
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); 
+    overflow: visible; 
+}
+
+.header-section { 
+    padding: 1.25rem; 
+    border-bottom: 1px solid var(--slate-200); 
+    background: var(--slate-50);
+    position: relative; 
+    z-index: 100;       
+    min-height: 180px; 
+}
+
+.header-title { 
+    font-size: 1.1rem; 
+    font-weight: 700; 
+    color: #0070d2; 
+    display: flex; 
+    align-items: center; 
+}
+
+.type-selector { max-width: 400px; margin-bottom: 1rem; }
+
+/* --- TABLAS ESTILO EXCEL PYATZ --- */
+.survey-wrapper { padding: 1rem; }
+
+.table-scroll-container { 
+    border: 1px solid var(--slate-200); 
+    border-radius: 8px; 
+    overflow: auto; 
+    max-height: 65vh; 
+    background: white; 
+    position: relative;
+    padding-bottom: 150px;
+}
+
+.survey-table { 
+    border-collapse: separate; 
+    border-spacing: 0; 
+    width: 100%; 
+    font-family: 'Segoe UI', system-ui, sans-serif; 
+}
+
+/* FIX DEFINITIVO: HEADERS QUE NO TAPAN DATOS */
+.survey-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+
+.survey-table thead tr th { 
+    background: #1e293b; 
+    color: white; 
+    font-size: 0.81rem; 
+    font-weight: 600; 
+    text-transform: uppercase; 
+    letter-spacing: 0.5px; 
+    padding: 14px 10px; 
+    border-right: 1px solid rgba(255,255,255,0.08); 
+    border-bottom: 3px solid #0070d2;
+    text-align: center; 
+    white-space: normal;
+    overflow-wrap: break-word;
+    line-height: 1.3;
+}
+
+/* Color diferenciado para grupos */
+.survey-header-group th { 
+    background: #334155; 
+    font-size: 0.75rem;
+    padding: 8px !important;
+    border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+/* FILAS DE DATOS: ALTURA FLEXIBLE PARA SOPORTAR RENGLONES */
+.survey-table tbody tr td { 
+    border-bottom: 1px solid #e2e8f0; 
+    border-right: 1px solid #f1f5f9; 
+    padding: 0 !important;
+    vertical-align: top; 
+    background: white;
+    min-height: 55px;
+    transition: background-color 0.2s ease;
+}
+
+.survey-table tbody tr:hover td { 
+    background-color: #fcfdfe; 
+}
+
+/* Inputs y Textareas Estilo Excel Profesional */
+.cell-input { 
+    width: 100%; 
+    min-height: 55px;
+    border: 1px solid transparent; 
+    padding: 12px 10px; 
+    font-size: 0.88rem; 
+    background: transparent; 
+    color: #334155; 
+    text-align: left; 
+    resize: none;
+    display: block;
+    line-height: 1.5;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+.cell-input:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.cell-input:focus { 
+    outline: none;
+    border-color: #0070d2;
+    background: white; 
+    box-shadow: inset 0 0 0 1px #0070d2;
+    z-index: 2; 
+    position: relative; 
+}
+
+/* CELDAS ESPECIALES: CENTRADO DE ICONOS Y NÚMEROS */
+.action-cell {
+    text-align: center !important;
+    vertical-align: middle !important;
+    width: 50px;
+    padding: 4px !important;
+    background: #f8fafc !important;
+}
+
+.row-number-cell {
+    text-align: center !important;
+    vertical-align: middle !important;
+    font-weight: 700;
+    color: #64748b;
+    background: #f1f5f9 !important;
+    width: 45px;
+    border-right: 2px solid #e2e8f0 !important;
+}
+
+.cell-select { 
+    width: 100%; 
+    height: 100%;
+    border: 1px solid transparent; 
+    padding: 8px; 
+    font-size: 0.85rem; 
+    background: transparent; 
+    cursor: pointer; 
+    text-align: center; 
+    appearance: none; 
+    transition: all 0.2s ease;
+}
+
+.cell-select:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.cell-select:focus { 
+    outline: none;
+    border-color: #0070d2;
+    background: white;
+}
+
+/* Totales Dash con impacto visual */
+.survey-row-totals td { 
+    background: #f8fafc; 
+    font-weight: 800; 
+    color: #1e293b;
+    border-top: 2px solid #cbd5e1; 
+    border-bottom: 2px solid #cbd5e1;
+    padding: 18px 10px !important; 
+    text-align: center; 
+    font-size: 0.95rem;
+}
+
+.total-label-cell { 
+    text-align: left !important; 
+    padding-left: 1.5rem !important; 
+    background: #f1f5f9 !important; 
+    letter-spacing: 1px;
+}
+
+/* Estados Colores Profesionales */
+.bg-green-soft { background-color: var(--green-soft) !important; color: #166534 !important; }
+.bg-orange-soft { background-color: var(--orange-soft) !important; color: #9a3412 !important; }
+.bg-red-soft { background-color: var(--red-soft) !important; color: #991b1b !important; }
+
+/* Botón Añadir */
+.btn-add { margin-top: 1rem; --slds-c-button-brand-color-background: var(--indigo-600); border-radius: 6px; }
+
+/* DIAGNÓSTICO SITUACIONAL (INTIMA) */
+.diag-card { background: white; border: 1px solid var(--slate-200); border-radius: 12px; margin-bottom: 1.5rem; overflow: hidden; }
+.diag-header { background: var(--slate-900); color: white; padding: 1rem; display: flex; align-items: center; }
+.diag-table { width: 100%; }
+.diag-table td { padding: 12px 16px; border-bottom: 1px solid var(--slate-100); }
+.diag-label { font-weight: 600; color: var(--slate-600); font-size: 0.85rem; background: var(--slate-50); width: 35%; }
+
+/* Scroll Customizado */
+.table-scroll-container::-webkit-scrollbar { height: 10px; width: 8px; }
+.table-scroll-container::-webkit-scrollbar-track { background: var(--slate-100); }
+.table-scroll-container::-webkit-scrollbar-thumb { background: var(--slate-200); border-radius: 10px; }
+.table-scroll-container::-webkit-scrollbar-thumb:hover { background: var(--slate-600); }
+
+/* --- ESTILOS AISLADOS PARA EL MODAL DE CONFIGURACIÓN --- */
+
+.config-modal-header {
+    background: #1b2735;
+    color: white;
+    padding: 1.5rem;
+}
+
+.config-modal-body {
+    background-color: #f3f3f3;
+}
+
+.config-card-name {
+    background: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    border: 1px solid #e2e8f0;
+}
+
+.config-column-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    border-left: 4px solid #fdbb2d;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+}
+
+.config-order-badge {
+    background: #1a2a6c;
+    color: white;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-weight: bold;
+}
+
+.config-preview-panel {
+    background: #1b2735;
+    border-radius: 12px;
+    padding: 1.5rem;
+    color: #e2e8f0;
+}
+
+.config-preview-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 4px;
+}
+
+.config-preview-table th {
+    background: #fdbb2d;
+    color: #1a2a6c;
+    padding: 8px;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    border-radius: 4px;
+}
+
+.config-preview-placeholder {
+    height: 30px;
+    background: rgba(255,255,255,0.03);
+    border: 1px dashed rgba(255,255,255,0.2);
+    border-radius: 4px;
+}

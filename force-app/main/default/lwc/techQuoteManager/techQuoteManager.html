@@ -1,0 +1,20 @@
+<template>
+    <div class="premium-cotizador-container" style="background: #fdfdfd; min-height: 90vh;">
+        
+        <!-- VISTA LISTADO PREMIUM (OPORTUNIDADES) -->
+        <template if:true={isListView}>
+            <!-- Aquí aprovechamos techOperations360 en su modo 'dashboard' 
+                 o techQuoteList con esteroides de oportunidad -->
+            <c-tech-operations-360 onrowaction={handleSelectOpportunity}></c-tech-operations-360>
+        </template>
+
+        <!-- VISTA EXPEDIENTE 360 (INMERSIÓN OPERATIVA) -->
+        <template if:true={is360View}>
+            <c-tech-operations-360 
+                record-id={selectedRecordId} 
+                onback={handleShowList}>
+            </c-tech-operations-360>
+        </template>
+
+    </div>
+</template>

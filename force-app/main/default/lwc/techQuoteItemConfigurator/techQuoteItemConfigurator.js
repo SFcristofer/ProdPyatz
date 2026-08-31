@@ -1,0 +1,296 @@
+import { LightningElement, api, track, wire } from 'lwc';
+import searchProducts from '@salesforce/apex/QuoteController.searchProducts';
+import getProductPrices from '@salesforce/apex/QuoteController.getProductPrices';
+import getProductInfoByPBE from '@salesforce/apex/QuoteController.getProductInfoByPBE';
+import getOpportunitySoluciones from '@salesforce/apex/QuoteController.getOpportunitySoluciones';
+import getHistoricalZones from '@salesforce/apex/QuoteController.getHistoricalZones';
+
+export default class TechQuoteItemConfigurator extends LightningElement {
+    @api recordId;
+    @api opportunityId;
+    @api accountId; 
+    @api selectedSedesObjects = [];
+    @api selectedLines = [];
+    @api allowOtherLines = false;
+    
+    @api 
+    get editItem() { return this._editItem; }
+    set editItem(value) {
+        this._editItem = value;
+        if (value) {
+            this.loadEditData(value);
+        }
+    }
+    _editItem;
+
+    @track solucionOptions = [];
+    @track selectedSolucionId = '';
+    @track searchResults = [];
+    @track allHistoricalZones = [];
+    @track zonasAfectadas = [];
+
+    @track selectedProductId = '';
+    @track selectedPbeId = '';
+    @track selectedProductName = '';
+    @track selectedProductPrice = 0;
+    @track productPriceOptions = [];
+    @track modalTableData = []; 
+    @track modalDescription = '';
+    @track isUnitario = true;
+    @track isTotal = false;
+
+    get mappedHistoricalZones() {
+        const allPossibleZones = new Set([...this.allHistoricalZones]);
+        this.zonasAfectadas.forEach(z => allPossibleZones.add(z));
+        const selectedSet = new Set(this.zonasAfectadas.map(z => z.trim().toLowerCase()));
+        
+        const groups = {};
+        
+        Array.from(allPossibleZones).sort().forEach(zoneName => {
+            const isSelected = selectedSet.has(zoneName.trim().toLowerCase());
+            let baseName = zoneName;
+            let reportName = 'Estándar';
+            
+            const lastParenIndex = zoneName.lastIndexOf(' (');
+            if (lastParenIndex !== -1 && zoneName.endsWith(')')) {
+                baseName = zoneName.substring(0, lastParenIndex).trim();
+                reportName = zoneName.substring(lastParenIndex + 2, zoneName.length - 1).trim();
+            }
+            
+            if (!groups[baseName]) {
+                groups[baseName] = { baseName: baseName, templates: [] };
+            }
+            groups[baseName].templates.push({
+                name: zoneName,
+                label: reportName,
+                isSelected: isSelected
+            });
+        });
+        
+        return Object.values(groups);
+    }
+
+    get formattedZonasAfectadas() {
+        return this.zonasAfectadas.map(z => {
+            let label = z;
+            const lastParenIndex = z.lastIndexOf(' (');
+            if (lastParenIndex !== -1 && z.endsWith(')')) {
+                const baseName = z.substring(0, lastParenIndex).trim();
+                const reportName = z.substring(lastParenIndex + 2, z.length - 1).trim();
+                label = `${baseName} • ${reportName}`;
+            } else {
+                label = `${z} • Estándar`;
+            }
+            return { name: z, label: label };
+        });
+    }
+
+    @wire(getHistoricalZones, { accountId: '$accountId' })
+    wiredZones({ error, data }) {
+        if (data) {
+            this.allHistoricalZones = data;
+            this.normalizeExistingZones();
+        } else if (error) {
+            console.error('Error cargando zonas históricas:', error);
+        }
+    }
+
+    normalizeExistingZones() {
+        if (!this.allHistoricalZones || this.allHistoricalZones.length === 0 || this.zonasAfectadas.length === 0) return;
+        const catalogMap = new Map();
+        this.allHistoricalZones.forEach(z => catalogMap.set(z.toLowerCase().trim(), z));
+        const normalized = this.zonasAfectadas.map(z => {
+            const lower = z.toLowerCase().trim();
+            return catalogMap.has(lower) ? catalogMap.get(lower) : z;
+        });
+        this.zonasAfectadas = [...new Set(normalized)];
+    }
+
+    @wire(getOpportunitySoluciones, { oppId: '$opportunityId' })
+    wiredSoluciones({ error, data }) {
+        if (data) {
+            this.solucionOptions = data;
+        } else if (error) {
+            console.error('Error cargando soluciones:', error);
+        }
+    }
+
+    handleSolucionChange(event) { this.selectedSolucionId = event.detail.value; }
+
+    get priceTypeOptions() { return [ { label: 'Unitario', value: 'UNITARIO' }, { label: 'Total', value: 'TOTAL' } ]; }
+    get selectedPriceType() { return this.isUnitario ? 'UNITARIO' : 'TOTAL'; }
+    get isAddDisabled() { return !this.selectedProductId && !this.selectedPbeId; }
+    get modalTitle() { return this._editItem ? 'Editar Partida Técnica' : 'Configurador de Partida Técnica'; }
+    get saveButtonLabel() { return this._editItem ? 'Actualizar Partida' : 'Confirmar Partida'; }
+    get discountOptions() { return [ { label: '$', value: 'monto' }, { label: '%', value: 'porcentaje' } ]; }
+
+    formatDescription(text) {
+        if (!text) return '';
+        // Si ya parece HTML (contiene etiquetas), lo dejamos pasar tal cual
+        if (/<[a-z][\s\S]*>/i.test(text)) {
+            return text;
+        }
+        // Si es texto plano, convertimos los saltos de línea \n a <br/> para el editor rich text
+        return text.replace(/\n/g, '<br/>');
+    }
+
+    loadEditData(item) {
+        this.selectedPbeId = item.pbeId;
+        this.selectedProductName = item.descripcion;
+        this.modalDescription = this.formatDescription(item.detalleTecnico);
+        const rawAreas = item.areas ? item.areas.split(',').map(a => a.trim()).filter(a => a !== '') : [];
+        this.zonasAfectadas = [...new Set(rawAreas)];
+        if (this.allHistoricalZones && this.allHistoricalZones.length > 0) this.normalizeExistingZones();
+        
+        if (item.productId) {
+            this.selectedProductId = item.productId;
+            this.loadProductPrices();
+        } else {
+            getProductInfoByPBE({ pbeId: this.selectedPbeId }).then(res => { this.selectedProductId = res.productId; this.loadProductPrices(); }).catch(err => console.error(err));
+        }
+
+        const sedesVinculadas = item.sedes ? item.sedes.split(',').map(s => s.trim()) : [];
+        this.isUnitario = item.isUnitario !== undefined ? item.isUnitario : true;
+        this.isTotal = !this.isUnitario;
+
+        // Recuperar el importe original capturado por el usuario (Unitario o Total)
+        const storedImporte = this.isUnitario 
+            ? (item.precioVenta !== undefined ? item.precioVenta : (item.totalSinImpuestos / (item.cantidad || 1)))
+            : (item.subtotalBruto !== undefined ? item.subtotalBruto : item.totalSinImpuestos);
+
+        this.modalTableData = this.selectedSedesObjects.map(s => {
+            const isMatch = sedesVinculadas.includes(s.Name);
+            return { 
+                id: s.Id, sede: s.Name, isSelected: isMatch, cantidad: item.cantidad, 
+                importeTotal: storedImporte, 
+                descuento: item.descuento || 0, 
+                tipoDescuento: item.tipoDescuento || 'monto', 
+                totalSinImpuestos: item.totalSinImpuestos, 
+                subtotalBruto: item.subtotalBruto || item.totalSinImpuestos,
+                precioVenta: item.precioVenta || (item.totalSinImpuestos / (item.cantidad || 1)),
+                impuestos: 16 
+            };
+        });
+        this.selectedProductPrice = storedImporte;
+        this.selectedSolucionId = item.solucionId || '';
+    }
+
+    handleToggleGlobalSearch(event) {
+        this.allowOtherLines = event.target.checked;
+        if (this.selectedProductName && this.selectedProductName.length >= 2) this.handleProductSearch({ target: { value: this.selectedProductName } });
+    }
+
+    handleProductSearch(event) {
+        const term = event.target.value;
+        this.selectedProductName = term;
+        if (term.length >= 2) {
+            searchProducts({ searchTerm: term, quoteId: this.recordId, businessLines: this.selectedLines, allowOtherLines: this.allowOtherLines }).then(res => { this.searchResults = res; }).catch(err => console.error(err));
+        } else this.searchResults = [];
+    }
+
+    handleProductSelect(event) {
+        const selectedId = event.currentTarget.dataset.id;
+        const res = this.searchResults.find(x => x.id === selectedId);
+        if (res) {
+            this.selectedPbeId = selectedId; this.selectedProductId = res.productId; this.selectedProductName = res.name; this.selectedProductPrice = res.unitPrice;
+            this.modalDescription = this.formatDescription(res.description); this.searchResults = []; this.loadProductPrices(); this.initModalTable();
+        }
+    }
+
+    handleDescriptionChange(event) { this.modalDescription = event.target.value; }
+
+    loadProductPrices() {
+        if (!this.selectedProductId) return;
+        getProductPrices({ product2Id: this.selectedProductId }).then(res => { this.productPriceOptions = res.map(opt => ({ ...opt, className: opt.pbeId === this.selectedPbeId ? 'price-option-card selected' : 'price-option-card' })); });
+    }
+
+    initModalTable() {
+        this.modalTableData = this.selectedSedesObjects.map(s => ({ id: s.Id, sede: s.Name, isSelected: true, cantidad: 1, importeTotal: this.selectedProductPrice, descuento: 0, tipoDescuento: 'monto', totalSinImpuestos: this.selectedProductPrice, impuestos: 16 }));
+    }
+
+    handlePriceOptionSelect(event) {
+        const pbeId = event.currentTarget.dataset.id;
+        const opt = this.productPriceOptions.find(o => o.pbeId === pbeId);
+        if (opt) {
+            this.selectedPbeId = pbeId; this.selectedProductPrice = opt.unitPrice;
+            this.productPriceOptions = this.productPriceOptions.map(o => ({ ...o, className: o.pbeId === pbeId ? 'price-option-card selected' : 'price-option-card' }));
+            this.modalTableData = this.modalTableData.map(row => ({ ...row, importeTotal: opt.unitPrice }));
+            this.recalculateModalData();
+        }
+    }
+
+    handlePriceType(event) {
+        const type = event.target.value;
+        this.isUnitario = (type === 'UNITARIO'); this.isTotal = !this.isUnitario;
+        this.recalculateModalData();
+    }
+
+    handleToggleZone(event) {
+        const zoneName = event.target.dataset.name ? event.target.dataset.name.trim() : '';
+        if (!zoneName) return;
+        
+        const isChecked = event.target.checked;
+        if (isChecked) {
+            // Comparación exacta para reuso de maestro
+            const exists = this.zonasAfectadas.some(z => z.trim() === zoneName);
+            if (!exists) this.zonasAfectadas = [...this.zonasAfectadas, zoneName];
+        } else {
+            this.zonasAfectadas = this.zonasAfectadas.filter(z => z.trim() !== zoneName);
+        }
+    }
+
+    removeZona(event) {
+        const zona = event.target.name ? event.target.name.trim() : '';
+        if (!zona) return;
+        this.zonasAfectadas = this.zonasAfectadas.filter(z => z.trim() !== zona);
+    }
+
+    handleModalInputChange(event) {
+        const id = event.target.dataset.id;
+        const field = event.target.dataset.field;
+        const checked = event.target.checked;
+        const val = field === 'isSelected' ? checked : (field === 'tipoDescuento' ? event.target.value : (parseFloat(event.target.value) || 0));
+        this.modalTableData = this.modalTableData.map(row => (row.id === id ? { ...row, [field]: val } : row));
+        this.recalculateModalData();
+    }
+
+    recalculateModalData() {
+        this.modalTableData = this.modalTableData.map(row => {
+            let base = this.isUnitario ? (row.importeTotal * row.cantidad) : (row.importeTotal || 0);
+            let finalTotal = base;
+            if (row.tipoDescuento === 'monto') {
+                let totalDescAmount = this.isUnitario ? ((row.descuento || 0) * row.cantidad) : (row.descuento || 0);
+                finalTotal = base - totalDescAmount;
+            } else if (row.tipoDescuento === 'porcentaje') {
+                finalTotal = base * (1 - ((row.descuento || 0) / 100));
+            }
+            let unitarioBase = row.cantidad !== 0 ? (base / row.cantidad) : 0;
+            return { ...row, totalSinImpuestos: finalTotal, subtotalBruto: base, precioVenta: unitarioBase };
+        });
+    }
+
+    handleCancel() { this.dispatchEvent(new CustomEvent('close')); }
+
+    handleSave() {
+        const selectedRows = this.modalTableData.filter(r => r.isSelected);
+        const newItems = selectedRows.map(row => ({
+            id: this._editItem ? this._editItem.id : (Date.now().toString() + Math.random()),
+            pbeId: this.selectedPbeId,
+            productId: this.selectedProductId,
+            descripcion: this.selectedProductName,
+            cantidad: row.cantidad,
+            totalSinImpuestos: row.totalSinImpuestos,
+            subtotalBruto: row.subtotalBruto,
+            precioVenta: row.precioVenta,
+            descuento: row.descuento,
+            tipoDescuento: row.tipoDescuento,
+            isUnitario: this.isUnitario,
+            sedes: row.sede,
+            areas: this.zonasAfectadas.join(', '),
+            detalleTecnico: this.modalDescription,
+            solucionId: this.selectedSolucionId,
+            rowClass: 'row-service'
+        }));
+        this.dispatchEvent(new CustomEvent('add', { detail: newItems }));
+    }
+}

@@ -1,0 +1,253 @@
+<template>
+    <div class="tactical-container slds-grid slds-wrap slds-gutters slds-p-around_medium">
+        
+        <!-- COLUMNA IZQUIERDA: ACCIONES -->
+        <div class="slds-col slds-size_1-of-1 slds-medium-size_6-of-12 slds-large-size_6-of-12 slds-p-right_medium slds-m-bottom_large">
+            <h2 class="slds-text-heading_medium slds-font-weight_bold slds-m-bottom_large" style="color: #00396b;">¿Qué acción deseas realizar hoy?</h2>
+            
+            <div class="slds-grid slds-wrap slds-gutters_small action-cards-container">
+                <div class="slds-col slds-size_1-of-2 slds-small-size_1-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-m-bottom_medium">
+                    <div class="action-card color-call" onclick={handleLogCall}>
+                        <lightning-icon icon-name="standard:log_a_call" size="large"></lightning-icon>
+                        <span class="card-title">Registrar Llamada</span>
+                    </div>
+                </div>
+                <div class="slds-col slds-size_1-of-2 slds-small-size_1-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-m-bottom_medium">
+                    <div class="action-card color-task" onclick={handleNewTask}>
+                        <lightning-icon icon-name="standard:task" size="large"></lightning-icon>
+                        <span class="card-title">Crear Tarea</span>
+                    </div>
+                </div>
+                <div class="slds-col slds-size_1-of-2 slds-small-size_1-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-m-bottom_medium">
+                    <div class={noteCardClass} data-action="note" onclick={handleActionClick}>
+                        <lightning-icon icon-name="standard:note" size="large"></lightning-icon>
+                        <span class="card-title">Añadir Nota</span>
+                    </div>
+                </div>
+                <div class="slds-col slds-size_1-of-2 slds-small-size_1-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-m-bottom_medium">
+                    <div class={emailCardClass} data-action="email" onclick={handleActionClick}>
+                        <lightning-icon icon-name="standard:email" size="large"></lightning-icon>
+                        <span class="card-title">Enviar Correo</span>
+                    </div>
+                </div>
+                <div class="slds-col slds-size_1-of-2 slds-small-size_1-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-m-bottom_medium">
+                    <div class={fileCardClass} data-action="file" onclick={handleActionClick}>
+                        <lightning-icon icon-name="standard:file" size="large"></lightning-icon>
+                        <span class="card-title">Subir Archivo</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FORMULARIOS DESPLEGABLES -->
+            <template if:true={isActionNote}>
+                <div class="action-form-container slide-down slds-m-top_small">
+                    <h3 class="form-title slds-m-bottom_medium">
+                        <lightning-icon icon-name="standard:note" size="small" class="slds-m-right_small"></lightning-icon>
+                        Redactar Nota Técnica
+                    </h3>
+                    <lightning-input label="Título de la Nota" value={noteTitle} onchange={handleNoteTitleChange} placeholder="Ej: Minuta de llamada técnica..." class="slds-m-bottom_small"></lightning-input>
+                    <lightning-input-rich-text value={noteContent} onchange={handleNoteContentChange} placeholder="Escriba los detalles aquí..."></lightning-input-rich-text>
+                    <div class="slds-m-top_medium slds-text-align_right">
+                        <lightning-button label="Cancelar" onclick={handleCancelAction} class="slds-m-right_small"></lightning-button>
+                        <lightning-button label="Guardar Nota" variant="brand" icon-name="utility:save" onclick={handleSaveNote} disabled={isNoteEmpty}></lightning-button>
+                    </div>
+                </div>
+            </template>
+
+            <template if:true={isActionEmail}>
+                <div class="action-form-container slide-down slds-m-top_small">
+                    <h3 class="form-title slds-m-bottom_medium">
+                        <lightning-icon icon-name="standard:email" size="small" class="slds-m-right_small"></lightning-icon>
+                        Centro de Correos
+                    </h3>
+                    <c-tech-communication-hub record-id={recordId}></c-tech-communication-hub>
+                </div>
+            </template>
+
+            <template if:true={isActionFile}>
+                <div class="action-form-container slide-down slds-m-top_small">
+                    <h3 class="form-title slds-m-bottom_medium">
+                        <lightning-icon icon-name="standard:file" size="small" class="slds-m-right_small"></lightning-icon>
+                        Repositorio de Expediente
+                    </h3>
+                    <div class="slds-box slds-theme_shade slds-text-align_center">
+                        <lightning-file-upload label="Arrastre sus documentos aquí" name="fileUploader" accept={acceptedFormats} record-id={recordId} onuploadfinished={handleUploadFinished} multiple></lightning-file-upload>
+                        <p class="slds-m-top_small slds-text-body_small slds-text-color_weak">Formatos aceptados: PDF, Imágenes, Office.</p>
+                    </div>
+                </div>
+            </template>
+
+            <!-- GUÍA DE CIERRE (PIE DE PÁGINA) -->
+            <div class="slds-m-top_xx-large slds-p-around_small bg-info radius-8">
+                <div class="slds-grid">
+                    <lightning-icon icon-name="utility:info" size="xx-small" class="slds-m-right_x-small"></lightning-icon>
+                    <span class="slds-text-title_bold" style="color: #00396b;">Consejo de Negociación:</span>
+                </div>
+                <p class="slds-text-body_small slds-p-left_large slds-m-top_xx-small">Utilice las Notas para registrar acuerdos verbales y el Correo para formalizarlos. El historial a la derecha le permite auditar cada paso.</p>
+            </div>
+        </div>
+
+        <!-- COLUMNA DERECHA: HISTORIAL (PERMANENTE) -->
+        <div class="slds-col slds-size_1-of-1 slds-medium-size_6-of-12 slds-large-size_6-of-12">
+            <div class="history-panel slds-p-around_medium">
+                <div class="slds-grid slds-grid_align-spread slds-m-bottom_large">
+                    <div class="slds-grid slds-grid_vertical-align-center">
+                        <lightning-icon icon-name="standard:recent" size="small" class="slds-m-right_small"></lightning-icon>
+                        <h3 class="slds-text-title_bold" style="font-size: 1.1rem; color: #0070d2;">Historial de Actividad</h3>
+                    </div>
+                    <lightning-button-icon icon-name="utility:refresh" variant="bare" onclick={refreshHistory} title="Actualizar Historial"></lightning-button-icon>
+                </div>
+
+                <template if:true={isLoadingHistory}>
+                    <div class="slds-is-relative slds-p-around_large" style="height: 100px;">
+                        <lightning-spinner alternative-text="Cargando historial..." size="small"></lightning-spinner>
+                    </div>
+                </template>
+
+                <template if:false={isLoadingHistory}>
+                    <div class="timeline-feed-container">
+                        <template for:each={groupedHistory} for:item="group">
+                            <div key={group.id} class="timeline-date-group slds-m-bottom_large">
+                                
+                                <!-- CHEVRON HEADER -->
+                                <div class="date-header-chevron slds-m-bottom_small">
+                                    <span class="chevron-text">{group.dateLabel}</span>
+                                </div>
+                                
+                                <div class="timeline-vertical-line">
+                                    <template for:each={group.items} for:item="item">
+                                        <div key={item.id} class="timeline-bubble-wrapper slds-m-bottom_medium">
+                                            <div class="timeline-dot" style={item.color}>
+                                                <!-- We use a neutral icon inside the dot if we want, or inherit color. The style is applied to the border -->
+                                            </div>
+                                            <div class="timeline-content-card">
+                                                <div class="slds-grid slds-grid_align-spread">
+                                                    <div class="slds-grid slds-grid_vertical-align-center">
+                                                        <lightning-icon icon-name={item.icon} size="small" class="slds-m-right_small"></lightning-icon>
+                                                        <div>
+                                                            <div class="slds-text-title_bold">{item.subject}</div>
+                                                            <div class="slds-text-body_small">
+                                                                <span class="slds-text-color_weak">{item.label} • </span>
+                                                                <lightning-formatted-date-time value={item.date} hour="2-digit" minute="2-digit"></lightning-formatted-date-time>
+                                                                
+                                                                <!-- VISIBILIDAD DE PROPIETARIO -->
+                                                                <template if:true={item.owner}>
+                                                                    <span class="slds-m-left_small slds-badge slds-theme_shade slds-badge_lightest" style="font-weight: normal; text-transform: none;">
+                                                                        <lightning-icon icon-name="utility:user" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
+                                                                        {item.owner}
+                                                                    </span>
+                                                                </template>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="slds-m-top_x-small slds-text-body_small slds-text-color_weak italic timeline-desc">
+                                                    {item.desc}
+                                                </div>
+
+                                                <!-- GESTIÓN DE TAREA -->
+                                                <template if:true={item.isTask}>
+                                                    <div class="slds-m-top_small slds-border_top slds-p-top_small">
+                                                        <template if:false={item.isEditing}>
+                                                            <div class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+                                                                <span class="slds-badge slds-theme_inverse">{item.status}</span>
+                                                                <lightning-button-icon icon-name="utility:edit" variant="bare" alternative-text="Gestionar Tarea" title="Gestionar Tarea" data-id={item.id} onclick={handleEditTask}></lightning-button-icon>
+                                                            </div>
+                                                        </template>
+                                                        
+                                                        <template if:true={item.isEditing}>
+                                                            <div class="slds-box slds-theme_shade slds-m-top_x-small" style="background: white;">
+                                                                <lightning-combobox label="Nuevo Estado" value={item.status} options={statusOptions} data-id={item.id} onchange={handleStatusChange} class="slds-m-bottom_x-small"></lightning-combobox>
+                                                                <lightning-textarea label="Añadir Observación de Seguimiento" placeholder="Ej: El cliente solicitó reagendar..." data-id={item.id} onchange={handleObsTaskChange}></lightning-textarea>
+                                                                <div class="slds-m-top_small slds-text-align_right">
+                                                                    <lightning-button label="Cancelar" variant="neutral" onclick={handleCancelEdit} class="slds-m-right_x-small"></lightning-button>
+                                                                    <lightning-button label="Guardar Avance" variant="brand" data-id={item.id} onclick={handleSaveTaskUpdate}></lightning-button>
+                                                                </div>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                </template>
+                                                <!-- ACCIÓN CORREO (VER COMPLETO) -->
+                                                <template if:true={item.isEmail}>
+                                                    <div class="slds-m-top_small slds-border_top slds-p-top_small slds-text-align_right">
+                                                        <lightning-button variant="base" label="Ver Correo Completo" icon-name="utility:preview" data-id={item.id} onclick={handleViewEmail}></lightning-button>
+                                                    </div>
+                                                </template>
+                                                
+                                                <!-- PREVISUALIZACIÓN DE IMAGEN -->
+                                                <template if:true={item.previewUrl}>
+                                                    <div class="slds-m-top_small preview-box">
+                                                        <img src={item.previewUrl} alt={item.subject}/>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                        <template if:false={historyItems.length}>
+                            <div class="slds-text-align_center slds-p-around_large slds-text-color_weak">
+                                No hay actividad registrada en este expediente.
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CORREO COMPLETO -->
+    <template if:true={showEmailModal}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_medium">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning-button-icon icon-name="utility:close" onclick={closeEmailModal} alternative-text="Cerrar" class="slds-modal__close" variant="bare-inverse"></lightning-button-icon>
+                    <h2 class="slds-text-heading_medium slds-hyphenate">
+                        <template if:true={isLoadingEmail}>Cargando...</template>
+                        <template if:false={isLoadingEmail}>{selectedEmail.subject}</template>
+                    </h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <template if:true={isLoadingEmail}>
+                        <div class="slds-is-relative slds-p-around_large" style="height: 150px;">
+                            <lightning-spinner alternative-text="Cargando contenido..." size="medium"></lightning-spinner>
+                        </div>
+                    </template>
+                    
+                    <template if:false={isLoadingEmail}>
+                        <div class="slds-grid slds-m-bottom_medium slds-text-body_small">
+                            <div class="slds-col slds-size_1-of-2"><strong>De:</strong> {selectedEmail.fromAddress}</div>
+                            <div class="slds-col slds-size_1-of-2"><strong>Para:</strong> {selectedEmail.toAddress}</div>
+                        </div>
+                        <div class="email-body-container slds-box slds-theme_shade slds-m-bottom_medium" style="background: white; min-height: 150px;">
+                            <lightning-formatted-rich-text value={selectedEmail.htmlBody}></lightning-formatted-rich-text>
+                        </div>
+                        
+                        <template if:true={selectedEmail.attachments.length}>
+                            <h3 class="slds-text-heading_small slds-m-bottom_small">
+                                <lightning-icon icon-name="utility:attach" size="small" class="slds-m-right_x-small"></lightning-icon>
+                                Archivos Adjuntos
+                            </h3>
+                            <div class="slds-grid slds-wrap slds-gutters_small">
+                                <template for:each={selectedEmail.attachments} for:item="att">
+                                    <div key={att.id} class="slds-col slds-size_1-of-2 slds-large-size_1-of-3 slds-m-bottom_small">
+                                        <div class="slds-box slds-box_link slds-text-align_center action-card" data-id={att.id} onclick={previewAttachment} style="padding: 1rem;">
+                                            <lightning-icon icon-name={att.icon} size="medium" class="slds-m-bottom_x-small"></lightning-icon>
+                                            <p class="slds-truncate slds-text-body_small" title={att.title}>{att.title}</p>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning-button label="Cerrar" onclick={closeEmailModal}></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>

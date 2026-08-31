@@ -1,0 +1,316 @@
+<template>
+    <!-- VISTA DASHBOARD (PIPELINE) -->
+    <template if:true={showDashboard}>
+        <div class="slds-box slds-theme_default" style="min-height: 80vh; background: #fdfdfd;">
+            <!-- HEADER DASHBOARD -->
+            <header class="slds-m-bottom_medium slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+                <div class="slds-grid slds-grid_vertical-align-center">
+                    <lightning-icon icon-name="standard:opportunity" size="medium" class="slds-m-right_small"></lightning-icon>
+                    <div>
+                        <h1 class="slds-text-heading_medium slds-font-weight_bold">Oportunidades</h1>
+                        <p class="slds-text-color_weak slds-text-body_small">Seleccione la oportunidad</p>
+                    </div>
+                </div>
+                <div class="slds-col_bump-left slds-m-right_medium" style="width: 300px;">
+                    <lightning-input 
+                        type="search" 
+                        variant="label-hidden" 
+                        placeholder="Buscar por nombre o cliente..." 
+                        onchange={handleSearchChange}
+                        is-loading={isLoading}>
+                    </lightning-input>
+                </div>
+                <div>
+                    <lightning-button label="Nueva Oportunidad" variant="brand" icon-name="utility:add" onclick={handleNewOpportunity}></lightning-button>
+                </div>
+            </header>
+
+            <!-- LOADING SPINNER -->
+            <div if:true={isLoading} class="slds-is-relative slds-m-vertical_large">
+                <lightning-spinner alternative-text="Cargando oportunidades..." size="medium"></lightning-spinner>
+            </div>
+
+            <!-- TABLA DE OPORTUNIDADES -->
+            <div if:false={isLoading} style="height: 600px;">
+                <c-tech-custom-datatable
+                    key-field="id"
+                    data={opportunities}
+                    columns={columns}
+                    hide-checkbox-column
+                    onrowaction={handleRowAction}
+                    onsave={handleSave}
+                    draft-values={draftValues}
+                    onpicklistchanged={handlePicklistChange}>
+                </c-tech-custom-datatable>
+            </div>
+        </div>
+    </template>
+
+    <!-- VISTA EXPEDIENTE 360 (WIZARD) -->
+    <template if:false={showDashboard}>
+        <div class="slds-box slds-theme_default" style="min-height: 80vh; background: #fdfdfd;">
+            
+            <!-- HEADER DEL EXPEDIENTE 360 -->
+            <header class="slds-m-bottom_medium slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+                <div class="slds-grid slds-grid_vertical-align-center">
+                    <lightning-icon icon-name="standard:omni_channel" size="medium" class="slds-m-right_small"></lightning-icon>
+                    <div>
+                        <h1 class="slds-text-heading_medium slds-font-weight_bold">Expediente Comercial</h1>
+                        <p class="slds-text-color_weak slds-text-body_small">Proceso integral Pyatz: {subPhase}</p>
+                    </div>
+                </div>
+                <div class="slds-grid slds-grid_vertical-align-center">
+                    <lightning-button-icon icon-name="utility:event" variant="border-filled" class="slds-m-right_small calendar-icon-only" style="--slds-c-icon-color-foreground: #0070d2; border-color: #0070d2;" onclick={handleOpenCalendar} tooltip="Ver Cronograma de Actividades"></lightning-button-icon>
+                    <lightning-button-icon icon-name="utility:slack" variant="border-filled" class="slds-m-right_small slack-icon-only" style="--slds-c-icon-color-foreground: #4A154B; border-color: #4A154B;" onclick={handleOpenSlack} tooltip="Abrir Slack 360"></lightning-button-icon>
+                    <lightning-button label="Volver a lista principal" icon-name="utility:back" onclick={handleBackToDashboard}></lightning-button>
+                </div>
+            </header>
+
+            <!-- INFORMACIÓN DE LA OPORTUNIDAD -->
+            <div class="slds-box slds-theme_shade slds-m-bottom_medium">
+                <div class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center slds-m-bottom_small slds-p-horizontal_small">
+                    <h3 class="slds-text-heading_small" style="color: #0070d2; font-weight: bold; border-left: 3px solid #0070d2; padding-left: 8px;">
+                        Información de la Oportunidad
+                    </h3>
+                    <lightning-button label="Historial y Evidencias" icon-name="utility:table" variant="brand-outline" onclick={openSummaryModal}></lightning-button>
+                </div>
+                <lightning-record-edit-form record-id={effectiveRecordId} object-api-name="Opportunity" onsuccess={handleHeaderSuccess} class="header-edit-form">
+                    <div class="slds-grid slds-wrap slds-p-horizontal_small">
+                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                            <lightning-output-field field-name="AccountId"></lightning-output-field>
+                            <lightning-output-field field-name="Name"></lightning-output-field>
+                            <lightning-output-field field-name="Amount"></lightning-output-field>
+                            <lightning-combobox 
+                                label="Propietario"
+                                name="owner"
+                                placeholder="Seleccionar..."
+                                value={currentOwnerId}
+                                options={usersList}
+                                onchange={handleOwnerChange}>
+                            </lightning-combobox>
+                            <lightning-output-field field-name="Linea_de_negocio__c"></lightning-output-field>
+                        </div>
+                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                            <lightning-output-field field-name="CloseDate"></lightning-output-field>
+                            <lightning-output-field field-name="StageName"></lightning-output-field>
+                            <lightning-output-field field-name="Tipo_de_venta__c"></lightning-output-field>
+                            <lightning-input-field field-name="Estado_Oportunidad__c" onchange={handleHeaderStatusChange}></lightning-input-field>
+                            <div class="slds-p-around_x-small slds-m-top_x-small" style="background: white; border-radius: 4px; border: 1px solid #e0e5ee;">
+                                <div class="slds-grid slds-grid_align-spread slds-m-bottom_xx-small">
+                                    <span class="slds-text-title_bold" style="color: #0070d2;">Avance del Expediente</span>
+                                    <span class="slds-text-title_bold">{overallProgress}%</span>
+                                </div>
+                                <lightning-progress-bar value={overallProgress} size="medium" variant="circular"></lightning-progress-bar>
+                            </div>
+                        </div>
+                    </div>
+                </lightning-record-edit-form>
+            </div>
+
+            <!-- NAVEGACIÓN ETAPAS -->
+            <div class="slds-m-vertical_medium slds-path">
+                <div class="slds-grid slds-path__track">
+                    <div class="slds-grid slds-path__scroller-container">
+                        <div class="slds-path__scroller">
+                            <div class="slds-path__scroller_inner">
+                                <ul class="slds-path__nav" role="listbox" aria-orientation="horizontal">
+                                    <template for:each={processedStages} for:item="stage">
+                                        <li key={stage.value} class={stage.cssClass} role="presentation">
+                                            <a aria-selected={stage.isCurrent} class="slds-path__link" href="javascript:void(0);" role="option" tabindex="-1" data-value={stage.value} onclick={handleStepClick}>
+                                                <span class="slds-path__stage">
+                                                    <lightning-icon icon-name="utility:check" size="x-small" alternative-text="Completado" if:true={stage.isCompleted} variant="inverse"></lightning-icon>
+                                                </span>
+                                                <span class="slds-path__title">{stage.label}</span>
+                                            </a>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NAVEGACIÓN SUBETAPAS -->
+            <div class="substage-toolbar slds-m-bottom_medium slds-path">
+                <div class="slds-grid slds-path__track">
+                    <div class="slds-grid slds-path__scroller-container">
+                        <div class="slds-path__scroller">
+                            <div class="slds-path__scroller_inner">
+                                <ul class="slds-path__nav" role="listbox" aria-orientation="horizontal">
+                                    <template for:each={processedSubStages} for:item="sub">
+                                        <li key={sub.value} class={sub.cssClass} role="presentation">
+                                            <a aria-selected={sub.isCurrent} class="slds-path__link" href="javascript:void(0);" role="option" tabindex="-1" data-value={sub.value} onclick={handleSubStepClick}>
+                                                <span class="slds-path__stage">
+                                                    <lightning-icon icon-name="utility:check" size="x-small" alternative-text="Completado" if:true={sub.isCompleted} variant="inverse"></lightning-icon>
+                                                </span>
+                                                <span class="slds-path__title">{sub.label}</span>
+                                            </a>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="module-container slds-p-around_medium">
+                <template if:true={isLevantamientoPhase}>
+                    <c-tech-levantamiento-manager record-id={effectiveRecordId}></c-tech-levantamiento-manager>
+                </template>
+                <template if:true={isMemoriaPhase}>
+                    <c-tech-memoria-manager record-id={effectiveRecordId}></c-tech-memoria-manager>
+                </template>
+                <template if:true={isDefSolucionPhase}>
+                    <c-tech-solution-costing record-id={effectiveRecordId}></c-tech-solution-costing>
+                </template>
+                <template if:true={isPresupuestoPhase}>
+                    <template if:true={showQuoteList}>
+                        <c-tech-quote-list opportunity-id={effectiveRecordId} oneditquote={handleEditQuote} oncreatenew={handleCreateNewQuote}></c-tech-quote-list>
+                    </template>
+                    <template if:true={showQuoteEditor}>
+                        <div class="slds-m-bottom_small">
+                            <lightning-button label="Volver al Listado" icon-name="utility:back" onclick={handleBackToQuoteList}></lightning-button>
+                        </div>
+                        <c-tech-quote-editor record-id={selectedQuoteId} opportunity-id={effectiveRecordId}></c-tech-quote-editor>
+                    </template>
+                </template>
+                <template if:true={isEnvioPhase}>
+                    <c-tech-communication-hub record-id={effectiveRecordId} onfasesuccess={handlePhaseSuccess}></c-tech-communication-hub>
+                </template>
+                <template if:true={isSeguimientoPhase}>
+                    <c-tech-tactical-follow-up record-id={effectiveRecordId}></c-tech-tactical-follow-up>
+                </template>
+                <template if:true={isContratoPhase}>
+                    <c-tech-contract-manager record-id={effectiveRecordId} oncontractgenerated={handleContractGenerated} oncontractfinalized={handleContractFinalized}></c-tech-contract-manager>
+                </template>
+                <template if:true={isWorkOrderPhase}>
+                    <c-tech-work-order-console record-id={effectiveRecordId} quote-id={selectedQuoteId} service-contract-id={selectedContractId}></c-tech-work-order-console>
+                </template>
+                <template if:true={isEnhorabuenaPhase}>
+                    <c-tech-communication-hub record-id={effectiveRecordId} folder-name="Enhorabuena"></c-tech-communication-hub>
+                </template>
+                <template if:true={isAutorizacionPhase}>
+                    <c-tech-process-summary record-id={effectiveRecordId} show-evidence-only="true"></c-tech-process-summary>
+                </template>
+                <template if:true={isAltaCliente}>
+                    <c-tech-file-checklist record-id={effectiveRecordId} category="Alta Cliente"></c-tech-file-checklist>
+                </template>
+                <template if:true={isAltaPyatz}>
+                    <c-tech-file-checklist record-id={effectiveRecordId} category="Alta Pyatz"></c-tech-file-checklist>
+                </template>
+                <template if:true={isCalendarioPhase}>
+                    <c-tech-resource-calendar record-id={effectiveRecordId}></c-tech-resource-calendar>
+                </template>
+            </div>
+
+            <!-- NAVEGACIÓN -->
+            <div class="slds-m-top_medium slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+                <lightning-button label="Anterior" variant="neutral" icon-name="utility:back" onclick={handlePrev} disabled={isFirstStep}></lightning-button>
+                <div class="slds-grid slds-grid_vertical-align-center">
+                    <div class="slds-m-right_medium" style="width: 250px;">
+                        <lightning-combobox label="Estado" placeholder="Estado..." value={currentStatus} options={statusOptions} onchange={handleStatusChange} variant="label-hidden" class="status-combobox" required></lightning-combobox>
+                    </div>
+                    <lightning-button label="Guardar y Continuar" variant="brand" icon-name="utility:forward" icon-position="right" onclick={handleNext} disabled={isLastStep}></lightning-button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- MODAL DINÁMICO (BASADO EN ACCIÓN RÁPIDA) -->
+    <template if:true={isCreationModalOpen}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_medium">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Cerrar" onclick={closeCreationModal}>
+                        <lightning-icon icon-name="utility:close" size="small" variant="inverse"></lightning-icon>
+                    </button>
+                    <h2 class="slds-text-heading_medium">Nuevo Proyecto Pyatz</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <lightning-record-edit-form object-api-name="Opportunity" onsubmit={handleOpportunitySubmit} onsuccess={handleOpportunitySuccess} class="creation-form">
+                        <lightning-messages></lightning-messages>
+                        
+                        <!-- RENDERIZADO POR SECCIONES PARA MAYOR PROFESIONALISMO -->
+                        <div class="slds-section slds-is-open slds-m-top_none">
+                            <h3 class="slds-section__title slds-theme_shade" style="padding: 0.5rem; border-radius: 4px; font-weight: bold; color: #0070d2;">
+                                <lightning-icon icon-name="utility:info" size="x-small" class="slds-m-right_small"></lightning-icon>
+                                Información Principal
+                            </h3>
+                            <div class="slds-grid slds-wrap slds-p-vertical_small">
+                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
+                                    <lightning-input-field field-name="Name" required></lightning-input-field>
+                                </div>
+                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
+                                    <lightning-input-field field-name="CloseDate" required></lightning-input-field>
+                                </div>
+                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
+                                    <lightning-combobox
+                                        label="Tipo de venta"
+                                        value={selectedTipoVenta}
+                                        options={tipoVentaOptions}
+                                        onchange={handleTipoVentaChange}>
+                                    </lightning-combobox>
+                                    <div class="slds-hide">
+                                        <lightning-input-field field-name="Tipo_de_venta__c"></lightning-input-field>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="slds-section slds-is-open">
+                            <h3 class="slds-section__title slds-theme_shade" style="padding: 0.5rem; border-radius: 4px; font-weight: bold; color: #0070d2;">
+                                <lightning-icon icon-name="utility:strategy" size="x-small" class="slds-m-right_small"></lightning-icon>
+                                Clasificación y Seguimiento
+                            </h3>
+                            <div class="slds-grid slds-wrap slds-p-vertical_small">
+                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
+                                    <lightning-input-field field-name="Linea_de_negocio__c"></lightning-input-field>
+                                </div>
+                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
+                                    <lightning-input-field field-name="StageName"></lightning-input-field>
+                                </div>
+                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
+                                    <lightning-input-field field-name="Estado_Oportunidad__c"></lightning-input-field>
+                                </div>
+                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
+                                    <lightning-input-field field-name="Auxiliar_oportunidad__c"></lightning-input-field>
+                                </div>
+                            </div>
+                        </div>
+                            
+                            <!-- Campo oculto para vinculación automática al cliente actual -->
+                            <div class="slds-hide">
+                                <lightning-input-field field-name="AccountId" value={recordId}></lightning-input-field>
+                            </div>
+
+                        <div class="slds-m-top_medium slds-text-align_right">
+                            <lightning-button label="Cancelar" onclick={closeCreationModal} class="slds-m-right_small"></lightning-button>
+                            <lightning-button type="submit" label="Crear e Iniciar 360" variant="brand"></lightning-button>
+                        </div>
+                    </lightning-record-edit-form>
+                </div>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+    <!-- MODAL RESUMEN OPERATIVO -->
+    <template if:true={isSummaryModalOpen}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_large">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Cerrar" onclick={closeSummaryModal}>
+                        <lightning-icon icon-name="utility:close" size="small" variant="inverse"></lightning-icon>
+                    </button>
+                    <h2 class="slds-text-heading_medium">Historial Operativo y Evidencias</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" style="background: #fdfdfd; min-height: 400px;">
+                    <c-tech-process-summary record-id={effectiveRecordId} show-table-only="true"></c-tech-process-summary>
+                </div>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>

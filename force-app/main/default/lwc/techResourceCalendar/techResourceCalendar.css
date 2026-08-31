@@ -1,0 +1,392 @@
+.calendar-container {
+    background: #ffffff;
+    min-height: 450px;
+}
+
+.calendar-grid-wrapper {
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* COLUMNA DE AGENTES */
+.agents-column {
+    width: 220px;
+    border-right: 2px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+.agent-cell {
+    min-height: 90px;
+    height: auto;
+    padding: 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+    transition: background 0.2s;
+}
+
+.agent-cell:hover {
+    background: #f3f4f6;
+}
+
+.agent-name {
+    font-weight: 700;
+    color: #111827;
+    font-size: 0.85rem;
+    display: block;
+}
+
+.agent-info {
+    font-size: 0.7rem;
+    color: #6b7280;
+}
+
+/* INDICADORES DE DISPONIBILIDAD */
+.availability-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1px #e5e7eb;
+}
+
+.status-green { background: #10b981; }
+.status-yellow { background: #f59e0b; }
+.status-red { background: #ef4444; }
+.status-gray { background: #9ca3af; }
+
+/* --------------------------------- */
+/* PREMIUM TIMELINE DESIGN           */
+/* --------------------------------- */
+
+.calendar-scroll-container {
+    overflow-x: auto;
+    overflow-y: auto;
+    position: relative;
+    max-height: 600px;
+    background: #ffffff;
+}
+
+/* SCROLLBAR MODERNO Y ELEGANTE */
+.calendar-scroll-container::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+.calendar-scroll-container::-webkit-scrollbar-track {
+    background: #f8fafc;
+    border-radius: 4px;
+}
+.calendar-scroll-container::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+.calendar-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.calendar-header-row {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: #f9fafb;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.agents-header {
+    position: sticky;
+    left: 0;
+    z-index: 25;
+    background: #f3f4f6;
+    border-right: 2px solid #e5e7eb;
+    border-bottom: none !important;
+}
+
+.grid-header-cell {
+    min-width: 140px;
+    flex: 1 1 140px;
+    height: 60px;
+    padding: 0.5rem;
+    text-align: center;
+    border-right: 1px solid #f3f4f6;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.day-cell.today {
+    background: #eff6ff;
+    border-bottom: 3px solid #2563eb;
+}
+
+.day-name {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    color: #6b7280;
+    font-weight: 700;
+}
+
+.day-number {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #111827;
+}
+
+/* FILAS DE RECURSOS (PERFECT ALIGNMENT) */
+.calendar-body-rows {
+    display: flex;
+    flex-direction: column;
+}
+
+.resource-full-row {
+    min-height: 90px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.resource-full-row:hover .agent-cell,
+.resource-full-row:hover .grid-data-cell {
+    background: #f8fafc;
+}
+
+.agent-cell {
+    position: sticky;
+    left: 0;
+    z-index: 10;
+    min-width: 220px;
+    width: 220px;
+    background: #f9fafb;
+    border-right: 2px solid #e5e7eb;
+    padding: 0.75rem;
+    transition: background 0.2s;
+}
+
+.grid-data-cell {
+    min-width: 140px;
+    flex: 1 1 140px;
+    border-right: 1px solid #f3f4f6;
+    padding: 6px;
+    background: white;
+    transition: background 0.2s;
+}
+
+/* TARJETAS DE CITA PREMIUM */
+.app-card {
+    padding: 6px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    color: #1f2937;
+    font-family: inherit;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border-left: 4px solid;
+    position: relative;
+    cursor: help;
+    transition: transform 150ms ease, box-shadow 150ms ease;
+    background: white;
+}
+
+.app-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.15);
+    z-index: 30;
+}
+
+.app-time {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #111827;
+}
+
+.app-duration {
+    font-size: 0.6rem;
+    background: rgba(0,0,0,0.05);
+    padding: 1px 4px;
+    border-radius: 3px;
+    color: #4b5563;
+    font-weight: 600;
+}
+
+.app-client {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 800;
+    margin-top: 4px;
+    color: #374151;
+}
+
+.status-done { 
+    border-left-color: #059669; 
+    background: rgba(5, 150, 105, 0.08); 
+}
+.status-pending { 
+    border-left-color: #2563eb; 
+    background: rgba(37, 99, 235, 0.08); 
+}
+.status-alert { 
+    border-left-color: #dc2626; 
+    background: rgba(220, 38, 38, 0.08); 
+}
+
+/* MODERN POPOVER */
+.modern-popover {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 280px;
+    z-index: 99999;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border-radius: 12px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+}
+
+/* POPOVER ARRIBA */
+.modern-popover.popover-top {
+    bottom: calc(100% + 10px);
+    animation: fadeInScaleTop 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.modern-popover.popover-top::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 12px;
+    height: 12px;
+    background: white;
+    border-right: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+/* POPOVER ABAJO */
+.modern-popover.popover-bottom {
+    top: calc(100% + 10px);
+    animation: fadeInScaleBottom 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.modern-popover.popover-bottom::after {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 12px;
+    height: 12px;
+    background: white;
+    border-left: 1px solid #e2e8f0;
+    border-top: 1px solid #e2e8f0;
+}
+
+.modern-popover-header {
+    background: #f8fafc;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.popover-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+.popover-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 12px;
+    background: #e0e7ff;
+    color: #4338ca;
+}
+
+.modern-popover-body {
+    padding: 12px 16px;
+}
+
+.popover-row {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.popover-row:last-child {
+    margin-bottom: 0;
+}
+
+.popover-icon {
+    margin-right: 8px;
+    margin-top: 2px;
+    --sds-c-icon-color-foreground-default: #64748b;
+}
+
+.popover-text {
+    font-size: 0.8rem;
+    color: #334155;
+    line-height: 1.4;
+}
+
+@keyframes fadeInScaleTop {
+    from { opacity: 0; transform: translate(-50%, 10px) scale(0.95); }
+    to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+
+@keyframes fadeInScaleBottom {
+    from { opacity: 0; transform: translate(-50%, -10px) scale(0.95); }
+    to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+
+/* LEYENDAS */
+.legend-item {
+    margin-right: 1.25rem;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.dot.done { background: #059669; }
+.dot.pending { background: #2563eb; }
+.dot.alert { background: #dc2626; }
+
+.month-label-btn {
+    min-width: 180px;
+    font-weight: 800;
+    color: #1e40af;
+}
+
+.date-jumper {
+    max-width: 140px;
+}
+
+.view-selector {
+    max-width: 130px;
+    margin-left: 8px;
+}
+
+/* --------------------------------- */
+/* RESPONSIVE DESIGN & UX ADJUSTMENTS */
+/* --------------------------------- */
+@media (max-width: 1024px) {
+    .agent-cell, .agents-header {
+        min-width: 160px;
+        width: 160px;
+    }
+    .agent-name {
+        font-size: 0.75rem;
+        white-space: normal;
+        word-wrap: break-word;
+    }
+    .agent-info {
+        font-size: 0.65rem;
+    }
+    .grid-header-cell, .grid-data-cell {
+        min-width: 120px;
+    }
+}

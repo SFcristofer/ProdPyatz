@@ -1,0 +1,380 @@
+/* UI ARQUITECTURA SLATE - PYATZ INDUSTRIAL */
+:host {
+    --slate-50: #f8fafc; --slate-100: #f1f5f9; --slate-200: #e2e8f0; --slate-600: #475569; --slate-700: #334155; --slate-900: #0f172a;
+    --indigo-600: #4f46e5; --indigo-700: #4338ca; --brand-pyatz: #1e293b; --green-soft: #dcfce7; --orange-soft: #ffedd5; --red-soft: #fee2e2;
+}
+
+.main-container { background: white; border: 1px solid var(--slate-200); border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+
+/* CARDS PROFESIONALES CON PROFUNDIDAD */
+.section-card {
+    background: #ffffff;
+    border: 1px solid var(--slate-200);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    overflow: visible !important; /* FIX: Permite que los dropdowns se vean completos */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.section-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+}
+
+.section-header {
+    background: linear-gradient(90deg, #1e293b 0%, #334155 100%);
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    border-bottom: 3px solid #0070d2;
+}
+
+.section-header h2 {
+    color: #ffffff !important;
+    font-weight: 700;
+    font-size: 0.88rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* BOTON CARGAR PLANTILLA - ESTILO PREMIUM */
+.template-button {
+    --slds-c-button-brand-color-background: #0070d2;
+    --slds-c-button-text-color: #ffffff;
+    --slds-c-button-brand-color-border: #0070d2;
+    --slds-c-button-brand-color-background-hover: #005fb2;
+    font-weight: bold;
+}
+
+.template-menu-container {
+    position: relative;
+    z-index: 1000; /* Asegura que el menu flote sobre el contenido */
+}
+
+/* INPUTS CON ESTADOS DE FOCO INTELIGENTES */
+lightning-input {
+    --slds-c-input-radius-border: 6px;
+    --slds-c-input-shadow-focus: 0 0 0 3px rgba(0, 112, 210, 0.15);
+    transition: all 0.2s ease;
+}
+
+lightning-input:hover {
+    --slds-c-input-color-border: #94a3b8;
+}
+
+/* BOTONES CON MICRO-TRANSICIONES */
+lightning-button, lightning-button-icon {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+lightning-button:hover, lightning-button-icon:hover {
+    transform: translateY(-1px);
+}
+
+lightning-button:active, lightning-button-icon:active {
+    transform: translateY(0px);
+}
+
+/* FOOTER NAVEGACION REFINADO */
+.sticky-footer { 
+    position: sticky; 
+    bottom: 0; 
+    z-index: 100; 
+    border-radius: 0 0 12px 12px;
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--slate-200);
+}.product-search-results {
+    position: absolute;
+    z-index: 1005; /* Ajustado para que viva dentro del modal pero sobre otros inputs */
+    width: 100%;
+    background: #ffffff !important;
+    border: 1px solid var(--slate-200);
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 2px;
+}
+
+/* CORRECCIÓN DE SUPERPOSICIÓN EN MODALES */
+.slds-modal__content {
+    background-color: #ffffff !important;
+}
+
+.slds-modal__header {
+    background-color: #ffffff !important;
+}
+
+.slds-modal__footer {
+    background-color: #ffffff !important;
+}
+
+.slds-backdrop {
+    background-color: rgba(15, 23, 42, 0.8) !important; /* Slate-900 con 80% opacidad */
+}
+
+.product-result-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--slate-100);
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-result-item:hover { 
+    background: #f0f7ff; 
+    border-left: 4px solid #0070d2;
+}
+
+.product-name { 
+    font-weight: 700; 
+    color: #0f172a; 
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+}
+
+.product-sku-label {
+    color: #475569;
+    font-weight: 600;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.75rem;
+    background: #f1f5f9;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+    display: inline-block;
+    width: fit-content;
+}
+
+/* LISTAS DE PRECIO CARDS PREMIUM */
+.price-option-card {
+    padding: 1.25rem;
+    border: 1px solid var(--slate-200);
+    border-radius: 12px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    margin-bottom: 10px;
+}
+
+.price-option-card:hover { 
+    border-color: #0070d2; 
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.price-option-card.selected { 
+    border-color: #0070d2; 
+    border-width: 2px;
+    background: #f0f7ff; 
+    box-shadow: 0 4px 15px rgba(0, 112, 210, 0.15);
+}
+
+.price-option-card.selected::after {
+    content: '✓';
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #0070d2;
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.price-option-card span {
+    color: #64748b;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.price-option-card strong { 
+    font-size: 1.25rem; 
+    color: #15803d; 
+    margin: 0;
+}
+
+/* TABLA DE SEDES EN MODAL */
+.custom-table { width: 100%; border-collapse: collapse; }
+.custom-table th { background: var(--slate-50); color: var(--slate-700); font-size: 0.75rem; padding: 12px; border-bottom: 2px solid var(--slate-200); }
+.custom-table td { padding: 10px; border-bottom: 1px solid var(--slate-100); vertical-align: middle; }
+
+/* PILLS / BURBUJAS */
+.pills-container { padding: 0.5rem; display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* FOOTER NAVEGACION */
+.sticky-footer { position: sticky; bottom: 0; z-index: 100; border-radius: 0 0 8px 8px; }
+
+.bg-blue-soft { background-color: #f0f7ff; }
+.bg-light-gray { background-color: #f8fafc; }
+.border-all { border: 1px solid var(--slate-200); }
+.radius-8 { border-radius: 8px; }
+
+.overflow-visible { overflow: visible !important; }
+.description-card { 
+    border-top: 2px solid var(--slate-200); 
+    padding-top: 1.25rem; 
+    background: #fbfcfe;
+}
+
+/* Estilo para que el editor de descripción técnica sea más alto */
+.description-card lightning-input-rich-text {
+    min-height: 200px;
+    display: block;
+    background: white;
+}
+
+/* MEJORA VISUAL EDITORES DE TEXTO (HOJA VIRTUAL) */
+lightning-input-rich-text {
+    --slds-c-textarea-shadow: none;
+    display: block;
+    background: #f1f5f9;
+    padding: 20px;
+    border-radius: 4px;
+}
+
+lightning-input-rich-text .slds-rich-text-editor__content {
+    background: white !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 850px !important; /* Simula ancho de hoja carta */
+    min-height: 400px !important;
+    padding: 40px !important; /* Margen interno de la hoja */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;
+    border: 1px solid #e2e8f0 !important;
+    font-family: 'Helvetica', 'Arial', sans-serif !important;
+    font-size: 10.5pt !important;
+    line-height: 1.5 !important;
+}
+
+/* Forzar que las tablas en el editor se vean bien */
+lightning-input-rich-text table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin: 10px 0 !important;
+}
+
+lightning-input-rich-text table td {
+    border: 1px solid #cbd5e1 !important;
+    padding: 8px !important;
+}
+
+/* ESTILO PARA LOS CHECKBOXES EN EL HEADER (FONDO OSCURO) */
+.header-toggle {
+    --sds-c-checkbox-label-text-color: #ffffff;
+    --slds-c-checkbox-label-text-color: #ffffff;
+    color: white !important;
+}
+
+.header-toggle lightning-input {
+    --sds-c-checkbox-label-text-color: #ffffff;
+    --slds-c-checkbox-label-text-color: #ffffff;
+}
+
+/* ETAPA 4: PDF WORKSPACE PROFESIONAL */
+.bg-dark-workspace { background-color: #1e293b !important; }
+.bg-slate-header { background-color: #0f172a; border-bottom: 1px solid #334155; }
+.text-white { color: #ffffff !important; }
+.no-border { border: none !important; }
+
+.pdf-workspace-container {
+    height: 700px;
+    background-color: #334155;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    position: relative;
+}
+
+.pdf-workspace-frame {
+    border: none;
+    background: white;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    border-radius: 4px;
+    max-width: 900px;
+}
+
+/* ESTILOS PARA SEPARADORES EN LA TABLA */
+.row-separator-header {
+    background-color: #001a33 !important;
+}
+
+.row-separator-header td {
+    color: white !important;
+    font-weight: bold !important;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    padding: 12px !important;
+}
+
+.row-separator-header lightning-icon {
+    --slds-c-icon-color-foreground: white;
+}
+
+.row-separator-header lightning-button-icon {
+    --slds-c-icon-color-foreground: white;
+}
+
+.row-separator-line {
+    background-color: #f8fafc !important;
+    border-top: 2px solid #cbd5e1 !important;
+    border-bottom: 2px solid #cbd5e1 !important;
+}
+
+.row-separator-line td {
+    color: #475569 !important;
+    font-weight: 600 !important;
+    font-style: italic;
+    padding: 10px !important;
+}
+
+.row-service {
+    background-color: white;
+}
+
+/* CONTENEDOR DE SEPARADORES CON LÍNEAS */
+.separator-container {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+}
+
+.separator-text {
+    padding: 0 15px;
+    white-space: nowrap;
+}
+
+.row-separator-line .separator-line-left,
+.row-separator-line .separator-line-right {
+    flex: 1;
+    border-bottom: 2px solid #cbd5e1;
+}
+
+.row-separator-header .separator-line-left,
+.row-separator-header .separator-line-right {
+    display: none;
+}
+
+.row-separator-header .separator-container {
+    justify-content: center;
+}
+
+.row-separator-header .separator-text {
+    padding: 0;
+}

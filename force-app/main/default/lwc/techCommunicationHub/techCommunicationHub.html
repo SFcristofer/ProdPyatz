@@ -1,0 +1,407 @@
+<template>
+    <div class="hub-container slds-p-around_small">
+        <div class="slds-grid slds-wrap slds-gutters">
+            
+            <!-- PANEL IZQUIERDO: CONFIGURACIÓN Y ADJUNTOS (Ancho 4 de 12) -->
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_4-of-12">
+                <div class="side-panel slds-box slds-theme_shade full-height flex-column">
+                    
+                    <!-- 1. HEADER DEL PANEL (FIJO) -->
+                    <div class="panel-header slds-p-bottom_small border-bottom">
+                        <div class="slds-text-heading_small slds-m-bottom_small">
+                            <lightning-icon icon-name="utility:attach" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                            Plantillas y Adjuntos
+                        </div>
+
+                        <lightning-combobox
+                            name="folder"
+                            label="Carpeta de Plantillas"
+                            value={selectedFolder}
+                            options={folderOptions}
+                            onchange={handleFolderChange}
+                            placeholder="Seleccione una carpeta..."
+                            class="slds-m-bottom_x-small">
+                        </lightning-combobox>
+
+                        <lightning-combobox
+                            name="template"
+                            label="Plantilla a usar"
+                            value={selectedTemplateId}
+                            options={filteredTemplates}
+                            onchange={handleTemplateChange}
+                            placeholder="Seleccione una plantilla..."
+                            disabled={isTemplateDisabled}>
+                        </lightning-combobox>
+                    </div>
+
+                    <!-- 2. CUERPO DEL PANEL (TABS PARA AHORRAR ESPACIO VERTICAL) -->
+                    <div class="panel-body flex-grow scrollable-attachments" style="padding: 0;">
+                        <lightning-tabset variant="scoped">
+                            
+                            <!-- PESTAÑA 1: DESTINATARIOS -->
+                            <lightning-tab label="Contactos" icon-name="standard:people">
+                                <template if:false={isInternalMode}>
+                                    <!-- SECCIÓN: EQUIPO INTERNO (Ventas, Operaciones) -->
+                                    <template if:true={showInternalTeam}>
+                                        <template if:true={internalContacts.length}>
+                                            <div class="slds-p-vertical_small border-bottom">
+                                                <div class="slds-text-title_bold slds-m-bottom_small slds-p-horizontal_x-small">
+                                                    <lightning-icon icon-name="standard:groups" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
+                                                    EQUIPO INTERNO:
+                                                </div>
+                                                <div class="slds-p-horizontal_x-small">
+                                                    <template for:each={internalContacts} for:item="int">
+                                                        <div key={int.id} class="att-item slds-m-bottom_xx-small">
+                                                            <lightning-input 
+                                                                type="checkbox" 
+                                                                label={int.name} 
+                                                                title={int.email}
+                                                                data-email={int.email} 
+                                                                onchange={handleQuickAddContact}>
+                                                            </lightning-input>
+                                                            <div class="slds-text-color_weak slds-text-body_small slds-m-left_large" style="margin-top: -4px;">{int.role}</div>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </template>
+
+                                    <!-- SECCIÓN: CONTACTOS DE LA SEDE -->
+                                    <template if:true={sedeContacts.length}>
+                                        <div class="slds-p-vertical_small">
+                                            <div class="slds-text-title_bold slds-m-bottom_small slds-p-horizontal_x-small">
+                                                <lightning-icon icon-name="standard:contact" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
+                                                CONTACTOS DE LA SEDE:
+                                            </div>
+                                            <div class="slds-p-horizontal_x-small">
+                                                <template for:each={sedeContacts} for:item="con">
+                                                    <div key={con.id} class="att-item slds-m-bottom_xx-small">
+                                                        <lightning-input 
+                                                            type="checkbox" 
+                                                            label={con.name} 
+                                                            title={con.email}
+                                                            data-email={con.email} 
+                                                            checked={con.isChecked}
+                                                            onchange={handleQuickAddContact}>
+                                                        </lightning-input>
+                                                        <div class="slds-text-color_weak slds-text-body_small slds-m-left_large" style="margin-top: -4px;">{con.sede}</div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </template>
+
+                                <!-- SECCIÓN: COLAS INTERNAS PYATZ (Modo Enhorabuena) -->
+                                <template if:true={isInternalMode}>
+                                    <div class="slds-p-vertical_small">
+                                        <div class="slds-text-title_bold slds-m-bottom_small slds-p-horizontal_x-small">
+                                            <lightning-icon icon-name="standard:groups" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
+                                            COLAS PYATZ:
+                                        </div>
+                                        <div class="slds-p-horizontal_x-small">
+                                            <template for:each={pyatzQueues} for:item="q">
+                                                <div key={q.id} class="att-item slds-m-bottom_xx-small">
+                                                    <lightning-input 
+                                                        type="checkbox" 
+                                                        label={q.name} 
+                                                        data-id={q.id} 
+                                                        onchange={handleQueueToggle}>
+                                                    </lightning-input>
+                                                </div>
+                                            </template>
+                                            <template if:false={pyatzQueues.length}>
+                                                <div class="slds-text-color_weak slds-text-body_small slds-m-left_large">No se encontraron colas con 'PYATZ'</div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+                            </lightning-tab>
+
+                            <!-- PESTAÑA 2: ARCHIVOS Y ADJUNTOS -->
+                            <lightning-tab label="Adjuntos" icon-name="standard:file">
+                                <div class="slds-p-vertical_small">
+                                    <template if:true={isLoadingAttachments}>
+                                        <div class="slds-align_absolute-center slds-p-around_large">
+                                            <lightning-spinner alternative-text="Cargando..." size="small" variant="brand" style="position: relative;"></lightning-spinner>
+                                        </div>
+                                    </template>
+                                    
+                                    <template if:false={isLoadingAttachments}>
+                                        <div class="slds-p-horizontal_x-small">
+                                            <div class="att-group-title first-group">
+                                                <lightning-icon icon-name="utility:quote" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
+                                                Presupuestos
+                                            </div>
+                                            <template for:each={availableAttachments.quotes} for:item="quote">
+                                                <div key={quote.id} class="att-item">
+                                                    <lightning-input type="checkbox" label={quote.name} data-id={quote.id} data-type="Quote" onchange={handleAttachmentToggle}></lightning-input>
+                                                </div>
+                                            </template>
+
+                                            <div class="att-group-title">
+                                                <lightning-icon icon-name="utility:survey" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
+                                                Levantamientos
+                                            </div>
+                                            <template for:each={availableAttachments.surveys} for:item="survey">
+                                                <div key={survey.name} class="att-item">
+                                                    <lightning-input type="checkbox" label={survey.name} data-id={survey.id} data-type="Survey" onchange={handleAttachmentToggle}></lightning-input>
+                                                </div>
+                                            </template>
+
+                                            <div class="att-group-title">
+                                                <lightning-icon icon-name="utility:pdf_ext" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
+                                                Archivos PDF
+                                            </div>
+                                            <template for:each={availableAttachments.files} for:item="file">
+                                                <div key={file.id} class="att-item">
+                                                    <lightning-input type="checkbox" label={file.name} data-id={file.id} data-type="File" onchange={handleAttachmentToggle}></lightning-input>
+                                                </div>
+                                            </template>
+
+                                            <!-- FICHAS TÉCNICAS -->
+                                            <template if:true={availableAttachments.fichas.length}>
+                                                <div class="att-group-title">
+                                                    <lightning-icon icon-name="utility:catalog" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
+                                                    Fichas Técnicas
+                                                </div>
+                                                <template for:each={availableAttachments.fichas} for:item="ficha">
+                                                    <div key={ficha.id} class="att-item">
+                                                        <lightning-input type="checkbox" label={ficha.name} data-id={ficha.id} data-type="File" onchange={handleAttachmentToggle}></lightning-input>
+                                                    </div>
+                                                </template>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </lightning-tab>
+                        </lightning-tabset>
+                    </div>
+
+                    <!-- 3. FOOTER DEL PANEL (FIJO AL FONDO) -->
+                    <div class="panel-footer slds-p-top_small border-top">
+                        <div class="slds-file-selector slds-file-selector_files">
+                            <div class="slds-file-selector__dropzone">
+                                <input type="file" class="slds-file-selector__input slds-assistive-text" id="file-upload-input-01" />
+                                <label class="slds-file-selector__body slds-size_1-of-1" for="file-upload-input-01">
+                                    <span class="slds-file-selector__button slds-button slds-button_neutral slds-size_1-of-1">
+                                        <lightning-icon icon-name="utility:upload" size="x-small" class="slds-m-right_x-small"></lightning-icon>Subir archivo local
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL DERECHO: EDITOR DE CORREO (Ancho 8 de 12) -->
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_8-of-12">
+                <div class="editor-panel slds-box bg-white full-height">
+                    
+                    <!-- HEADER UNIFICADO CON BOTONES DE ACTIVIDAD -->
+                    <div class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread slds-m-bottom_small border-bottom slds-p-bottom_x-small">
+                        <div class="slds-grid slds-grid_vertical-align-center">
+                            <lightning-icon icon-name="utility:email" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                            <span class="slds-text-heading_small">Redacción del Correo</span>
+                        </div>
+                        <div class="slds-button-group" role="group">
+                            <lightning-button-icon icon-name="utility:preview" variant="border-filled" onclick={handleShowEngagement} title="Historial de aperturas" class="slds-m-right_x-small"></lightning-button-icon>
+                            <lightning-button label="Llamada" icon-name="standard:log_a_call" variant="neutral" onclick={handleLogCall} class="slds-m-left_xx-small compact-btn"></lightning-button>
+                            <lightning-button label="Tarea" icon-name="standard:task" variant="neutral" onclick={handleNewTask} class="slds-m-left_xx-small compact-btn"></lightning-button>
+                            <lightning-button label="Evento" icon-name="standard:event" variant="neutral" onclick={handleNewEvent} class="slds-m-left_xx-small compact-btn"></lightning-button>
+                        </div>
+                    </div>
+
+                    <div class="slds-grid slds-wrap slds-gutters_small">
+                            <template if:false={isInternalMode}>
+                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                    <lightning-input type="email" label="Para" value={toEmail} onchange={handleEmailChange} required></lightning-input>
+                                </div>
+                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                    <lightning-input label="CC (Opcional)" placeholder="separar por comas..." value={ccEmail} onchange={handleCcChange}></lightning-input>
+                                </div>
+                            </template>
+
+                            <template if:true={isInternalMode}>
+                                <div class="slds-col slds-size_1-of-1">
+                                    <div class="slds-form-element slds-m-bottom_small">
+                                        <label class="slds-form-element__label">Buscar Usuarios Internos adicionales (opcional)</label>
+                                        <div class="slds-form-element__control">
+                                            <div class="slds-combobox_container">
+                                                <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-is-open">
+                                                    <lightning-input type="search" variant="label-hidden" value={userSearchTerm} onchange={handleUserSearchChange} placeholder="Buscar por nombre..."></lightning-input>
+                                                    
+                                                    <template if:true={userSearchResults.length}>
+                                                        <div class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid" role="listbox">
+                                                            <ul class="slds-listbox slds-listbox_vertical" role="presentation">
+                                                                <template for:each={userSearchResults} for:item="u">
+                                                                    <li key={u.id} role="presentation" class="slds-listbox__item">
+                                                                        <div class="slds-media slds-listbox__option slds-listbox__option_entity slds-listbox__option_has-meta" role="option" data-id={u.id} data-name={u.name} onclick={handleSelectUser}>
+                                                                            <span class="slds-media__figure slds-listbox__option-icon">
+                                                                                <lightning-icon icon-name="standard:user" size="small"></lightning-icon>
+                                                                            </span>
+                                                                            <span class="slds-media__body">
+                                                                                <span class="slds-listbox__option-text slds-listbox__option-text_entity">{u.name}</span>
+                                                                                <span class="slds-listbox__option-meta slds-listbox__option-meta_entity">{u.title}</span>
+                                                                            </span>
+                                                                        </div>
+                                                                    </li>
+                                                                </template>
+                                                            </ul>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <template if:true={selectedUserPills.length}>
+                                        <lightning-pill-container items={selectedUserPills} onitemremove={handleRemoveUserPill} class="slds-m-bottom_small"></lightning-pill-container>
+                                    </template>
+                                    <div class="slds-grid slds-wrap slds-gutters_small">
+                                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                            <lightning-input label="CC (Opcional)" placeholder="separar por comas..." value={ccEmail} onchange={handleCcChange}></lightning-input>
+                                        </div>
+                                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                            <lightning-input label="CCO (Opcional)" placeholder="separar por comas..." value={bccEmail} onchange={handleBccChange}></lightning-input>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <div class="slds-col slds-size_1-of-1 slds-m-top_small">
+                                <lightning-input label="Asunto" value={subject} onchange={handleSubjectChange} required></lightning-input>
+                            </div>
+                        </div>
+
+                    <div class="slds-m-top_medium rich-text-container">
+                        <lightning-input-rich-text
+                            value={emailBody}
+                            onchange={handleBodyChange}
+                            placeholder="Escriba su mensaje aquí..."
+                            style="height: 350px;">
+                        </lightning-input-rich-text>
+                    </div>
+
+                    <div class="slds-m-top_large slds-grid slds-grid_align-end">
+                        <template if:false={isInternalMode}>
+                            <lightning-button 
+                                label="Enviar Correo al Cliente" 
+                                variant="brand" 
+                                icon-name="utility:send" 
+                                onclick={handleSendEmail} 
+                                loading={isSending}
+                                disabled={isSendDisabled}>
+                            </lightning-button>
+                        </template>
+                        <template if:true={isInternalMode}>
+                            <lightning-button 
+                                label="Enviar correo" 
+                                variant="brand" 
+                                icon-name="utility:send" 
+                                onclick={handleSendEmail} 
+                                loading={isSending}
+                                disabled={isSendDisabled}>
+                            </lightning-button>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL DE HISTORIAL DE ENGAGEMENT -->
+    <template if:true={showEngagementModal}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_medium">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Cerrar" onclick={handleCloseEngagement}>
+                        <lightning-icon icon-name="utility:close" variant="inverse" size="small"></lightning-icon>
+                    </button>
+                    <h2 class="slds-text-heading_medium">Historial de Engagement de Propuestas</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium bg-light modal-scroll">
+                      <template if:true={isLoadingEngagement}>
+                          <lightning-spinner alternative-text="Cargando historial..." size="medium"></lightning-spinner>
+                      </template>
+                      
+                      <template if:false={isLoadingEngagement}>
+                          <div class="engagement-timeline slds-p-around_x-small">
+                              <template for:each={engagementDetails} for:item="email">
+                                  <div key={email.id} class="engagement-card slds-m-bottom_medium">
+                                      <div class="slds-grid slds-grid_align-spread slds-m-bottom_small">
+                                          <div class="slds-grid slds-has-flexi-truncate">
+                                              <div class="icon-container slds-m-right_small">
+                                                  <lightning-icon icon-name={email.iconName} size="small" variant={email.iconVariant}></lightning-icon>
+                                              </div>
+                                              <div class="slds-truncate">
+                                                  <div class="slds-text-heading_small slds-truncate slds-m-bottom_xxx-small" title={email.subject}>
+                                                      <strong>{email.subject}</strong>
+                                                  </div>
+                                                  <div class="recipients-list slds-truncate">
+                                                      <template for:each={email.recipients} for:item="rec">
+                                                          <lightning-badge key={rec.email} label={rec.name} title={rec.email} icon-name={rec.icon} class="slds-m-right_xx-small custom-badge"></lightning-badge>
+                                                      </template>
+                                                  </div>
+                                              </div>
+                                          </div>
+                                          <div class="status-container slds-m-left_small">
+                                              <span class={email.statusClass}>{email.statusLabel}</span>
+                                          </div>
+                                      </div>
+                                      
+                                      <div class="engagement-stats">
+                                          <div class="slds-grid slds-wrap">
+                                              <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3 stat-box">
+                                                  <div class="stat-label">
+                                                      <lightning-icon icon-name="utility:send" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
+                                                      Enviado
+                                                  </div>
+                                                  <div class="stat-value">
+                                                      <lightning-formatted-date-time value={email.sentDate} year="numeric" month="short" day="2-digit" hour="2-digit" minute="2-digit"></lightning-formatted-date-time>
+                                                  </div>
+                                              </div>
+                                              <template if:true={email.isOpened}>
+                                                  <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3 stat-box success-box">
+                                                      <div class="stat-label">
+                                                          <lightning-icon icon-name="utility:preview" size="xx-small" class="slds-m-right_xx-small slds-icon-text-success"></lightning-icon>
+                                                          Primera Apertura
+                                                      </div>
+                                                      <div class="stat-value text-success">
+                                                          <lightning-formatted-date-time value={email.firstOpen} year="numeric" month="short" day="2-digit" hour="2-digit" minute="2-digit"></lightning-formatted-date-time>
+                                                      </div>
+                                                  </div>
+                                                  <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3 stat-box warning-box">
+                                                      <div class="stat-label">
+                                                          <lightning-icon icon-name="utility:clock" size="xx-small" class="slds-m-right_xx-small slds-icon-text-error"></lightning-icon>
+                                                          Última Apertura
+                                                      </div>
+                                                      <div class="stat-value text-error">
+                                                          <lightning-formatted-date-time value={email.lastOpen} year="numeric" month="short" day="2-digit" hour="2-digit" minute="2-digit"></lightning-formatted-date-time>
+                                                      </div>
+                                                  </div>
+                                              </template>
+                                          </div>
+                                      </div>
+                                  </div>
+                              </template>
+                              <template if:false={engagementDetails.length}>
+                                  <div class="slds-illustration slds-illustration_small slds-m-top_large">
+                                      <div class="slds-text-longform">
+                                          <h3 class="slds-text-heading_medium">Aún no hay correos enviados</h3>
+                                          <p class="slds-text-body_regular">El historial de aperturas aparecerá aquí una vez que envíes propuestas.</p>
+                                      </div>
+                                  </div>
+                              </template>
+                          </div>
+                      </template>
+                  </div>
+                <footer class="slds-modal__footer">
+                    <lightning-button label="Cerrar" variant="neutral" onclick={handleCloseEngagement}></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>

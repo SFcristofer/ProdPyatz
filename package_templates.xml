@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+    <types>
+        <members>Pyatz_Cierres</members>
+<members>Pyatz_Garantias</members>
+<members>Pyatz_Introducciones</members>
+<members>Pyatz_Servicios</members>
+<members>Pyatz_Observaciones_de_Pago</members>
+<members>Pyatz_Clausulas_y_Anexos</members>
+<members>Pyatz_Condiciones_Contrato</members>
+<members>Pyatz_CORREOS_INTERNOS</members>
+<members>Pyatz_CORREOS_A_CLIENTES</members>
+<members>Enhorabuena</members>
+<members>Membrete_Pyatz_PDF</members>
+        <name>EmailFolder</name>
+    </types>
+    <types>
+        <members>Pyatz_Introducciones/Intro_Estandar</members>
+<members>Pyatz_Introducciones/Limpieza_Trampa_Grasa_RME</members>
+<members>Pyatz_Introducciones/Recoleccion_RME</members>
+<members>Pyatz_Introducciones/Gestion_Menstrual</members>
+<members>Pyatz_Introducciones/Recoleccion_Gestion_Menstrual</members>
+<members>Pyatz_Servicios/Detalle_Mantenimiento_Estandar</members>
+<members>Pyatz_Observaciones_de_Pago/Ejemplo_Pago</members>
+<members>Pyatz_Observaciones_de_Pago/Notas_Clientes_General</members>
+<members>Pyatz_Observaciones_de_Pago/Notas_Extraordinarios_Liverpool</members>
+<members>Pyatz_Observaciones_de_Pago/Notas_Polizas_Diversos_Importes</members>
+<members>Pyatz_Observaciones_de_Pago/Notas_Polizas_Mismo_Importe</members>
+<members>Pyatz_Clausulas_y_Anexos/Ejemplo_Clausulas</members>
+<members>Pyatz_Clausulas_y_Anexos/Extraordinario_con_levantamiento</members>
+<members>Pyatz_Clausulas_y_Anexos/Extraordinario_sin_levantamiento</members>
+<members>Pyatz_Clausulas_y_Anexos/Notas_Generales_Liverpool</members>
+<members>Pyatz_Clausulas_y_Anexos/Polizas_Clientes_General</members>
+<members>Pyatz_Clausulas_y_Anexos/Venta_Producto</members>
+<members>Pyatz_Condiciones_Contrato/Contrato_Estandar_Pyatz</members>
+<members>Pyatz_Condiciones_Contrato/Contrato_Especializado_REPSE</members>
+<members>Pyatz_Condiciones_Contrato/BACTERIA_LIMPIEZA_TRAMPAS_DE_GRASA</members>
+<members>Pyatz_Condiciones_Contrato/TRATAMIENTO_PARA_AGUAS_RESIDUALES</members>
+<members>Pyatz_Condiciones_Contrato/LIMPIEZA_TRAMPAS_DE_GRASA</members>
+<members>Pyatz_Condiciones_Contrato/RECOLECCION_DE_GRASA</members>
+<members>Pyatz_Condiciones_Contrato/CONFINAMIENTO_RGM</members>
+<members>Pyatz_Condiciones_Contrato/RECOLECCION_DE_RESIDUO_GESTION_MENSTRUAL</members>
+<members>Pyatz_Condiciones_Contrato/DESAZOLVE</members>
+<members>Pyatz_Condiciones_Contrato/LIMPIEZA_DUCTOS_EXTRACCION_DE_GRASA</members>
+<members>Pyatz_Condiciones_Contrato/PERSONA_MORAL_GENERAL</members>
+<members>Pyatz_Condiciones_Contrato/PERSONA_FISICA_GENERAL</members>
+<members>Pyatz_CORREOS_INTERNOS/SOLICITUD_LEVANTAMIENTO_SIN_CARTA_DE_ACCESO</members>
+<members>Pyatz_CORREOS_INTERNOS/SOLICITUD_LEVANTAMIENTO_CON_CARTA_DE_ACCESO</members>
+<members>Pyatz_CORREOS_INTERNOS/SOLICITUD_CARTA_DE_ACCESO</members>
+<members>Pyatz_CORREOS_INTERNOS/SOLICITUD_ALTA_DE_PERSONAL_OPERATIVO</members>
+<members>Pyatz_CORREOS_INTERNOS/SOLICITUD_BAJA_DE_PERSONAL_OPERATIVO</members>
+<members>Pyatz_CORREOS_INTERNOS/SOLICITUD_DE_MUESTRAS_PARA_CAPACITACI_N</members>
+<members>Pyatz_CORREOS_INTERNOS/SOLICITUD_DE_MUESTRAS_PARA_PRUEBA_EN_INSTALACIONES_CLIENTE</members>
+<members>Pyatz_CORREOS_INTERNOS/REPROGRAMACI_N_DE_SERVICIO_AVISO_INTERNO</members>
+<members>Pyatz_CORREOS_INTERNOS/RECUPERACI_N_DE_EQUIPOS_DOSIFICADORES_AVISO_INTERNO</members>
+<members>Pyatz_CORREOS_INTERNOS/REVISION_DE_EQUIPOS_DOSIFICADORES_o_FUNCIONAMIENTO_PRODUCTO</members>
+<members>Pyatz_CORREOS_INTERNOS/CANCELACION_DE_SERVICIO_POLIZA</members>
+<members>Pyatz_CORREOS_INTERNOS/MODIFICACION_A_POLIZA_VIGENTE</members>
+<members>Pyatz_CORREOS_INTERNOS/SOLICITUD_DE_FIRMA_DE_CONTRATO</members>
+<members>Pyatz_CORREOS_INTERNOS/ENVIO_PRESUPUESTO_CLIENTE_NUEVO_BACTERIA</members>
+<members>Pyatz_CORREOS_INTERNOS/ENVIO_PRESUPUESTO_CLIENTE_NUEVO_LIMPIEZA_TRAMPAS_DE_GRASA</members>
+<members>Pyatz_CORREOS_A_CLIENTES/CONFIRMACION_DE_LEVANTAMIENTO</members>
+<members>Pyatz_CORREOS_A_CLIENTES/CONFIRMACION_DE_LEVANTAMIENTO_CON_CARTA_DE_ACCESO</members>
+<members>Pyatz_CORREOS_A_CLIENTES/CARTA_DE_ACCESO</members>
+<members>Pyatz_CORREOS_A_CLIENTES/SOLICITUD_CAMBIO_DE_PERSONAL_EN_CARTA_DE_ACCESO</members>
+<members>Pyatz_CORREOS_A_CLIENTES/CONFIRMACION_CAPACITACION_A_CLIENTE</members>
+<members>Pyatz_CORREOS_A_CLIENTES/CONFIRMACION_REALIZACI_N_DE_PRUEBAS_EN_INSTALACIONES_CLIENTES</members>
+<members>Pyatz_CORREOS_A_CLIENTES/REPROGRAMACION_DE_SERVICIO_AVISO_A_CLIENTE</members>
+<members>Pyatz_CORREOS_A_CLIENTES/RECUPERACION_DE_EQUIPOS_DOSIFICADORES_POR_REMODELACION_A_SOLICITUD_DEL_CLIENTE</members>
+<members>Pyatz_CORREOS_A_CLIENTES/CONFIRMACION_REVISION_DE_EQUIPOS_DOSIFICADORES_o_FUNCIONAMIENTO_PRODUCTO</members>
+<members>Pyatz_CORREOS_A_CLIENTES/CONFIRMACION_DE_CANCELACION_DE_SERVICIO_POLIZA</members>
+<members>Pyatz_CORREOS_A_CLIENTES/CONFIRMACION_MODIFICACION_A_POLIZA_VIGENTE</members>
+<members>Pyatz_CORREOS_A_CLIENTES/ENVIO_PRESUPUESTO_CLIENTE_NUEVO_INTIMA</members>
+<members>Pyatz_CORREOS_A_CLIENTES/ENVIO_PRESUPUESTO_CLIENTE_NUEVO_BACTERIA2</members>
+<members>Pyatz_CORREOS_A_CLIENTES/ENVIO_PRESUPUESTO_CLIENTE_NUEVO_LIMPIEZA_TRAMPAS_DE_GRASA2</members>
+<members>Pyatz_CORREOS_A_CLIENTES/ACTUALIZACION_DE_PAPELES_CON_CLIENTES_PARA_FIRMA_DE_CONTRATO</members>
+<members>Pyatz_CORREOS_A_CLIENTES/BIENVENIDA_A_UN_NUEVO_COORDINADOR_SOLICITANDO_CITA_PARA_PRESENTARLE_LAS_ACTIVIDA</members>
+<members>Pyatz_CORREOS_A_CLIENTES/ENVIO_PRESUPUESTO_CLIENTE_NUEVO_INTIMA2</members>
+<members>Pyatz_CORREOS_A_CLIENTES/ENVIO_PRESUPUESTO_CLIENTE_NUEVO_BACTERIA3</members>
+<members>Pyatz_CORREOS_A_CLIENTES/ENVIO_PRESUPUESTO_CLIENTE_NUEVO_LIMPIEZA_TRAMPAS_DE_GRASA3</members>
+<members>Enhorabuena/ENHORABUENA_POLIZA_CLIENTE_ACTIVO</members>
+<members>Enhorabuena/ENHORABUENA_POLIZA_CLIENTE_NUEVO</members>
+<members>Enhorabuena/ENHORABUENA_EXTRAORDINARIO_CLIENTE_ACTIVO</members>
+<members>Enhorabuena/ENHORABUENA_EXTRAORDINARIO_CLIENTE_NUEVO</members>
+<members>Enhorabuena/ENHORABUENTA_VENTA_PRODUCTO_CLIENTE_ACTIVO</members>
+<members>Enhorabuena/ENHORABUENTA_VENTA_PRODUCTO_CLIENTE_ACTIVO2</members>
+<members>Enhorabuena/ENHORABUENTA_VENTA_PRODUCTO_CLIENTE_NUEVO</members>
+<members>Enhorabuena/ENVIO_ENHORABUENA_CLIENTE_INTIMA</members>
+<members>Membrete_Pyatz_PDF/MembretePDF</members>
+        <name>EmailTemplate</name>
+    </types>
+    <version>60.0</version>
+</Package>
