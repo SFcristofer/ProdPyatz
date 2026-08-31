@@ -106,34 +106,34 @@
             <div class="content-body" style="page-break-before:always;">
                 <table class="tbl-svc" style="width:100%; border-collapse:collapse;">
                     <thead>
-                        <tr><td colspan="4" class="hdr-spacer"></td></tr>
+                        <tr><td colspan="{!dynamicColspan}" class="hdr-spacer"></td></tr>
                         <tr>
-                            <th width="50%" style="text-align:center;">Concepto / Servicio</th>
-                            <th width="10%" style="text-align:center;">Cant</th>
-                            <th width="20%" style="text-align:center;">P. Unitario</th>
-                            <th width="20%" style="text-align:center;">Importe</th>
+                            <th style="text-align:center;">Concepto / Servicio</th>
+                            <apex:outputPanel rendered="{!showQuantityCol}" layout="none"><th width="10%" style="text-align:center;">Cant</th></apex:outputPanel>
+                            <apex:outputPanel rendered="{!showUnitPriceCol}" layout="none"><th width="20%" style="text-align:center;">P. Unitario</th></apex:outputPanel>
+                            <apex:outputPanel rendered="{!showTotalPriceCol}" layout="none"><th width="20%" style="text-align:center;">Importe</th></apex:outputPanel>
                         </tr>
                     </thead>
                     <tbody>
                         <!-- BLOQUE: SERVICIOS -->
                         <apex:repeat value="{!technicalQuote.QuoteLineItems}" var="item">
                             <apex:outputPanel rendered="{!BLANKVALUE(item.Quantity, 0) == 0}" layout="none">
-                                <tr class="row-sep"><td colspan="4" style="padding:8pt;">{!item.Product2.Name}</td></tr>
+                                <tr class="row-sep"><td colspan="{!dynamicColspan}" style="padding:8pt;">{!item.Product2.Name}</td></tr>
                             </apex:outputPanel>
                             <apex:outputPanel rendered="{!BLANKVALUE(item.Quantity, 0) > 0}" layout="none">
                                 <tr class="row-item" style="page-break-inside:avoid;">
                                     <td style="text-align:center;"><strong>{!item.Product2.Name}</strong></td>
-                                    <td style="text-align:center;">{!item.Quantity}</td>
-                                    <td style="text-align:center;"><apex:outputText value="{0, number, currency}"><apex:param value="{!BLANKVALUE(item.UnitPrice, 0)}"/></apex:outputText></td>
-                                    <td style="text-align:center;"><apex:outputText value="{0, number, currency}"><apex:param value="{!BLANKVALUE(item.TotalPrice, 0)}"/></apex:outputText></td>
+                                    <apex:outputPanel rendered="{!showQuantityCol}" layout="none"><td style="text-align:center;">{!item.Quantity}</td></apex:outputPanel>
+                                    <apex:outputPanel rendered="{!showUnitPriceCol}" layout="none"><td style="text-align:center;"><apex:outputText value="{0, number, currency}"><apex:param value="{!BLANKVALUE(item.UnitPrice, 0)}"/></apex:outputText></td></apex:outputPanel>
+                                    <apex:outputPanel rendered="{!showTotalPriceCol}" layout="none"><td style="text-align:center;"><apex:outputText value="{0, number, currency}"><apex:param value="{!BLANKVALUE(item.TotalPrice, 0)}"/></apex:outputText></td></apex:outputPanel>
                                 </tr>
                                 <apex:outputPanel rendered="{!NOT(ISBLANK(item.Descripcion_Detallada__c))}" layout="none">
-                                    <tr class="row-detail"><td colspan="4"><div class="detail-inner"><apex:outputText value="{!item.Descripcion_Detallada__c}" escape="false"/></div></td></tr>
+                                    <tr class="row-detail"><td colspan="{!dynamicColspan}"><div class="detail-inner"><apex:outputText value="{!item.Descripcion_Detallada__c}" escape="false"/></div></td></tr>
                                 </apex:outputPanel>
                             </apex:outputPanel>
                         </apex:repeat>
                     </tbody>
-                    <tfoot><tr><td colspan="4" class="ftr-spacer"></td></tr></tfoot>
+                    <tfoot><tr><td colspan="{!dynamicColspan}" class="ftr-spacer"></td></tr></tfoot>
                 </table>
 
                 <!-- NUEVA TABLA PARA TOTALES Y FIRMAS -->

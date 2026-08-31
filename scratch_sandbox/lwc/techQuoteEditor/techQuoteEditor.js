@@ -90,6 +90,11 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
     @track showTax = true;
     @track showTotal = true;
 
+    // --- COLUMNAS DE PRODUCTOS ---
+    @track showQuantityCol = true;
+    @track showUnitPriceCol = true;
+    @track showTotalPriceCol = true;
+
     // --- NUEVOS TOTALES PARA LA TABLA ---
     @track calcSubtotal1 = 0;
     @track calcDescuento = 0;
@@ -99,6 +104,13 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
 
     get hasDescuento() {
         return this.calcDescuento > 0 && this.showDiscount;
+    }
+
+    get lwcSeparatorColspan() {
+        let cols = 2; // Servicio y Sedes
+        if (this.showQuantityCol) cols++;
+        if (this.showTotalPriceCol) cols++;
+        return cols;
     }
 
     // --- MODALES ---
@@ -164,6 +176,9 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
                     this.showSubtotal2 = q.Show_Subtotal_2__c !== undefined ? q.Show_Subtotal_2__c : true;
                     this.showTax = q.Show_Tax__c !== undefined ? q.Show_Tax__c : true;
                     this.showTotal = q.Show_Total__c !== undefined ? q.Show_Total__c : true;
+                    this.showQuantityCol = q.Show_Quantity__c !== undefined ? q.Show_Quantity__c : true;
+                    this.showUnitPriceCol = q.Show_UnitPrice__c !== undefined ? q.Show_UnitPrice__c : true;
+                    this.showTotalPriceCol = q.Show_TotalPrice__c !== undefined ? q.Show_TotalPrice__c : true;
                     if (q.Account) this.clienteNombre = q.Account.Name;
                     if (q.Markers_Data__c) {
                         try {
@@ -452,7 +467,10 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
             showDiscount: this.showDiscount,
             showSubtotal2: this.showSubtotal2,
             showTax: this.showTax,
-            showTotal: this.showTotal
+            showTotal: this.showTotal,
+            showQuantityCol: this.showQuantityCol,
+            showUnitPriceCol: this.showUnitPriceCol,
+            showTotalPriceCol: this.showTotalPriceCol
         };
 
         try {
@@ -590,6 +608,9 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
     handleShowSubtotal2Change(event) { this.showSubtotal2 = event.target.checked; }
     handleShowTaxChange(event) { this.showTax = event.target.checked; }
     handleShowTotalChange(event) { this.showTotal = event.target.checked; }
+    handleShowQuantityColChange(event) { this.showQuantityCol = event.target.checked; }
+    handleShowUnitPriceColChange(event) { this.showUnitPriceCol = event.target.checked; }
+    handleShowTotalPriceColChange(event) { this.showTotalPriceCol = event.target.checked; }
 
     handleOpenSeparatorModal() { this.showSeparatorModal = true; }
     handleCloseSeparatorModal() { this.showSeparatorModal = false; }

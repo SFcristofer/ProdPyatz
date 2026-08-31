@@ -173,8 +173,12 @@
                                     <th style="width: 40px;"></th>
                                     <th>Servicio / Descripción</th>
                                     <th>Sede(s)</th>
-                                    <th style="width: 80px; text-align: center;">Cant.</th>
-                                    <th style="width: 120px; text-align: right;">Total</th>
+                                    <template if:true={showQuantityCol}>
+                                        <th style="width: 80px; text-align: center;">Cant.</th>
+                                    </template>
+                                    <template if:true={showTotalPriceCol}>
+                                        <th style="width: 120px; text-align: right;">Total</th>
+                                    </template>
                                     <th style="width: 100px; text-align: center;">Acciones</th>
                                 </tr>
                             </thead>
@@ -187,7 +191,7 @@
                                         </td>
                                         
                                         <template if:true={item.isSeparator}>
-                                            <td colspan="4">
+                                            <td colspan={lwcSeparatorColspan}>
                                                 <div class="separator-container">
                                                     <span class="separator-line-left"></span>
                                                     <span class="separator-text">{item.descripcion}</span>
@@ -207,8 +211,12 @@
                                                 </template>
                                             </td>
                                             <td><div class="slds-truncate" title={item.sedes}>{item.sedes}</div></td>
-                                            <td style="text-align: center;">{item.cantidad}</td>
-                                            <td style="text-align: right;"><strong><lightning-formatted-number value={item.totalSinImpuestos} format-style="currency"></lightning-formatted-number></strong></td>
+                                            <template if:true={showQuantityCol}>
+                                                <td style="text-align: center;">{item.cantidad}</td>
+                                            </template>
+                                            <template if:true={showTotalPriceCol}>
+                                                <td style="text-align: right;"><strong><lightning-formatted-number value={item.totalSinImpuestos} format-style="currency"></lightning-formatted-number></strong></td>
+                                            </template>
                                         </template>
 
                                         <td class="slds-text-align_center">
@@ -225,6 +233,20 @@
                                 <lightning-button label="+ Añadir Separador" variant="brand-outline" onclick={handleOpenSeparatorModal}></lightning-button>
                             </div>
                             <lightning-button label="P&L" icon-name="utility:calculator" variant="brand-outline" onclick={handleOpenPLModal}></lightning-button>
+                        </div>
+                        <div class="slds-p-around_medium bg-white border-top">
+                            <div class="slds-text-title_bold slds-m-bottom_small" style="color: #0a315e;">Columnas en PDF (Productos)</div>
+                            <div class="slds-grid slds-wrap slds-gutters_small">
+                                <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-3">
+                                    <lightning-input type="checkbox" label="Ver Cantidad" checked={showQuantityCol} onchange={handleShowQuantityColChange}></lightning-input>
+                                </div>
+                                <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-3">
+                                    <lightning-input type="checkbox" label="Ver P. Unitario" checked={showUnitPriceCol} onchange={handleShowUnitPriceColChange}></lightning-input>
+                                </div>
+                                <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-3">
+                                    <lightning-input type="checkbox" label="Ver Importe / Total" checked={showTotalPriceCol} onchange={handleShowTotalPriceColChange}></lightning-input>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -21,6 +21,9 @@ public with sharing class QuoteEngineService {
             Boolean showDiscount = p.containsKey('showDiscount') ? (Boolean)p.get('showDiscount') : true;
             Boolean showSubtotal2 = p.containsKey('showSubtotal2') ? (Boolean)p.get('showSubtotal2') : true;
             Boolean showTotal = p.containsKey('showTotal') ? (Boolean)p.get('showTotal') : true;
+            Boolean showQuantityCol = p.containsKey('showQuantityCol') ? (Boolean)p.get('showQuantityCol') : true;
+            Boolean showUnitPriceCol = p.containsKey('showUnitPriceCol') ? (Boolean)p.get('showUnitPriceCol') : true;
+            Boolean showTotalPriceCol = p.containsKey('showTotalPriceCol') ? (Boolean)p.get('showTotalPriceCol') : true;
 
             Quote q;
             String businessLines = (String)p.get('businessLines');
@@ -38,6 +41,9 @@ public with sharing class QuoteEngineService {
                 q.Show_Discount__c = showDiscount;
                 q.Show_Subtotal_2__c = showSubtotal2;
                 q.Show_Total__c = showTotal;
+                q.Show_Quantity__c = showQuantityCol;
+                q.Show_UnitPrice__c = showUnitPriceCol;
+                q.Show_TotalPrice__c = showTotalPriceCol;
                 update q;
             } else {
                 if (oppId == null && rid != null && rid.getSObjectType().getDescribe().getName() == 'Opportunity') oppId = rid;
@@ -55,7 +61,10 @@ public with sharing class QuoteEngineService {
                     Show_Tax__c = showTax,
                     Show_Discount__c = showDiscount,
                     Show_Subtotal_2__c = showSubtotal2,
-                    Show_Total__c = showTotal
+                    Show_Total__c = showTotal,
+                    Show_Quantity__c = showQuantityCol,
+                    Show_UnitPrice__c = showUnitPriceCol,
+                    Show_TotalPrice__c = showTotalPriceCol
                 );
                 insert q; rid = q.Id;
             }
