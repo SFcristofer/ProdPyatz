@@ -111,7 +111,14 @@
                                     <lightning-icon icon-name="utility:announcement" size="small" class="slds-m-right_small"></lightning-icon>
                                     <h2 class="slds-text-heading_small">Introducción Técnica</h2>
                                 </div>
-                                <div class="template-menu-container">
+                                <div class="template-menu-container slds-grid slds-grid_vertical-align-center">
+                                    <template if:true={showTemplateWarning}>
+                                        <div class="slds-m-right_small" style="color: #ff9800; font-size: 0.8rem; font-weight: bold; display: flex; align-items: center; background: rgba(255, 255, 255, 0.15); padding: 4px 8px; border-radius: 4px;">
+                                            <lightning-icon icon-name="utility:warning" size="x-small" variant="warning" class="slds-m-right_xx-small"></lightning-icon>
+                                            Actualiza la plantilla
+                                            <lightning-button-icon icon-name="utility:refresh" variant="bare-inverse" size="small" class="slds-m-left_x-small" onclick={handleRefreshIntroText} title="Actualizar datos sin borrar la plantilla"></lightning-button-icon>
+                                        </div>
+                                    </template>
                                     <lightning-button-menu label="Cargar Plantilla" icon-name="utility:insert_tag_field" variant="border-filled" onselect={handleApplyTemplate} data-field="introduccion" class="template-button">
                                         <template for:each={introTemplates} for:item="tpl">
                                             <lightning-menu-item key={tpl.id} value={tpl.id} label={tpl.name}></lightning-menu-item>

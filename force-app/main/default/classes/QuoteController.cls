@@ -85,8 +85,8 @@ public with sharing class QuoteController {
 
     @AuraEnabled(cacheable=true)
     public static Map<String, Object> getProductInfoByPBE(Id pbeId) {
-        PricebookEntry pbe = [SELECT Id, Product2Id, UnitPrice, Product2.Name, Product2.Description, Product2.Family FROM PricebookEntry WHERE Id = :pbeId LIMIT 1];
-        return new Map<String, Object>{ 'productId' => pbe.Product2Id, 'name' => pbe.Product2.Name, 'unitPrice' => pbe.UnitPrice, 'description' => pbe.Product2.Description, 'family' => pbe.Product2.Family };
+        PricebookEntry pbe = [SELECT Id, Product2Id, UnitPrice, Product2.Name, Product2.Description, Product2.Description_product__c, Product2.Family FROM PricebookEntry WHERE Id = :pbeId LIMIT 1];
+        return new Map<String, Object>{ 'productId' => pbe.Product2Id, 'name' => pbe.Product2.Name, 'unitPrice' => pbe.UnitPrice, 'description' => pbe.Product2.Description_product__c != null ? pbe.Product2.Description_product__c : pbe.Product2.Description, 'family' => pbe.Product2.Family };
     }
 
     @AuraEnabled

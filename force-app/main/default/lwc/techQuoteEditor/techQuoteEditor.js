@@ -38,11 +38,17 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
     @track asunto = '';
     @track opportunityName = ''; 
     @track introduccion = '';
+    @track quoteName = '';
+    @track accountId = null;
+    @track clienteNombre = 'SIN CLIENTE';
+    @track contactoNombreOriginal = '';
     @track warranty = '';
     @track observacionesPago = '';
     @track agenteNombre = '';
-    @track clienteNombre = 'SIN CLIENTE';
-    @track accountId;
+    @track showTemplateWarning = false;
+    @track lastReplacedClientName = '';
+    @track lastReplacedContactName = '';
+    @track lastReplacedClientNameWarranty = '';
 
     // --- CONTACTOS ---
     @track contactOptions = [];
@@ -411,8 +417,61 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
         if (this.estrategiaVenta !== 'E5' && currentObjects.length > 1) currentObjects = [currentObjects[currentObjects.length - 1]];
         this.selectedSedesObjects = currentObjects;
         this.selectedSedesIds = currentObjects.map(s => s.Id);
+
+        if (this.introduccion && this.clienteNombre && this.clienteNombre !== 'SIN CLIENTE' && currentObjects.length > 0 && currentObjects[0].Name !== this.clienteNombre) {
+            this.showTemplateWarning = true;
+        } else {
+            this.showTemplateWarning = false;
+        }
+        
+        setTimeout(() => { this.updateWarrantyWithClient(); }, 50);
+
         if (currentObjects.length > 0) this.fetchContacts(currentObjects[0].Id);
         else { this.contactOptions = []; this.selectedContactIds = []; this.selectedContactNames = ''; }
+    }
+
+    updateWarrantyWithClient() {
+        if (!this.warranty) return;
+        let newWarranty = this.warranty;
+        let replaced = false;
+        const accountPattern = /\[\[CUENTA\]\]/g;
+        
+        let currentClientName = '';
+        if (this.selectedSedesObjects && this.selectedSedesObjects.length > 0) {
+            currentClientName = this.selectedSedesObjects[0].Name;
+        } else if (this.clienteNombre && this.clienteNombre !== 'Sin Cliente') {
+            currentClientName = this.clienteNombre;
+        } else {
+            currentClientName = 'el cliente';
+        }
+        
+        if (newWarranty.match(accountPattern)) {
+            newWarranty = newWarranty.replace(accountPattern, currentClientName);
+            this.lastReplacedClientNameWarranty = currentClientName;
+            replaced = true;
+        }
+        
+        // Also support dynamic update if they change the client AFTER loading the template
+        let searchClientName = this.lastReplacedClientNameWarranty || this.clienteNombre;
+        if (searchClientName && searchClientName !== 'Sin Cliente' && currentClientName && currentClientName !== searchClientName) {
+            const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const clientPattern = new RegExp(escapeRegExp(searchClientName), 'g');
+            if (newWarranty.match(clientPattern)) {
+                newWarranty = newWarranty.replace(clientPattern, currentClientName);
+                this.lastReplacedClientNameWarranty = currentClientName;
+                replaced = true;
+            }
+        }
+        
+        if (replaced) {
+            this.warranty = newWarranty;
+        }
+    }
+
+    handleRefreshIntroText() {
+        this.updateIntroWithContacts();
+        this.updateWarrantyWithClient();
+        this.showTemplateWarning = false;
     }
 
     handleContactChange(event) {
@@ -436,6 +495,34 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
         patterns.forEach(pattern => {
             if (newIntro.match(pattern)) { newIntro = newIntro.replace(pattern, `${this.selectedContactNames ? displayNames : 'a quien corresponda'}`); replaced = true; }
         });
+
+        // Dynamic replacement for OLD contact name injected by template
+        let searchContactName = this.lastReplacedContactName || this.contactoNombreOriginal;
+        if (searchContactName && this.selectedContactNames && this.selectedContactNames !== searchContactName) {
+            const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const contactPattern = new RegExp(escapeRegExp(searchContactName), 'g');
+            if (newIntro.match(contactPattern)) {
+                newIntro = newIntro.replace(contactPattern, this.selectedContactNames);
+                this.lastReplacedContactName = this.selectedContactNames;
+                replaced = true;
+            }
+        }
+
+        // Dynamic replacement for OLD client name injected by template
+        let searchClientName = this.lastReplacedClientName || this.clienteNombre;
+        if (searchClientName && searchClientName !== 'Sin Cliente' && this.selectedSedesObjects && this.selectedSedesObjects.length > 0) {
+            const currentClientName = this.selectedSedesObjects[0].Name;
+            if (currentClientName && currentClientName !== searchClientName) {
+                const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const clientPattern = new RegExp(escapeRegExp(searchClientName), 'g');
+                if (newIntro.match(clientPattern)) {
+                    newIntro = newIntro.replace(clientPattern, currentClientName);
+                    this.lastReplacedClientName = currentClientName;
+                    replaced = true;
+                }
+            }
+        }
+
         if (replaced) {
             this.introduccion = newIntro;
         }
@@ -585,8 +672,11 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
                 const cleaned = this.cleanHtml(result);
                 if (targetField === 'introduccion') {
                     this.introduccion = cleaned;
+                    this.showTemplateWarning = false;
+                    setTimeout(() => { this.updateIntroWithContacts(); }, 50);
                 } else if (targetField === 'warranty') {
                     this.warranty = cleaned;
+                    setTimeout(() => { this.updateWarrantyWithClient(); }, 50);
                 } else if (targetField === 'observacionesPago') {
                     this.observacionesPago = cleaned;
                 }
@@ -683,3 +773,4 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
         this.template.querySelectorAll('tr').forEach(row => row.classList.remove('dragging'));
     }
 }
+

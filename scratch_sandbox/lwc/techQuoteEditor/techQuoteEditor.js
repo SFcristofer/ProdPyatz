@@ -38,11 +38,13 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
     @track asunto = '';
     @track opportunityName = ''; 
     @track introduccion = '';
+    @track quoteName = '';
+    @track accountId = null;
+    @track clienteNombre = 'SIN CLIENTE';
+    @track contactoNombreOriginal = '';
     @track warranty = '';
     @track observacionesPago = '';
     @track agenteNombre = '';
-    @track clienteNombre = 'SIN CLIENTE';
-    @track accountId;
 
     // --- CONTACTOS ---
     @track contactOptions = [];
@@ -166,9 +168,9 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
                     // Limpieza de ceros a la izquierda para visualización (igual que el PDF)
                     this.folio = (q.QuoteNumber) ? q.QuoteNumber.replace(/^0+/, '') : 'POR GENERAR';
                     this.asunto = q.Name;
-                    this.introduccion = q.Introduction_Text__c;
-                    this.warranty = q.Warranty_Text__c;
-                    this.observacionesPago = q.Description;
+                    this.introduccion = this.cleanHtml(q.Introduction_Text__c);
+                    this.warranty = this.cleanHtml(q.Warranty_Text__c);
+                    this.observacionesPago = this.cleanHtml(q.Description);
                     this.accountId = q.AccountId;
                     this.parentOpportunityId = q.OpportunityId;
                     this.showSubtotal = q.Show_Subtotal__c !== undefined ? q.Show_Subtotal__c : true;
@@ -215,8 +217,21 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
                 } else if (result.opportunity) {
                     this.accountId = result.opportunity.AccountId;
                     this.parentOpportunityId = result.opportunity.Id;
+                    this.clienteNombre = result.opportunity.Account ? result.opportunity.Account.Name : 'Sin Cliente';
                     this.autoFillAsunto();
                 }
+
+                // Auto-seleccionar el cliente de la Oportunidad/Cotización si no hay clientes seleccionados
+                if ((!this.selectedSedesObjects || this.selectedSedesObjects.length === 0) && this.accountId && this.clienteNombre !== 'Sin Cliente') {
+                    this.selectedSedesObjects = [{
+                        Id: this.accountId,
+                        Name: this.clienteNombre,
+                        ParentName: 'Principal'
+                    }];
+                    this.selectedSedesIds = [this.accountId];
+                    this.fetchContacts(this.accountId);
+                }
+
                 if (this.accountId) this.fetchSedes();
                 this.isLoading = false;
             })
@@ -423,7 +438,33 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
         patterns.forEach(pattern => {
             if (newIntro.match(pattern)) { newIntro = newIntro.replace(pattern, `${this.selectedContactNames ? displayNames : 'a quien corresponda'}`); replaced = true; }
         });
-        if (replaced) this.introduccion = newIntro;
+
+        // Dynamic replacement for OLD contact name injected by template
+        if (this.contactoNombreOriginal && this.selectedContactNames && this.selectedContactNames !== this.contactoNombreOriginal) {
+            const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const contactPattern = new RegExp(escapeRegExp(this.contactoNombreOriginal), 'g');
+            if (newIntro.match(contactPattern)) {
+                newIntro = newIntro.replace(contactPattern, this.selectedContactNames);
+                replaced = true;
+            }
+        }
+
+        // Dynamic replacement for OLD client name injected by template
+        if (this.clienteNombre && this.clienteNombre !== 'Sin Cliente' && this.selectedSedesObjects && this.selectedSedesObjects.length > 0) {
+            const currentClientName = this.selectedSedesObjects[0].Name;
+            if (currentClientName && currentClientName !== this.clienteNombre) {
+                const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const clientPattern = new RegExp(escapeRegExp(this.clienteNombre), 'g');
+                if (newIntro.match(clientPattern)) {
+                    newIntro = newIntro.replace(clientPattern, currentClientName);
+                    replaced = true;
+                }
+            }
+        }
+
+        if (replaced) {
+            this.introduccion = newIntro;
+        }
     }
 
     fetchContacts(sedeId) {
@@ -567,9 +608,15 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
         this.isLoading = true;
         renderTemplate({ templateId: templateId, quoteId: this.recordId })
             .then(result => {
-                if (targetField === 'introduccion') this.introduccion = result;
-                else if (targetField === 'warranty') this.warranty = result;
-                else if (targetField === 'observacionesPago') this.observacionesPago = result;
+                const cleaned = this.cleanHtml(result);
+                if (targetField === 'introduccion') {
+                    this.introduccion = cleaned;
+                    setTimeout(() => { this.updateIntroWithContacts(); }, 50);
+                } else if (targetField === 'warranty') {
+                    this.warranty = cleaned;
+                } else if (targetField === 'observacionesPago') {
+                    this.observacionesPago = cleaned;
+                }
             })
             .catch(error => { console.error('Error render:', error); })
             .finally(() => { this.isLoading = false; });
@@ -595,6 +642,14 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
     }
     
     handleAsuntoChange(event) { this.asunto = event.target.value; }
+    cleanHtml(html) {
+        if (!html) return html;
+        let cleaned = html;
+        // Purge all spans and structural tags that corrupt QuillJS
+        cleaned = cleaned.replace(/<\/?(span|table|tbody|tr|td|th|center|style)[^>]*>/gi, '');
+        return cleaned;
+    }
+
     handleIntroChange(event) { this.introduccion = event.target.value; }
     handleWarrantyChange(event) { this.warranty = event.target.value; }
     handleObservacionesPagoChange(event) { this.observacionesPago = event.target.value; }
@@ -655,3 +710,4 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
         this.template.querySelectorAll('tr').forEach(row => row.classList.remove('dragging'));
     }
 }
+

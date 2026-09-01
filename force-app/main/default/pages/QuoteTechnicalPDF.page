@@ -29,7 +29,7 @@
                 .row-item td          { padding:7pt 6pt; font-size:10pt; border-bottom:0.5pt solid #f0f0f0; background-color:#fff; vertical-align:middle; }
                 .row-detail td        { padding:3pt 0 10pt 0; border-bottom:0.5pt solid #eee; font-size:9pt; color:#444; line-height:1.15; }
                 .detail-inner         { border-left:2pt solid #dde; padding-left:10pt; }
-                .detail-inner b, .detail-inner strong { font-weight: bold; }
+                b, strong, .detail-inner b, .detail-inner strong { font-family: 'Poppins-Bold', 'Helvetica', 'Arial', sans-serif; font-weight: bold; }
                 .detail-inner i, .detail-inner em { font-style: italic; }
                 .detail-inner u { text-decoration: underline; }
                 .detail-inner p { margin: 2pt 0; }

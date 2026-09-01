@@ -133,7 +133,7 @@ public with sharing class QuoteEngineService {
         Id pbId; List<String> lines = businessLines != null ? businessLines : new List<String>();
         if (quoteId != null) { Quote q = [SELECT Pricebook2Id, Business_Lines_Selected__c FROM Quote WHERE Id = :quoteId LIMIT 1]; pbId = q.Pricebook2Id; if (lines.isEmpty() && q.Business_Lines_Selected__c != null) { for(String s : q.Business_Lines_Selected__c.split(',')) lines.add(s.trim()); } }
         String query = '%' + searchTerm + '%';
-        String soql = 'SELECT Id, Name, ProductCode, Description, Family FROM Product2 WHERE (Name LIKE :query OR ProductCode LIKE :query) AND IsActive = true ';
+        String soql = 'SELECT Id, Name, ProductCode, Description, Description_product__c, Family FROM Product2 WHERE (Name LIKE :query OR ProductCode LIKE :query) AND IsActive = true ';
         if (!allowOtherLines && !lines.isEmpty()) soql += 'AND Family IN :lines ';
         List<Product2> products = Database.query(soql + ' ORDER BY Name ASC LIMIT 40');
         if (products.isEmpty()) return results;
@@ -148,7 +148,7 @@ public with sharing class QuoteEngineService {
             for (PricebookEntry pbe : pbes) { if (pbId != null && pbe.Pricebook2Id == pbId) { best = pbe; break; } }
             if (best == null) { for (PricebookEntry pbe : pbes) { if (pbe.Pricebook2.IsStandard) { best = pbe; break; } } }
             if (best == null) best = pbes[0];
-            results.add(new Map<String, Object>{ 'id' => best.Id, 'productId' => p.Id, 'name' => p.Name, 'sku' => p.ProductCode, 'description' => p.Description, 'unitPrice' => best.UnitPrice, 'pricebookName' => best.Pricebook2.Name });
+            results.add(new Map<String, Object>{ 'id' => best.Id, 'productId' => p.Id, 'name' => p.Name, 'sku' => p.ProductCode, 'description' => p.Description_product__c != null ? p.Description_product__c : p.Description, 'unitPrice' => best.UnitPrice, 'pricebookName' => best.Pricebook2.Name });
         }
         return results;
     }
