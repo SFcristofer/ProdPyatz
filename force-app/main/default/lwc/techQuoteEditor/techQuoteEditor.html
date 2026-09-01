@@ -269,13 +269,13 @@
                             <div class="slds-text-title_bold slds-m-bottom_small" style="color: #0a315e;">Opciones de Visibilidad en PDF</div>
                             <div class="slds-grid slds-wrap slds-gutters_small">
                                 <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-5">
-                                    <lightning-input type="checkbox" label="Ver Subtotal 1" checked={showSubtotal} onchange={handleShowSubtotalChange}></lightning-input>
+                                    <lightning-input type="checkbox" label="Ver Importe Original" checked={showSubtotal} disabled={isImporteOriginalDisabled} onchange={handleShowSubtotalChange}></lightning-input>
                                 </div>
                                 <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-5">
                                     <lightning-input type="checkbox" label="Ver Descuento" checked={showDiscount} onchange={handleShowDiscountChange}></lightning-input>
                                 </div>
                                 <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-5">
-                                    <lightning-input type="checkbox" label="Ver Subtotal 2" checked={showSubtotal2} onchange={handleShowSubtotal2Change}></lightning-input>
+                                    <lightning-input type="checkbox" label={subtotal2CheckboxLabel} checked={showSubtotal2} onchange={handleShowSubtotal2Change}></lightning-input>
                                 </div>
                                 <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-5">
                                     <lightning-input type="checkbox" label="Ver I.V.A." checked={showTax} onchange={handleShowTaxChange}></lightning-input>
@@ -295,9 +295,9 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <template if:true={showSubtotal}>
+                                <template if:true={showImporteOriginalBlock}>
                                     <tr>
-                                        <td><strong>SUBTOTAL 1</strong></td>
+                                        <td><strong>IMPORTE ORIGINAL</strong></td>
                                         <td><lightning-formatted-number value={calcSubtotal1} format-style="currency" currency-code="MXN"></lightning-formatted-number></td>
                                     </tr>
                                 </template>
@@ -309,7 +309,7 @@
                                 </template>
                                 <template if:true={showSubtotal2}>
                                     <tr>
-                                        <td><strong>SUBTOTAL 2</strong></td>
+                                        <td><strong>{subtotal2Label}</strong></td>
                                         <td><lightning-formatted-number value={calcSubtotal2} format-style="currency" currency-code="MXN"></lightning-formatted-number></td>
                                     </tr>
                                 </template>

@@ -117,15 +117,15 @@
                             <apex:outputPanel rendered="{!BLANKVALUE(item.Quantity, 0) > 0}" layout="none">
                                 <tr style="page-break-after:avoid;">
                                     <th style="text-align:center;">Concepto / Servicio</th>
-                                    <apex:outputPanel rendered="{!showQuantityCol}" layout="none"><th width="10%" style="text-align:center;">Cant</th></apex:outputPanel>
-                                    <apex:outputPanel rendered="{!showUnitPriceCol}" layout="none"><th width="20%" style="text-align:center;">P. Unitario</th></apex:outputPanel>
-                                    <apex:outputPanel rendered="{!showTotalPriceCol}" layout="none"><th width="20%" style="text-align:center;">Importe</th></apex:outputPanel>
+                                    <th width="10%" style="text-align:center; display:{!IF(showQuantityCol, 'table-cell', 'none')};">Cant</th>
+                                    <th width="20%" style="text-align:center; display:{!IF(showUnitPriceCol, 'table-cell', 'none')};">P. Unitario</th>
+                                    <th width="20%" style="text-align:center; display:{!IF(showTotalPriceCol, 'table-cell', 'none')};">Importe</th>
                                 </tr>
                                 <tr class="row-item" style="page-break-inside:avoid;">
                                     <td style="text-align:center;"><strong>{!item.Product2.Name}</strong></td>
-                                    <apex:outputPanel rendered="{!showQuantityCol}" layout="none"><td style="text-align:center;">{!item.Quantity}</td></apex:outputPanel>
-                                    <apex:outputPanel rendered="{!showUnitPriceCol}" layout="none"><td style="text-align:center;"><apex:outputText value="{0, number, currency}"><apex:param value="{!BLANKVALUE(item.UnitPrice, 0)}"/></apex:outputText></td></apex:outputPanel>
-                                    <apex:outputPanel rendered="{!showTotalPriceCol}" layout="none"><td style="text-align:center;"><apex:outputText value="{0, number, currency}"><apex:param value="{!BLANKVALUE(item.TotalPrice, 0)}"/></apex:outputText></td></apex:outputPanel>
+                                    <td style="text-align:center; display:{!IF(showQuantityCol, 'table-cell', 'none')};">{!item.Quantity}</td>
+                                    <td style="text-align:center; display:{!IF(showUnitPriceCol, 'table-cell', 'none')};"><apex:outputText value="{0, number, currency}"><apex:param value="{!BLANKVALUE(item.UnitPrice, 0)}"/></apex:outputText></td>
+                                    <td style="text-align:center; display:{!IF(showTotalPriceCol, 'table-cell', 'none')};"><apex:outputText value="{0, number, currency}"><apex:param value="{!BLANKVALUE(item.TotalPrice, 0)}"/></apex:outputText></td>
                                 </tr>
                                 <apex:outputPanel rendered="{!NOT(ISBLANK(item.Descripcion_Detallada__c))}" layout="none">
                                     <tr class="row-detail"><td colspan="{!dynamicColspan}"><div class="detail-inner"><apex:outputText value="{!item.Descripcion_Detallada__c}" escape="false"/></div></td></tr>
@@ -137,14 +137,14 @@
                         <!-- BLOQUE: TOTALES -->
                         <tr style="page-break-inside:avoid;"><td colspan="{!dynamicColspan}" style="padding-top:20pt;">
                             <table class="tbl-totals">
-                                <apex:outputPanel rendered="{!showSubtotal}" layout="none">
-                                    <tr><td class="tot-lbl">SUBTOTAL 1</td><td class="tot-val"><apex:outputText value="{0, number, currency}"><apex:param value="{!calcSubtotal1}"/></apex:outputText></td></tr>
+                                <apex:outputPanel rendered="{!AND(showSubtotal, calcDescuento > 0)}" layout="none">
+                                    <tr><td class="tot-lbl">IMPORTE ORIGINAL</td><td class="tot-val"><apex:outputText value="{0, number, currency}"><apex:param value="{!calcSubtotal1}"/></apex:outputText></td></tr>
                                 </apex:outputPanel>
                                 <apex:outputPanel rendered="{!AND(showDiscount, calcDescuento > 0)}" layout="none">
                                     <tr><td class="tot-lbl" style="color:#d8000c;">DESCUENTO</td><td class="tot-val" style="color:#d8000c;">- <apex:outputText value="{0, number, currency}"><apex:param value="{!calcDescuento}"/></apex:outputText></td></tr>
                                 </apex:outputPanel>
                                 <apex:outputPanel rendered="{!showSubtotal2}" layout="none">
-                                    <tr><td class="tot-lbl">SUBTOTAL 2</td><td class="tot-val"><apex:outputText value="{0, number, currency}"><apex:param value="{!calcSubtotal2}"/></apex:outputText></td></tr>
+                                    <tr><td class="tot-lbl"><apex:outputText value="{!IF(calcDescuento > 0, 'SUBTOTAL CON DESC.', 'SUBTOTAL')}"/></td><td class="tot-val"><apex:outputText value="{0, number, currency}"><apex:param value="{!calcSubtotal2}"/></apex:outputText></td></tr>
                                 </apex:outputPanel>
                                 <apex:outputPanel rendered="{!showTax}" layout="none">
                                     <tr><td class="tot-lbl">I.V.A. (16%)</td><td class="tot-val"><apex:outputText value="{0, number, currency}"><apex:param value="{!calcIva}"/></apex:outputText></td></tr>

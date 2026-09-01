@@ -107,10 +107,26 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
     @track calcSubtotal2 = 0;
     @track calcIva = 0;
     @track calcTotal = 0;
-
     get hasDescuento() {
         return this.calcDescuento > 0 && this.showDiscount;
     }
+
+    get subtotal2Label() {
+        return this.calcDescuento > 0 ? 'SUBTOTAL CON DESC.' : 'SUBTOTAL';
+    }
+
+    get subtotal2CheckboxLabel() {
+        return this.calcDescuento > 0 ? 'Ver Subtotal con Desc.' : 'Ver Subtotal';
+    }
+
+    get isImporteOriginalDisabled() {
+        return this.calcDescuento <= 0;
+    }
+
+    get showImporteOriginalBlock() {
+        return this.calcDescuento > 0 && this.showSubtotal;
+    }
+
 
     get lwcSeparatorColspan() {
         let cols = 2; // Servicio y Sedes
