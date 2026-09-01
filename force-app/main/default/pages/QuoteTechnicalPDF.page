@@ -107,12 +107,6 @@
                 <table class="tbl-svc" style="width:100%; border-collapse:collapse;">
                     <thead>
                         <tr><td colspan="{!dynamicColspan}" class="hdr-spacer"></td></tr>
-                        <tr>
-                            <th style="text-align:center;">Concepto / Servicio</th>
-                            <apex:outputPanel rendered="{!showQuantityCol}" layout="none"><th width="10%" style="text-align:center;">Cant</th></apex:outputPanel>
-                            <apex:outputPanel rendered="{!showUnitPriceCol}" layout="none"><th width="20%" style="text-align:center;">P. Unitario</th></apex:outputPanel>
-                            <apex:outputPanel rendered="{!showTotalPriceCol}" layout="none"><th width="20%" style="text-align:center;">Importe</th></apex:outputPanel>
-                        </tr>
                     </thead>
                     <tbody>
                         <!-- BLOQUE: SERVICIOS -->
@@ -121,6 +115,12 @@
                                 <tr class="row-sep"><td colspan="{!dynamicColspan}" style="padding:8pt;">{!item.Product2.Name}</td></tr>
                             </apex:outputPanel>
                             <apex:outputPanel rendered="{!BLANKVALUE(item.Quantity, 0) > 0}" layout="none">
+                                <tr style="page-break-after:avoid;">
+                                    <th style="text-align:center;">Concepto / Servicio</th>
+                                    <apex:outputPanel rendered="{!showQuantityCol}" layout="none"><th width="10%" style="text-align:center;">Cant</th></apex:outputPanel>
+                                    <apex:outputPanel rendered="{!showUnitPriceCol}" layout="none"><th width="20%" style="text-align:center;">P. Unitario</th></apex:outputPanel>
+                                    <apex:outputPanel rendered="{!showTotalPriceCol}" layout="none"><th width="20%" style="text-align:center;">Importe</th></apex:outputPanel>
+                                </tr>
                                 <tr class="row-item" style="page-break-inside:avoid;">
                                     <td style="text-align:center;"><strong>{!item.Product2.Name}</strong></td>
                                     <apex:outputPanel rendered="{!showQuantityCol}" layout="none"><td style="text-align:center;">{!item.Quantity}</td></apex:outputPanel>
@@ -133,16 +133,9 @@
                             </apex:outputPanel>
                         </apex:repeat>
                     </tbody>
-                    <tfoot><tr><td colspan="{!dynamicColspan}" class="ftr-spacer"></td></tr></tfoot>
-                </table>
-
-                <!-- NUEVA TABLA PARA TOTALES Y FIRMAS -->
-                <table style="width:100%; border-collapse:collapse;">
-                    <thead><tr><td class="hdr-spacer"></td></tr></thead>
-                    <tfoot><tr><td class="ftr-spacer"></td></tr></tfoot>
-                    <tbody>
+                    <tbody style="border-top:none;">
                         <!-- BLOQUE: TOTALES -->
-                        <tr style="page-break-inside:avoid;"><td style="padding-top:20pt;">
+                        <tr style="page-break-inside:avoid;"><td colspan="{!dynamicColspan}" style="padding-top:20pt;">
                             <table class="tbl-totals">
                                 <apex:outputPanel rendered="{!showSubtotal}" layout="none">
                                     <tr><td class="tot-lbl">SUBTOTAL 1</td><td class="tot-val"><apex:outputText value="{0, number, currency}"><apex:param value="{!calcSubtotal1}"/></apex:outputText></td></tr>
@@ -166,19 +159,19 @@
                                     <tr><th width="25%">Método de Pago</th><th width="50%" style="text-align:center;">Descripción</th><th width="25%">Tipo de Trabajo</th></tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td style="text-align:left;">{!metodoPago}</td><td style="text-align:center; font-size:8.5pt; line-height:1.15;"><apex:outputText value="{!descripcionPago}" escape="false"/></td><td style="text-align:left;">{!tipoTrabajo}</td></tr>
+                                    <tr><td style="text-align:center; vertical-align:middle;">{!metodoPago}</td><td style="text-align:center; vertical-align:middle; font-size:8.5pt; line-height:1.15;"><apex:outputText value="{!descripcionPago}" escape="false"/></td><td style="text-align:center; vertical-align:middle;">{!tipoTrabajo}</td></tr>
                                 </tbody>
                             </table>
                         </td></tr>
 
                         <!-- BLOQUE: GARANTÍA -->
                         <apex:outputPanel rendered="{!NOT(ISBLANK(technicalQuote.Warranty_Text__c))}" layout="none">
-                            <tr><td style="padding-top:24pt;">
+                            <tr><td colspan="{!dynamicColspan}" style="padding-top:24pt;">
                                 <div class="warranty-block"><div style="font-weight:bold; font-size:11pt; margin-bottom:6pt; text-transform:uppercase;">Condiciones / Anexos / Cl&#225;usulas</div><apex:outputText escape="false" value="{!technicalQuote.Warranty_Text__c}"/></div>
                             </td></tr>
                         </apex:outputPanel>
                         <!-- BLOQUE: FIRMAS -->
-                        <tr><td style="padding-top:40pt;">
+                        <tr><td colspan="{!dynamicColspan}" style="padding-top:40pt;">
                             <div style="page-break-inside:avoid;">
                                 <table class="tbl-sig">
                                     <tr>
@@ -193,6 +186,7 @@
                             </div>
                         </td></tr>
                     </tbody>
+                    <tfoot><tr><td colspan="{!dynamicColspan}" class="ftr-spacer"></td></tr></tfoot>
                 </table>
             </div>
             <img src="{!$Resource.FooterPDF}" class="footer-img"/>
