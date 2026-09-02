@@ -6,6 +6,8 @@ import getProcessHistory from '@salesforce/apex/OperationsController.getProcessH
 import getOpenOpportunities from '@salesforce/apex/OperationsController.getOpenOpportunities';
 import getEvidenceGallery from '@salesforce/apex/OperationsController.getEvidenceGallery';
 import renameUploadedFile from '@salesforce/apex/OperationsController.renameUploadedFile';
+import deleteDocument from '@salesforce/apex/CommunicationController.deleteDocument';
+import LightningConfirm from 'lightning/confirm';
 
 export default class TechProcessSummary extends NavigationMixin(LightningElement) {
     @api recordId;
@@ -45,6 +47,51 @@ export default class TechProcessSummary extends NavigationMixin(LightningElement
                 selectedRecordId: docId
             }
         });
+    }
+
+    /**
+     * Elimina una evidencia pidiendo confirmación
+     */
+    async handleDeleteEvidence(event) {
+        // Evita que el click se propague a la tarjeta (que abre el preview)
+        event.stopPropagation();
+        
+        const docId = event.currentTarget.dataset.id;
+        const docTitle = event.currentTarget.dataset.title;
+
+        const result = await LightningConfirm.open({
+            message: `¿Estás seguro de que deseas eliminar permanentemente la evidencia "${docTitle}"? Esta acción no se puede deshacer.`,
+            variant: 'headerless',
+            label: 'Confirmar eliminación',
+            theme: 'error'
+        });
+
+        if (result && docId) {
+            this.isLoadingEvidence = true;
+            deleteDocument({ documentId: docId })
+                .then(() => {
+                    this.dispatchEvent(new ShowToastEvent({
+                        title: 'Eliminado',
+                        message: 'La evidencia se eliminó correctamente.',
+                        variant: 'success'
+                    }));
+                    return refreshApex(this._wiredGallery);
+                })
+                .then(() => {
+                    return refreshApex(this._wiredResult);
+                })
+                .catch(error => {
+                    console.error('Error al eliminar:', error);
+                    this.dispatchEvent(new ShowToastEvent({
+                        title: 'Error',
+                        message: 'No se pudo eliminar el archivo. Es posible que no tengas permisos.',
+                        variant: 'error'
+                    }));
+                })
+                .finally(() => {
+                    this.isLoadingEvidence = false;
+                });
+        }
     }
 
     /**

@@ -114,8 +114,18 @@
                         <div class="evidence-card border-all radius-8 bg-white shadow-sm overflow-hidden clickable-card" 
                              onclick={handlePreviewFile} 
                              data-id={doc.id}>
-                            <div class="card-header slds-p-around_xx-small bg-slate-100 slds-text-align_center">
-                                <span class="tag-label">{doc.tag}</span>
+                            <div class="card-header slds-p-around_xx-small bg-slate-100 slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+                                <span class="tag-label slds-m-left_x-small slds-truncate" title={doc.tag}>{doc.tag}</span>
+                                <lightning-button-icon
+                                    icon-name="utility:delete"
+                                    variant="bare"
+                                    size="small"
+                                    class="slds-m-right_xx-small"
+                                    tooltip="Eliminar evidencia"
+                                    data-id={doc.id}
+                                    data-title={doc.title}
+                                    onclick={handleDeleteEvidence}>
+                                </lightning-button-icon>
                             </div>
                             <div class="card-body slds-p-around_small slds-text-align_center">
                                 <template if:true={doc.isImage}>
