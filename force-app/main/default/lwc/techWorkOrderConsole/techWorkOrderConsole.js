@@ -40,7 +40,7 @@ export default class TechWorkOrderConsole extends NavigationMixin(LightningEleme
         fechaFin: '---',
         fechaLimiteServicios: '---',
         prioridad: 'Medium',
-        territoryId: '0HhV9000000EWODKA4',
+        territoryId: '',
         direccionSede: '',
         contactoPerson: ''
     };

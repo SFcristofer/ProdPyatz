@@ -9,11 +9,13 @@ public with sharing class TechWorkOrderController {
             if (quoteId != null) {
                 targetQuote = [SELECT Id, QuoteNumber, Name, AccountId, Account.Name, OpportunityId, 
                                      Account.BillingStreet, Account.BillingCity, Account.BillingState, Account.BillingPostalCode,
+                                     Account.ShippingStreet, Account.ShippingCity, Account.ShippingState, Account.ShippingPostalCode,
                                      Business_Lines_Selected__c, Technical_Sedes__c, CreatedDate, ExpirationDate
                               FROM Quote WHERE Id = :quoteId LIMIT 1];
             } else {
                 List<Quote> syncingQuotes = [SELECT Id, QuoteNumber, Name, AccountId, Account.Name, OpportunityId,
                                                    Account.BillingStreet, Account.BillingCity, Account.BillingState, Account.BillingPostalCode,
+                                                   Account.ShippingStreet, Account.ShippingCity, Account.ShippingState, Account.ShippingPostalCode,
                                                    Business_Lines_Selected__c, Technical_Sedes__c, CreatedDate, ExpirationDate
                                             FROM Quote WHERE OpportunityId = :oppId AND IsSyncing = true LIMIT 1];
                 if (syncingQuotes.isEmpty()) throw new AuraHandledException('No hay un presupuesto sincronizado.');
@@ -154,7 +156,10 @@ public with sharing class TechWorkOrderController {
             result.put('serviceContractId', serviceContractId);
             result.put('folio', targetQuote.QuoteNumber);
             result.put('cliente', targetQuote.Account.Name);
-            result.put('direccion', targetQuote.Account.BillingStreet + ', ' + targetQuote.Account.BillingCity);
+            String shipAddr = (targetQuote.Account.ShippingStreet != null ? targetQuote.Account.ShippingStreet : '') + (targetQuote.Account.ShippingStreet != null && targetQuote.Account.ShippingCity != null ? ', ' : '') + (targetQuote.Account.ShippingCity != null ? targetQuote.Account.ShippingCity : '');
+            String billAddr = (targetQuote.Account.BillingStreet != null ? targetQuote.Account.BillingStreet : '') + (targetQuote.Account.BillingStreet != null && targetQuote.Account.BillingCity != null ? ', ' : '') + (targetQuote.Account.BillingCity != null ? targetQuote.Account.BillingCity : '');
+            String finalAddr = String.isNotBlank(shipAddr) ? shipAddr : billAddr;
+            result.put('direccion', String.isNotBlank(finalAddr) ? finalAddr : null);
             result.put('lineaNegocio', targetQuote.Business_Lines_Selected__c != null ? targetQuote.Business_Lines_Selected__c : '---');
             result.put('sedes', targetQuote.Technical_Sedes__c != null ? targetQuote.Technical_Sedes__c : '---');
             result.put('fechaInicio', targetQuote.CreatedDate.format('dd-MMM-yyyy'));

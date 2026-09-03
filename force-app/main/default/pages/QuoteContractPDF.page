@@ -166,6 +166,113 @@
 
 
 
+            <!-- ═══ SECCIÓN 1: INTRODUCCIÓN ════════════════════════════
+
+                 thead=3.3cm reserva espacio bajo el header fijo.
+
+                 tfoot=2.3cm reserva espacio sobre el footer fijo.            -->
+
+
+            <table style="width:100%; border-collapse:collapse; -fs-table-paginate: paginate;">
+
+                <thead>
+
+                    <tr><td style="height:3.8cm; padding:0; line-height:0; font-size:0;">&#160;</td></tr>
+
+                </thead>
+
+                <tfoot>
+
+                    <tr><td style="height:2.3cm; padding:0; line-height:0; font-size:0;">&#160;</td></tr>
+
+                </tfoot>
+
+                <tbody>
+
+                    <tr>
+
+                        <td style="padding:0; vertical-align:top;">
+
+                            <div class="content-body">
+
+
+
+                                <table class="hdr-table">
+
+                                    <tr>
+
+                                        <td width="62%" style="vertical-align:top; padding:0;">
+
+                                            <div class="quote-number">CONTRATO No. {!quoteNumberShort}</div>  
+
+                                            <div class="nombre-comercial">{!quoteRecord.Account.Name}</div>
+
+                                            <div class="asunto"><strong>Asunto:</strong>&#160;{!quoteRecord.Name}</div>
+
+                                        </td>                                        <td width="38%" style="vertical-align:top; text-align:right; font-size:10pt; padding:2pt 0 0 0;">
+
+                                            <div><strong>Fecha:</strong>&#160;{!fechaHoy}</div>
+
+                                            <div><strong>Agente:</strong>&#160;{!firmanteNombre}</div>
+
+                                        </td>
+
+                                    </tr>
+
+                                </table>
+
+
+
+                                <div class="sede-title">{!quoteRecord.Technical_Sedes__c}</div>
+
+
+
+                                <apex:outputPanel rendered="{!NOT(ISBLANK(quoteRecord.Introduction_Text__c))}">
+
+                                    <table style="width:100%; border-collapse:collapse; table-layout:fixed; margin-top:3pt; font-size:10pt;">
+
+                                        <colgroup>
+
+                                            <col style="width:15pt;"/>
+
+                                            <col/>
+
+                                            <col style="width:15pt;"/>
+
+                                        </colgroup>
+
+                                        <tr>
+
+                                            <td style="width:15pt;"></td>
+
+                                            <td>
+
+                                                <apex:outputText value="{!quoteRecord.Introduction_Text__c}" escape="false"/>
+
+                                            </td>
+
+                                            <td style="width:15pt;"></td>
+
+                                        </tr>
+
+                                    </table>
+
+                                </apex:outputPanel>
+
+
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+            <div style="page-break-before:always;"></div>
+
             <!-- ═══ SECCIÓN 4: CONTRATO REPSE ════════════════════════════ -->
 
             <table style="width:100%; border-collapse:collapse; -fs-table-paginate: paginate;">
@@ -533,114 +640,6 @@
                         </div>
 
                     </div></td></tr>
-
-                </tbody>
-
-            </table>
-
-
-
-            <!-- ═══ SECCIÓN 1: INTRODUCCIÓN ════════════════════════════
-
-                 thead=3.3cm reserva espacio bajo el header fijo.
-
-                 tfoot=2.3cm reserva espacio sobre el footer fijo.            -->
-
-            <div style="page-break-before:always;"></div>
-
-            <table style="width:100%; border-collapse:collapse; -fs-table-paginate: paginate;">
-
-                <thead>
-
-                    <tr><td style="height:3.8cm; padding:0; line-height:0; font-size:0;">&#160;</td></tr>
-
-                </thead>
-
-                <tfoot>
-
-                    <tr><td style="height:2.3cm; padding:0; line-height:0; font-size:0;">&#160;</td></tr>
-
-                </tfoot>
-
-                <tbody>
-
-                    <tr>
-
-                        <td style="padding:0; vertical-align:top;">
-
-                            <div class="content-body">
-
-
-
-                                <table class="hdr-table">
-
-                                    <tr>
-
-                                        <td width="62%" style="vertical-align:top; padding:0;">
-
-                                            <div class="quote-number">CONTRATO No. {!quoteNumberShort}</div>  
-
-                                            <div class="nombre-comercial">{!quoteRecord.Account.Name}</div>
-
-                                            <div class="asunto"><strong>Asunto:</strong>&#160;{!quoteRecord.Name}</div>
-
-                                        </td>                                        <td width="38%" style="vertical-align:top; text-align:right; font-size:10pt; padding:2pt 0 0 0;">
-
-                                            <div><strong>Fecha:</strong>&#160;{!fechaHoy}</div>
-
-                                            <div><strong>Agente:</strong>&#160;{!firmanteNombre}</div>
-
-                                        </td>
-
-                                    </tr>
-
-                                </table>
-
-
-
-                                <div class="sede-title">{!quoteRecord.Technical_Sedes__c}</div>
-
-
-
-                                <apex:outputPanel rendered="{!NOT(ISBLANK(quoteRecord.Introduction_Text__c))}">
-
-                                    <table style="width:100%; border-collapse:collapse; table-layout:fixed; margin-top:3pt; font-size:10pt;">
-
-                                        <colgroup>
-
-                                            <col style="width:15pt;"/>
-
-                                            <col/>
-
-                                            <col style="width:15pt;"/>
-
-                                        </colgroup>
-
-                                        <tr>
-
-                                            <td style="width:15pt;"></td>
-
-                                            <td>
-
-                                                <apex:outputText value="{!quoteRecord.Introduction_Text__c}" escape="false"/>
-
-                                            </td>
-
-                                            <td style="width:15pt;"></td>
-
-                                        </tr>
-
-                                    </table>
-
-                                </apex:outputPanel>
-
-
-
-                            </div>
-
-                        </td>
-
-                    </tr>
 
                 </tbody>
 

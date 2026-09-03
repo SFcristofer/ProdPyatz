@@ -177,11 +177,7 @@ public with sharing class QuoteTechnicalPDFController {
             this.calcDescuento += (subP - totP);
         }
         
-        Decimal headerDiscountPercent = this.technicalQuote.Discount != null ? this.technicalQuote.Discount : 0;
-        Decimal intermediateSubtotal = this.calcSubtotal1 - this.calcDescuento;
-        Decimal headerDiscountAmount = intermediateSubtotal * (headerDiscountPercent / 100.0);
-        
-        this.calcDescuento += headerDiscountAmount;
+        // Header discount removed: line-item discounts already cover the total (see calcDescuento above)
         this.calcSubtotal2 = this.calcSubtotal1 - this.calcDescuento;
         
         if (this.technicalQuote.Tax != null && this.technicalQuote.Tax > 0) {
