@@ -10,10 +10,22 @@
 
         <!-- VISTA EXPEDIENTE 360 (INMERSIÓN OPERATIVA) -->
         <template if:true={is360View}>
-            <c-tech-operations-360 
-                record-id={selectedRecordId} 
+            <c-tech-operations-360
+                record-id={selectedRecordId}
                 onback={handleShowList}>
             </c-tech-operations-360>
+        </template>
+
+        <!-- VISTA DIRECTA A UN PRESUPUESTO (desde el dashboard de la Cuenta) -->
+        <template if:true={isQuoteDirectView}>
+            <div class="slds-m-bottom_small">
+                <lightning-button label="Volver" icon-name="utility:back" onclick={handleShowList}></lightning-button>
+            </div>
+            <c-tech-quote-editor
+                record-id={directQuoteId}
+                opportunity-id={directOppId}
+                oncancel={handleShowList}>
+            </c-tech-quote-editor>
         </template>
 
     </div>

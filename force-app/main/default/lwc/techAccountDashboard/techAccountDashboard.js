@@ -1,4 +1,5 @@
 import { LightningElement, api, wire, track } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
 import getDashboardData  from '@salesforce/apex/AccountDashboardController.getDashboardData';
 import getOpportunities  from '@salesforce/apex/AccountDashboardController.getOpportunities';
 import getQuotes         from '@salesforce/apex/AccountDashboardController.getQuotes';
@@ -7,8 +8,8 @@ import getWorkOrders     from '@salesforce/apex/AccountDashboardController.getWo
 
 const COLS = {
     opp: [
-        { label: 'Oportunidad', fieldName: 'recordUrl', type: 'url',
-          typeAttributes: { label: { fieldName: 'Name' }, target: '_blank' }, sortable: true },
+        { label: 'Oportunidad', type: 'button',
+          typeAttributes: { label: { fieldName: 'Name' }, name: 'open_opp', variant: 'base' }, sortable: true },
         { label: 'Etapa',       fieldName: 'StageName',   sortable: true },
         { label: 'Monto',       fieldName: 'Amount',      type: 'currency',
           typeAttributes: { currencyCode: 'MXN', minimumFractionDigits: 0 }, sortable: true },
@@ -17,8 +18,8 @@ const COLS = {
           cellAttributes: { alignment: 'right' }, sortable: true, initialWidth: 90 },
     ],
     quote: [
-        { label: 'Presupuesto',  fieldName: 'recordUrl', type: 'url',
-          typeAttributes: { label: { fieldName: 'Name' }, target: '_blank' }, sortable: true },
+        { label: 'Presupuesto', type: 'button',
+          typeAttributes: { label: { fieldName: 'Name' }, name: 'open_quote', variant: 'base' }, sortable: true },
         { label: 'Estado',       fieldName: 'Status',         sortable: true },
         { label: 'Total',        fieldName: 'TotalPrice',     type: 'currency',
           typeAttributes: { currencyCode: 'MXN', minimumFractionDigits: 0 }, sortable: true },
@@ -26,8 +27,8 @@ const COLS = {
         { label: 'Vencimiento',  fieldName: 'ExpirationDate', type: 'date-local', sortable: true },
     ],
     contract: [
-        { label: 'Contrato', fieldName: 'recordUrl', type: 'url',
-          typeAttributes: { label: { fieldName: 'Name' }, target: '_blank' }, sortable: true },
+        { label: 'Contrato', type: 'button',
+          typeAttributes: { label: { fieldName: 'Name' }, name: 'open_contract', variant: 'base' }, sortable: true },
         { label: 'Estado',   fieldName: 'ApprovalStatus', sortable: true },
         { label: 'Total',    fieldName: 'TotalPrice',     type: 'currency',
           typeAttributes: { currencyCode: 'MXN', minimumFractionDigits: 0 }, sortable: true },
@@ -35,8 +36,8 @@ const COLS = {
         { label: 'Fin',      fieldName: 'EndDate',        type: 'date-local', sortable: true },
     ],
     wo: [
-        { label: '#',         fieldName: 'recordUrl', type: 'url',
-          typeAttributes: { label: { fieldName: 'WorkOrderNumber' }, target: '_blank' },
+        { label: '#', type: 'button',
+          typeAttributes: { label: { fieldName: 'WorkOrderNumber' }, name: 'open_wo', variant: 'base' },
           sortable: true, initialWidth: 110 },
         { label: 'Asunto',    fieldName: 'Subject',      sortable: true },
         { label: 'Estado',    fieldName: 'Status',       sortable: true },
@@ -53,7 +54,7 @@ const PANEL = {
     wo:       { title: 'Órdenes de Trabajo', icon: 'standard:work_order',  fn: getWorkOrders    },
 };
 
-export default class TechAccountDashboard extends LightningElement {
+export default class TechAccountDashboard extends NavigationMixin(LightningElement) {
     @api recordId;
 
     @track isLoading = true;
@@ -107,8 +108,13 @@ export default class TechAccountDashboard extends LightningElement {
         try {
             const raw = await PANEL[type].fn({ accountId: this.recordId });
             this.panelRecords = raw.map(r => {
-                const row = { ...r, recordUrl: `/lightning/r/${r.Id}/view` };
+                let url = `/lightning/r/${r.Id}/view`;
+                if (type === 'quote') {
+                    url = `/lightning/n/c__techQuoteManagerTab?c__recordId=${r.Id}`;
+                }
+                const row = { ...r, recordUrl: url };
                 if (type === 'quote' && r.Opportunity) row.OpportunityName = r.Opportunity.Name;
+                if (type === 'quote') row.OpportunityId = r.OpportunityId;
                 return row;
             });
         } catch (e) {
@@ -131,5 +137,48 @@ export default class TechAccountDashboard extends LightningElement {
             const bv = b[fieldName] ?? '';
             return av > bv ? factor : av < bv ? -factor : 0;
         });
+    }
+
+    handleRowAction(evt) {
+        const actionName = evt.detail.action.name;
+        const row = evt.detail.row;
+        if (actionName === 'open_quote') {
+            this[NavigationMixin.Navigate]({
+                type: 'standard__component',
+                attributes: {
+                    componentName: 'c__techQuoteManager'
+                },
+                state: {
+                    c__quoteId: row.Id,
+                    c__oppId: row.OpportunityId
+                }
+            });
+        } else if (actionName === 'open_opp') {
+            this[NavigationMixin.Navigate]({
+                type: 'standard__component',
+                attributes: {
+                    componentName: 'c__techQuoteManager'
+                },
+                state: {
+                    c__recordId: row.Id
+                }
+            });
+        } else if (actionName === 'open_wo') {
+            this[NavigationMixin.Navigate]({
+                type: 'standard__recordPage',
+                attributes: {
+                    recordId: row.Id,
+                    actionName: 'view'
+                }
+            });
+        } else if (actionName === 'open_contract') {
+            this[NavigationMixin.Navigate]({
+                type: 'standard__recordPage',
+                attributes: {
+                    recordId: row.Id,
+                    actionName: 'view'
+                }
+            });
+        }
     }
 }

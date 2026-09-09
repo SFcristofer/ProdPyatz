@@ -406,11 +406,12 @@ export default class TechOperations360 extends NavigationMixin(LightningElement)
 
     connectedCallback() {
         if (this.recordId) {
-            if (this.objectApiName === 'Opportunity') {
+            const isOpp = this.objectApiName === 'Opportunity' || String(this.recordId).startsWith('006');
+            if (isOpp) {
                 this.activeOppId = this.recordId;
                 this.quoteViewMode = 'list';
                 this.loadProcessHistory();
-            } else if (this.isAccountContext) {
+            } else if (this.isAccountContext || String(this.recordId).startsWith('001')) {
                 this.activeOppId = null;
                 this.loadOpportunities();
             }
@@ -419,6 +420,7 @@ export default class TechOperations360 extends NavigationMixin(LightningElement)
             this.viewingDashboard = true;
         }
     }
+
 
     get showDashboard() { 
         if (this.isAccountContext) return !this.activeOppId || this.viewingDashboard;
@@ -603,6 +605,11 @@ export default class TechOperations360 extends NavigationMixin(LightningElement)
         const fields = event.detail.fields;
         fields.Tipo_de_venta__c = this.selectedTipoVenta;
         
+        // Ensure AccountId is explicitly set to prevent orphaned opportunities
+        if (this.recordId && String(this.recordId).startsWith('001')) {
+            fields.AccountId = this.recordId;
+        }
+        
         // Ejecutamos el envío manualmente
         this.template.querySelector('.creation-form').submit(fields);
     }
@@ -619,6 +626,7 @@ export default class TechOperations360 extends NavigationMixin(LightningElement)
         this.currentSubStep = '1';
         this.quoteViewMode = 'list';
         this.loadProcessHistory();
+        if (this.isAccountContext) this.loadOpportunities();
     }
 
     navigateToGlobalAction(actionName) {

@@ -39,7 +39,7 @@ public with sharing class OperationsController {
         return result;
     }
 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static List<Map<String, Object>> getOpportunitiesByAccount(Id accountId) {
         List<Map<String, Object>> results = new List<Map<String, Object>>();
         for (Opportunity o : [SELECT Id, Name, StageName, Amount, CloseDate, Owner.Name, Account.Name, Subetapa__c, Estado_Subetapa__c, Estado_Oportunidad__c FROM Opportunity WHERE AccountId = :accountId ORDER BY CreatedDate DESC]) {

@@ -135,6 +135,16 @@ export default class TechQuoteList extends NavigationMixin(LightningElement) {
             this.showCloneModal = true;
         } else if (actionName === 'send_email') {
             this.openEmailComposer(row.id);
+        } else if (actionName === 'pdf') {
+            if (row.monto && row.monto > 0) {
+                window.open(`/apex/QuoteTechnicalPDF?id=${row.id}&t=${Date.now()}`, '_blank');
+            } else {
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Cotización vacía',
+                    message: 'No puedes descargar el PDF porque la cotización no tiene partidas o el monto es $0.',
+                    variant: 'warning'
+                }));
+            }
         }
     }
 

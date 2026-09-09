@@ -78,7 +78,7 @@ public with sharing class AccountDashboardController {
         return result;
     }
 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static List<Opportunity> getOpportunities(Id accountId) {
         return [
             SELECT Id, Name, StageName, Amount, CloseDate, Probability
@@ -89,10 +89,10 @@ public with sharing class AccountDashboardController {
         ];
     }
 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static List<Quote> getQuotes(Id accountId) {
         return [
-            SELECT Id, Name, Status, TotalPrice, ExpirationDate, Opportunity.Name
+            SELECT Id, Name, Status, TotalPrice, ExpirationDate, OpportunityId, Opportunity.Name
             FROM Quote
             WHERE AccountId = :accountId
             ORDER BY CreatedDate DESC
@@ -100,7 +100,7 @@ public with sharing class AccountDashboardController {
         ];
     }
 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static List<ServiceContract> getContracts(Id accountId) {
         return [
             SELECT Id, Name, ApprovalStatus, StartDate, EndDate, TotalPrice
@@ -111,7 +111,7 @@ public with sharing class AccountDashboardController {
         ];
     }
 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static List<WorkOrder> getWorkOrders(Id accountId) {
         return [
             SELECT Id, WorkOrderNumber, Subject, Status, Priority, CreatedDate

@@ -281,13 +281,13 @@
                         </div>
                             
                             <!-- Campo oculto para vinculación automática al cliente actual -->
-                            <div class="slds-hide">
-                                <lightning-input-field field-name="AccountId" value={recordId}></lightning-input-field>
+                            <div style="visibility:hidden; height:0; width:0;">
+                                <lightning-input-field field-name="AccountId"></lightning-input-field>
                             </div>
 
                         <div class="slds-m-top_medium slds-text-align_right">
                             <lightning-button label="Cancelar" onclick={closeCreationModal} class="slds-m-right_small"></lightning-button>
-                            <lightning-button type="submit" label="Crear e Iniciar 360" variant="brand"></lightning-button>
+                            <lightning-button type="submit" label="Crear Proyecto 360" variant="brand"></lightning-button>
                         </div>
                     </lightning-record-edit-form>
                 </div>
