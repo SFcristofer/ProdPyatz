@@ -1,4 +1,5 @@
 import { LightningElement, track, wire, api } from 'lwc';
+import { refreshApex } from '@salesforce/apex';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { NavigationMixin } from 'lightning/navigation';
 import getQuotesList from '@salesforce/apex/QuoteController.getQuotesList';
@@ -88,8 +89,12 @@ export default class TechQuoteList extends NavigationMixin(LightningElement) {
         }
     }
 
+    wiredQuotesResult;
+
     @wire(getQuotesList, { opportunityId: '$opportunityId' })
-    wiredQuotes({ error, data }) {
+    wiredQuotes(result) {
+        this.wiredQuotesResult = result;
+        const { error, data } = result;
         this.isLoading = true;
         if (data) {
             this.quotes = data.map(q => {
@@ -121,6 +126,15 @@ export default class TechQuoteList extends NavigationMixin(LightningElement) {
 
     handleNewQuote() {
         this.dispatchEvent(new CustomEvent('createnew'));
+    }
+
+    handleRefresh() {
+        if (this.wiredQuotesResult) {
+            this.isLoading = true;
+            refreshApex(this.wiredQuotesResult).finally(() => {
+                this.isLoading = false;
+            });
+        }
     }
 
     handleRowAction(event) {
@@ -235,6 +249,11 @@ export default class TechQuoteList extends NavigationMixin(LightningElement) {
                 }));
                 this.isLoadingClone = false;
                 this.showCloneModal = false;
+                
+                if (this.wiredQuotesResult) {
+                    refreshApex(this.wiredQuotesResult);
+                }
+                
                 this.dispatchEvent(new CustomEvent('editquote', { detail: newQuoteId }));
             })
             .catch(error => {
