@@ -24,6 +24,7 @@ public with sharing class QuoteTechnicalPDFController {
     public Boolean showQuantityCol {get; set;}
     public Boolean showUnitPriceCol {get; set;}
     public Boolean showTotalPriceCol {get; set;}
+    public Boolean showDiscountCol {get; set;}
 
     public Integer dynamicColspan {get; set;}
 
@@ -36,10 +37,10 @@ public with sharing class QuoteTechnicalPDFController {
                                      Show_Introduction__c, Introduction_Text__c, Phone, Email, Discount,
                                      Show_Warranty__c, Warranty_Text__c, Markers_Data__c, Show_Subtotal__c, Show_Tax__c,
                                      Show_Discount__c, Show_Subtotal_2__c, Show_Total__c,
-                                     Show_Quantity__c, Show_UnitPrice__c, Show_TotalPrice__c,
+                                     Show_Quantity__c, Show_UnitPrice__c, Show_TotalPrice__c, Show_Discount_Column__c,
                                      Business_Lines_Selected__c, Technical_Sedes__c, CreatedBy.Name, CreatedBy.Email, CreatedDate,
                                      Subtotal, Tax, TotalPrice, Description,
-                                     (SELECT Id, Product2.Name, Product2.ProductCode, Description, Pyatz_Technical_Description__c, Descripcion_Detallada__c, Quantity, ListPrice, UnitPrice, Discount, TotalPrice
+                                     (SELECT Id, Product2.Name, Product2.ProductCode, Description, Pyatz_Technical_Description__c, Descripcion_Detallada__c, Quantity, ListPrice, UnitPrice, Discount, Descuento_Adicional__c, TotalPrice
                                       FROM QuoteLineItems)
                               FROM Quote 
                               WHERE Id = :quoteId];
@@ -152,11 +153,13 @@ public with sharing class QuoteTechnicalPDFController {
         this.showQuantityCol = this.technicalQuote.Show_Quantity__c != null ? this.technicalQuote.Show_Quantity__c : true;
         this.showUnitPriceCol = this.technicalQuote.Show_UnitPrice__c != null ? this.technicalQuote.Show_UnitPrice__c : true;
         this.showTotalPriceCol = this.technicalQuote.Show_TotalPrice__c != null ? this.technicalQuote.Show_TotalPrice__c : true;
+        this.showDiscountCol = this.technicalQuote.Show_Discount_Column__c != null ? this.technicalQuote.Show_Discount_Column__c : false;
 
         this.dynamicColspan = 1;
         if (this.showQuantityCol) this.dynamicColspan++;
         if (this.showUnitPriceCol) this.dynamicColspan++;
         if (this.showTotalPriceCol) this.dynamicColspan++;
+        if (this.showDiscountCol) this.dynamicColspan++;
         
         if(this.technicalQuote.Show_Warranty__c == true && String.isNotBlank(this.technicalQuote.Warranty_Text__c)){
             this.technicalQuote.Warranty_Text__c = fixListStyles(this.technicalQuote.Warranty_Text__c);

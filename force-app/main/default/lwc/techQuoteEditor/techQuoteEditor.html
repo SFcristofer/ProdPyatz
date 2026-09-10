@@ -244,13 +244,16 @@
                         <div class="slds-p-around_medium bg-white border-top">
                             <div class="slds-text-title_bold slds-m-bottom_small" style="color: #0a315e;">Columnas en PDF (Productos)</div>
                             <div class="slds-grid slds-wrap slds-gutters_small">
-                                <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-3">
+                                <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4">
                                     <lightning-input type="checkbox" label="Ver Cantidad" checked={showQuantityCol} onchange={handleShowQuantityColChange}></lightning-input>
                                 </div>
-                                <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-3">
+                                <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4">
                                     <lightning-input type="checkbox" label="Ver P. Unitario" checked={showUnitPriceCol} onchange={handleShowUnitPriceColChange}></lightning-input>
                                 </div>
-                                <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-3">
+                                <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4">
+                                    <lightning-input type="checkbox" label="Ver Descuento" checked={showDiscountCol} onchange={handleShowDiscountColChange}></lightning-input>
+                                </div>
+                                <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4">
                                     <lightning-input type="checkbox" label="Ver Importe / Total" checked={showTotalPriceCol} onchange={handleShowTotalPriceColChange}></lightning-input>
                                 </div>
                             </div>

@@ -24,6 +24,7 @@ public with sharing class QuoteEngineService {
             Boolean showQuantityCol = p.containsKey('showQuantityCol') ? (Boolean)p.get('showQuantityCol') : true;
             Boolean showUnitPriceCol = p.containsKey('showUnitPriceCol') ? (Boolean)p.get('showUnitPriceCol') : true;
             Boolean showTotalPriceCol = p.containsKey('showTotalPriceCol') ? (Boolean)p.get('showTotalPriceCol') : true;
+            Boolean showDiscountCol = p.containsKey('showDiscountCol') ? (Boolean)p.get('showDiscountCol') : false;
 
             Quote q;
             String businessLines = (String)p.get('businessLines');
@@ -44,6 +45,7 @@ public with sharing class QuoteEngineService {
                 q.Show_Quantity__c = showQuantityCol;
                 q.Show_UnitPrice__c = showUnitPriceCol;
                 q.Show_TotalPrice__c = showTotalPriceCol;
+                q.Show_Discount_Column__c = showDiscountCol;
                 update q;
             } else {
                 if (oppId == null && rid != null && rid.getSObjectType().getDescribe().getName() == 'Opportunity') oppId = rid;
@@ -64,7 +66,8 @@ public with sharing class QuoteEngineService {
                     Show_Total__c = showTotal,
                     Show_Quantity__c = showQuantityCol,
                     Show_UnitPrice__c = showUnitPriceCol,
-                    Show_TotalPrice__c = showTotalPriceCol
+                    Show_TotalPrice__c = showTotalPriceCol,
+                    Show_Discount_Column__c = showDiscountCol
                 );
                 insert q; rid = q.Id;
             }

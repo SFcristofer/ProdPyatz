@@ -124,13 +124,24 @@
                                 <tr style="page-break-after:avoid;">
                                     <th style="text-align:center;">Concepto / Servicio</th>
                                     <th width="10%" style="text-align:center; display:{!IF(showQuantityCol, 'table-cell', 'none')};">Cant</th>
-                                    <th width="20%" style="text-align:center; display:{!IF(showUnitPriceCol, 'table-cell', 'none')};">P. Unitario</th>
-                                    <th width="20%" style="text-align:center; display:{!IF(showTotalPriceCol, 'table-cell', 'none')};">Importe</th>
+                                    <th width="15%" style="text-align:center; display:{!IF(showUnitPriceCol, 'table-cell', 'none')};">P. Unitario</th>
+                                    <th width="10%" style="text-align:center; display:{!IF(showDiscountCol, 'table-cell', 'none')};">Desc.</th>
+                                    <th width="15%" style="text-align:center; display:{!IF(showTotalPriceCol, 'table-cell', 'none')};">Importe</th>
                                 </tr>
                                 <tr class="row-item" style="page-break-inside:avoid;">
                                     <td style="text-align:center;"><strong>{!item.Product2.Name}</strong></td>
                                     <td style="text-align:center; display:{!IF(showQuantityCol, 'table-cell', 'none')};"><apex:outputText value="{0, number, 0}"><apex:param value="{!item.Quantity}"/></apex:outputText></td>
                                     <td style="text-align:center; display:{!IF(showUnitPriceCol, 'table-cell', 'none')};"><apex:outputText value="{0, number, currency}"><apex:param value="{!BLANKVALUE(item.UnitPrice, 0)}"/></apex:outputText></td>
+                                    <td style="text-align:center; display:{!IF(showDiscountCol, 'table-cell', 'none')};">
+                                        <apex:outputPanel rendered="{!item.Descuento_Adicional__c != null && item.Descuento_Adicional__c > 0}">
+                                            <apex:outputText value="{0, number, currency}">
+                                                <apex:param value="{!item.Descuento_Adicional__c}"/>
+                                            </apex:outputText>
+                                        </apex:outputPanel>
+                                        <apex:outputPanel rendered="{!item.Descuento_Adicional__c == null || item.Descuento_Adicional__c <= 0}">
+                                            -
+                                        </apex:outputPanel>
+                                    </td>
                                     <td style="text-align:center; display:{!IF(showTotalPriceCol, 'table-cell', 'none')};"><apex:outputText value="{0, number, currency}"><apex:param value="{!BLANKVALUE(item.TotalPrice, 0)}"/></apex:outputText></td>
                                 </tr>
                                 <apex:outputPanel rendered="{!NOT(ISBLANK(item.Descripcion_Detallada__c))}" layout="none">

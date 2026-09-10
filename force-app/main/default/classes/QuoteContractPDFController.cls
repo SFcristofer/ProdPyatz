@@ -18,6 +18,7 @@ public with sharing class QuoteContractPDFController {
     public Boolean showQuantityCol {get; set;}
     public Boolean showUnitPriceCol {get; set;}
     public Boolean showTotalPriceCol {get; set;}
+    public Boolean showDiscountCol {get; set;}
     public Integer dynamicColspan {get; set;}
 
     

@@ -201,6 +201,7 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
                     this.showQuantityCol = q.Show_Quantity__c !== undefined ? q.Show_Quantity__c : true;
                     this.showUnitPriceCol = q.Show_UnitPrice__c !== undefined ? q.Show_UnitPrice__c : true;
                     this.showTotalPriceCol = q.Show_TotalPrice__c !== undefined ? q.Show_TotalPrice__c : true;
+                    this.showDiscountCol = q.Show_Discount_Column__c !== undefined ? q.Show_Discount_Column__c : false;
                     if (q.Account) this.clienteNombre = q.Account.Name;
                     if (q.Markers_Data__c) {
                         try {
@@ -588,7 +589,8 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
             showTotal: this.showTotal,
             showQuantityCol: this.showQuantityCol,
             showUnitPriceCol: this.showUnitPriceCol,
-            showTotalPriceCol: this.showTotalPriceCol
+            showTotalPriceCol: this.showTotalPriceCol,
+            showDiscountCol: this.showDiscountCol
         };
 
         try {
@@ -745,6 +747,7 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
     handleShowQuantityColChange(event) { this.showQuantityCol = event.target.checked; }
     handleShowUnitPriceColChange(event) { this.showUnitPriceCol = event.target.checked; }
     handleShowTotalPriceColChange(event) { this.showTotalPriceCol = event.target.checked; }
+    handleShowDiscountColChange(event) { this.showDiscountCol = event.target.checked; }
 
     handleOpenSeparatorModal() { this.showSeparatorModal = true; }
     handleCloseSeparatorModal() { this.showSeparatorModal = false; }
