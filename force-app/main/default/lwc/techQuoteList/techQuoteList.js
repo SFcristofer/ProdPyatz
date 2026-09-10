@@ -5,6 +5,7 @@ import { NavigationMixin } from 'lightning/navigation';
 import getQuotesList from '@salesforce/apex/QuoteController.getQuotesList';
 import getQuoteStats from '@salesforce/apex/QuoteController.getQuoteStats';
 import cloneQuote from '@salesforce/apex/QuoteController.cloneQuote';
+import deleteQuotes from '@salesforce/apex/QuoteController.deleteQuotes';
 import searchSedes from '@salesforce/apex/QuoteController.searchSedes';
 import searchProspectos from '@salesforce/apex/QuoteController.searchProspectos';
 
@@ -14,6 +15,11 @@ export default class TechQuoteList extends NavigationMixin(LightningElement) {
     @track quotes = [];
     @track stats = { Total: 0, Aprobada: 0, Pendiente: 0, Rechazada: 0, Actualizada: 0 };
     @track isLoading = true;
+    @track selectedRows = [];
+
+    get hasSelectedRows() {
+        return this.selectedRows && this.selectedRows.length > 0;
+    }
 
     // CLONING STATE (IGEOAPP STYLE)
     @track showCloneModal = false;
@@ -134,6 +140,48 @@ export default class TechQuoteList extends NavigationMixin(LightningElement) {
             refreshApex(this.wiredQuotesResult).finally(() => {
                 this.isLoading = false;
             });
+        }
+    }
+
+    handleRowSelection(event) {
+        this.selectedRows = event.detail.selectedRows;
+    }
+
+    handleDeleteSelected() {
+        if (this.selectedRows.length === 0) {
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Atención',
+                message: 'Debes seleccionar al menos un registro para poder eliminar.',
+                variant: 'warning'
+            }));
+            return;
+        }
+        
+        if (window.confirm(`¿Estás seguro de que deseas eliminar ${this.selectedRows.length} presupuesto(s)?`)) {
+            this.isLoading = true;
+            const quoteIds = this.selectedRows.map(row => row.id);
+            deleteQuotes({ quoteIds })
+                .then(() => {
+                    this.dispatchEvent(new ShowToastEvent({
+                        title: 'Éxito',
+                        message: 'Presupuestos eliminados correctamente',
+                        variant: 'success'
+                    }));
+                    this.selectedRows = [];
+                    if (this.wiredQuotesResult) {
+                        refreshApex(this.wiredQuotesResult);
+                    }
+                })
+                .catch(error => {
+                    this.dispatchEvent(new ShowToastEvent({
+                        title: 'Error al eliminar',
+                        message: error.body ? error.body.message : 'Error desconocido',
+                        variant: 'error'
+                    }));
+                })
+                .finally(() => {
+                    this.isLoading = false;
+                });
         }
     }
 

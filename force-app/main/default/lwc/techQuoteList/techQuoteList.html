@@ -105,6 +105,7 @@
                         <h2 class="slds-text-heading_small">Listado de Presupuestos</h2>
                     </div>
                     <div class="slds-grid slds-grid_vertical-align-center">
+                        <lightning-button label="Eliminar" icon-name="utility:delete" variant="destructive" class="slds-m-right_small" onclick={handleDeleteSelected}></lightning-button>
                         <lightning-input type="search" variant="label-hidden" placeholder="Buscar..."></lightning-input>
                     </div>
                 </div>
@@ -116,7 +117,7 @@
                         key-field="id"
                         data={quotes}
                         columns={columns}
-                        hide-checkbox-column
+                        onrowselection={handleRowSelection}
                         onrowaction={handleRowAction}>
                     </lightning-datatable>
                 </div>

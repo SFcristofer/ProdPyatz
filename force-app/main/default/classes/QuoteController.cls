@@ -106,6 +106,17 @@ public with sharing class QuoteController {
         } catch (Exception e) { throw new AuraHandledException(e.getMessage()); }
     }
 
+    @AuraEnabled
+    public static void deleteQuotes(List<Id> quoteIds) {
+        try {
+            if (quoteIds != null && !quoteIds.isEmpty()) {
+                delete [SELECT Id FROM Quote WHERE Id IN :quoteIds];
+            }
+        } catch (Exception e) {
+            throw new AuraHandledException('Error al eliminar presupuestos: ' + e.getMessage());
+        }
+    }
+
     @AuraEnabled(cacheable=true)
     public static List<Analisis_PL__c> getPLAnalysis(Id quoteId) {
         return QuoteSelector.getPLAnalysisByQuoteId(quoteId);
