@@ -14,6 +14,7 @@ import getInternalTeam from '@salesforce/apex/CommunicationController.getInterna
 import searchInternalUsers from '@salesforce/apex/CommunicationController.searchInternalUsers';
 import getPyatzQueues from '@salesforce/apex/CommunicationController.getPyatzQueues';
 import sendInternalEmail from '@salesforce/apex/CommunicationController.sendInternalEmail';
+import { refreshApex } from '@salesforce/apex';
 
 export default class TechCommunicationHub extends NavigationMixin(LightningElement) {
     @api recordId; // Opportunity ID
@@ -27,6 +28,23 @@ export default class TechCommunicationHub extends NavigationMixin(LightningEleme
     @track sedeContacts = [];
     @track internalContacts = [];
     
+    @track attSections = {
+        quotes: true,
+        surveys: true,
+        files: true,
+        fichas: true
+    };
+
+    toggleAttSection(event) {
+        const sec = event.currentTarget.dataset.sec;
+        this.attSections[sec] = !this.attSections[sec];
+    }
+    
+    get iconQuotes() { return this.attSections.quotes ? 'utility:chevrondown' : 'utility:chevronright'; }
+    get iconSurveys() { return this.attSections.surveys ? 'utility:chevrondown' : 'utility:chevronright'; }
+    get iconFiles() { return this.attSections.files ? 'utility:chevrondown' : 'utility:chevronright'; }
+    get iconFichas() { return this.attSections.fichas ? 'utility:chevrondown' : 'utility:chevronright'; }
+
     @track toEmail = '';
     @track ccEmail = '';
     @track bccEmail = '';
@@ -48,6 +66,27 @@ export default class TechCommunicationHub extends NavigationMixin(LightningEleme
 
     get isInternalMode() {
         return this.folderName === 'Enhorabuena';
+    }
+
+    get acceptedFormats() {
+        return ['.pdf', '.png', '.jpg', '.jpeg', '.docx', '.xlsx', '.csv'];
+    }
+
+    handleUploadFinished(event) {
+        // Los archivos han sido cargados al registro actual (Opportunity)
+        const uploadedFiles = event.detail.files;
+        
+        let fileNames = uploadedFiles.map(file => file.name).join(', ');
+        this.dispatchEvent(
+            new ShowToastEvent({
+                title: 'Éxito',
+                message: uploadedFiles.length + ' archivo(s) subido(s) correctamente: ' + fileNames,
+                variant: 'success',
+            }),
+        );
+        
+        // Refrescar la lista de adjuntos disponibles para el correo
+        this.loadAttachments();
     }
 
     @wire(getRecord, { recordId: '$recordId', fields: [STAGE_FIELD, SUBETAPA_FIELD] })
@@ -161,15 +200,27 @@ export default class TechCommunicationHub extends NavigationMixin(LightningEleme
         return this.folderName ? [this.folderName] : ['Pyatz-CORREOS A CLIENTES', 'Pyatz-CORREOS INTERNOS'];
     }
 
+    wiredAttachmentsResult;
+
     @wire(getAvailableAttachments, { oppId: '$recordId' })
-    wiredAttachments({ error, data }) {
+    wiredAttachments(result) {
+        this.wiredAttachmentsResult = result;
         this.isLoadingAttachments = true;
-        if (data) {
-            this.availableAttachments = data;
+        if (result.data) {
+            this.availableAttachments = result.data;
             this.isLoadingAttachments = false;
-        } else if (error) {
-            console.error('Error loading attachments:', error);
+        } else if (result.error) {
+            console.error('Error loading attachments:', result.error);
             this.isLoadingAttachments = false;
+        }
+    }
+
+    loadAttachments() {
+        if (this.wiredAttachmentsResult) {
+            this.isLoadingAttachments = true;
+            refreshApex(this.wiredAttachmentsResult).finally(() => {
+                this.isLoadingAttachments = false;
+            });
         }
     }
 

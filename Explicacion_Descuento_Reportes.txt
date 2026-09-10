@@ -1,0 +1,22 @@
+=============================================================
+GUÍA PARA REPORTES DE DESCUENTOS EN COTIZACIONES
+=============================================================
+
+Al crear reportes en Salesforce que involucren descuentos en las cotizaciones, es crucial entender la diferencia entre los dos campos disponibles en el objeto "Partida de presupuesto" (QuoteLineItem):
+
+1. CAMPO NATIVO: "Descuento" (Discount)
+- Tipo: Porcentaje.
+- Uso interno: Salesforce lo utiliza obligatoriamente para calcular de forma matemática el Precio Total de la partida y poder sincronizar correctamente con la Oportunidad.
+- Cómo funciona: Si en la pantalla escribes un descuento de $500.00 MXN para un servicio de $32,000 MXN, el código lo convierte a un porcentaje (ej. 1.52%) y lo guarda aquí.
+- En reportes: NO se recomienda usar este campo para sumar montos, ya que te mostrará el porcentaje (1.52) y la suma total de los porcentajes no tiene valor financiero directo.
+
+2. CAMPO NUEVO: "Descuento Adicional" (Descuento_Adicional__c)
+- Tipo: Fórmula (Moneda).
+- Fórmula interna: (Precio Unitario × Cantidad) * Descuento
+- Dónde encontrarlo: En el Gestor de Objetos -> "Partida de presupuesto" (QuoteLineItem).
+- Uso: Este campo fue creado exclusivamente para visualización en el PDF y para Reportes financieros. 
+- En reportes: Este es el campo que SIEMPRE debes usar cuando quieras ver o sumar el dinero exacto que se descontó. Te mostrará directamente los $500.00 MXN y te permitirá hacer sumatorias exactas en tus columnas.
+
+RESUMEN:
+- Para totales y matemáticas internas del sistema -> Salesforce usa el campo nativo "Descuento" (Porcentaje).
+- Para PDFs y reportes de gerencia o financieros -> Utiliza el campo "Descuento Adicional" (Moneda).

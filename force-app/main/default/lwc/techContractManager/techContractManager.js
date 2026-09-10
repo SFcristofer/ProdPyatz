@@ -149,6 +149,29 @@ export default class TechContractManager extends NavigationMixin(LightningElemen
                     this.isLoading = false;
                 }
                 
+                // --- RECUPERAR DATOS DEL CONTRATO EXISTENTE ---
+                if (result.existingContract) {
+                    const ec = result.existingContract;
+                    if (ec.StartDate) this.fechaInicioContrato = ec.StartDate;
+                    if (ec.EndDate) this.fechaFinContrato = ec.EndDate;
+                    if (ec.First_Service_Date__c) this.fechaPrimerServicio = ec.First_Service_Date__c;
+                    if (ec.Service_Limit_Date__c) this.fechaLimiteServicio = ec.Service_Limit_Date__c;
+                    if (ec.Private_Observations__c) this.observacionesPrivadas = ec.Private_Observations__c;
+                    if (ec.Renewal_Observations__c) this.observacionesRenovacion = ec.Renewal_Observations__c;
+                    if (ec.Legal_Content__c) this.contenidoLegal = ec.Legal_Content__c;
+                    if (ec.Description) this.introduccionPresupuesto = ec.Description;
+                    
+                    if (ec.Contract_Creator__c && ec.Contract_Creator__r) {
+                        this.selectedCreator = { id: ec.Contract_Creator__c, name: ec.Contract_Creator__r.Name };
+                    }
+                    if (ec.Contract_Manager__c && ec.Contract_Manager__r) {
+                        this.selectedManager = { id: ec.Contract_Manager__c, name: ec.Contract_Manager__r.Name };
+                    }
+                    if (ec.Client_Signer__c) {
+                        this.selectedClientSigner = ec.Client_Signer__c;
+                    }
+                }
+                
                 this.fetchTemplates();
             })
             .catch(error => {

@@ -286,6 +286,16 @@ public with sharing class QuoteController {
             result.put('historicalZones', [SELECT Id, Name, Tipo_de_Servicio__c, Detalle_Tecnico__c, Levantamiento_Tecnico__c 
                                           FROM Zona_Servicio_Pyatz__c 
                                           WHERE Cotizacion__c = :opp.SyncedQuoteId]);
+                                          
+            // RECUPERAR EL CONTRATO PREVIAMENTE GUARDADO (Para que no se pierdan los datos al regresar a la pestaña)
+            List<ServiceContract> existingContracts = [SELECT Id, StartDate, EndDate, First_Service_Date__c, Service_Limit_Date__c,
+                                                      Legal_Content__c, Private_Observations__c, Renewal_Observations__c, Description,
+                                                      Contract_Creator__c, Contract_Creator__r.Name, Contract_Manager__c, Contract_Manager__r.Name,
+                                                      Client_Signer__c, Client_Signer__r.Name 
+                                                      FROM ServiceContract WHERE Quote_Source__c = :opp.SyncedQuoteId ORDER BY CreatedDate DESC LIMIT 1];
+            if (!existingContracts.isEmpty()) {
+                result.put('existingContract', existingContracts[0]);
+            }
         }
         return result;
     }
@@ -297,12 +307,18 @@ public with sharing class QuoteController {
             String scName = 'Contrato: ' + q.QuoteNumber + ' - ' + q.Name;
             
             // 1. Crear o actualizar Contrato base
-            ServiceContract sc = new ServiceContract(
-                Name = scName, 
-                AccountId = q.AccountId, 
-                Pricebook2Id = q.Pricebook2Id,
-                Quote_Source__c = quoteId
-            );
+            List<ServiceContract> existingContracts = [SELECT Id FROM ServiceContract WHERE Quote_Source__c = :quoteId LIMIT 1];
+            ServiceContract sc = new ServiceContract();
+            
+            if (!existingContracts.isEmpty()) {
+                sc = existingContracts[0];
+            } else {
+                sc.Name = scName;
+                sc.AccountId = q.AccountId;
+                sc.Pricebook2Id = q.Pricebook2Id;
+                sc.Quote_Source__c = quoteId;
+            }
+
             if (contractData.containsKey('fechaInicioContrato')) sc.StartDate = Date.valueOf((String)contractData.get('fechaInicioContrato'));
             if (contractData.containsKey('fechaVencimiento')) sc.EndDate = Date.valueOf((String)contractData.get('fechaVencimiento'));
             if (contractData.containsKey('contenidoLegal')) sc.Legal_Content__c = (String)contractData.get('contenidoLegal');
@@ -332,10 +348,15 @@ public with sharing class QuoteController {
                 sc.Client_Signer__c = (Id)contractData.get('clientSignerId');
             }
             
-            insert sc;
+            upsert sc;
 
             // 2. SINCRONIZACIÓN DE MATERIALIDAD: Crear partidas de contrato con vínculos técnicos
             if (contractData.containsKey('lineItemsJson')) {
+                // Borrar partidas anteriores para evitar duplicados en cada actualización
+                if (!existingContracts.isEmpty()) {
+                    delete [SELECT Id FROM ContractLineItem WHERE ServiceContractId = :sc.Id];
+                }
+
                 List<Object> items = (List<Object>)JSON.deserializeUntyped((String)contractData.get('lineItemsJson'));
                 List<ContractLineItem> clis = new List<ContractLineItem>();
                 for (Object obj : items) {

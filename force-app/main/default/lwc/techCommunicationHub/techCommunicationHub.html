@@ -130,46 +130,70 @@
                                     
                                     <template if:false={isLoadingAttachments}>
                                         <div class="slds-p-horizontal_x-small">
-                                            <div class="att-group-title first-group">
+                                            <div class="att-group-title first-group" data-sec="quotes" onclick={toggleAttSection} style="cursor: pointer;">
+                                                <lightning-icon icon-name={iconQuotes} size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
                                                 <lightning-icon icon-name="utility:quote" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
                                                 Presupuestos
                                             </div>
-                                            <template for:each={availableAttachments.quotes} for:item="quote">
-                                                <div key={quote.id} class="att-item">
-                                                    <lightning-input type="checkbox" label={quote.name} data-id={quote.id} data-type="Quote" onchange={handleAttachmentToggle}></lightning-input>
-                                                </div>
+                                            <template if:true={attSections.quotes}>
+                                                <template for:each={availableAttachments.quotes} for:item="quote">
+                                                    <div key={quote.id} class="att-item slds-grid slds-grid_vertical-align-center slds-m-bottom_xx-small">
+                                                        <lightning-input class="slds-col" type="checkbox" label={quote.name} data-id={quote.id} data-type="Quote" onchange={handleAttachmentToggle}></lightning-input>
+                                                        <a href={quote.downloadUrl} target="_blank" class="slds-m-left_x-small" title="Ver/Descargar PDF">
+                                                            <lightning-icon icon-name="utility:download" size="xx-small" class="slds-icon-text-default"></lightning-icon>
+                                                        </a>
+                                                    </div>
+                                                </template>
                                             </template>
 
-                                            <div class="att-group-title">
+                                            <div class="att-group-title" data-sec="surveys" onclick={toggleAttSection} style="cursor: pointer;">
+                                                <lightning-icon icon-name={iconSurveys} size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
                                                 <lightning-icon icon-name="utility:survey" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
                                                 Levantamientos
                                             </div>
-                                            <template for:each={availableAttachments.surveys} for:item="survey">
-                                                <div key={survey.name} class="att-item">
-                                                    <lightning-input type="checkbox" label={survey.name} data-id={survey.id} data-type="Survey" onchange={handleAttachmentToggle}></lightning-input>
-                                                </div>
+                                            <template if:true={attSections.surveys}>
+                                                <template for:each={availableAttachments.surveys} for:item="survey">
+                                                    <div key={survey.name} class="att-item slds-grid slds-grid_vertical-align-center slds-m-bottom_xx-small">
+                                                        <lightning-input class="slds-col" type="checkbox" label={survey.name} data-id={survey.id} data-type="Survey" onchange={handleAttachmentToggle}></lightning-input>
+                                                        <a href={survey.downloadUrl} target="_blank" class="slds-m-left_x-small" title="Ver/Descargar PDF">
+                                                            <lightning-icon icon-name="utility:download" size="xx-small" class="slds-icon-text-default"></lightning-icon>
+                                                        </a>
+                                                    </div>
+                                                </template>
                                             </template>
 
-                                            <div class="att-group-title">
+                                            <div class="att-group-title" data-sec="files" onclick={toggleAttSection} style="cursor: pointer;">
+                                                <lightning-icon icon-name={iconFiles} size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
                                                 <lightning-icon icon-name="utility:pdf_ext" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
-                                                Archivos PDF
+                                                Archivos Adicionales
                                             </div>
-                                            <template for:each={availableAttachments.files} for:item="file">
-                                                <div key={file.id} class="att-item">
-                                                    <lightning-input type="checkbox" label={file.name} data-id={file.id} data-type="File" onchange={handleAttachmentToggle}></lightning-input>
-                                                </div>
+                                            <template if:true={attSections.files}>
+                                                <template for:each={availableAttachments.files} for:item="file">
+                                                    <div key={file.id} class="att-item slds-grid slds-grid_vertical-align-center slds-m-bottom_xx-small">
+                                                        <lightning-input class="slds-col" type="checkbox" label={file.name} data-id={file.id} data-type="File" onchange={handleAttachmentToggle}></lightning-input>
+                                                        <a href={file.downloadUrl} target="_blank" class="slds-m-left_x-small" title="Ver/Descargar">
+                                                            <lightning-icon icon-name="utility:download" size="xx-small" class="slds-icon-text-default"></lightning-icon>
+                                                        </a>
+                                                    </div>
+                                                </template>
                                             </template>
 
                                             <!-- FICHAS TÉCNICAS -->
                                             <template if:true={availableAttachments.fichas.length}>
-                                                <div class="att-group-title">
+                                                <div class="att-group-title" data-sec="fichas" onclick={toggleAttSection} style="cursor: pointer;">
+                                                    <lightning-icon icon-name={iconFichas} size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
                                                     <lightning-icon icon-name="utility:catalog" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
                                                     Fichas Técnicas
                                                 </div>
-                                                <template for:each={availableAttachments.fichas} for:item="ficha">
-                                                    <div key={ficha.id} class="att-item">
-                                                        <lightning-input type="checkbox" label={ficha.name} data-id={ficha.id} data-type="File" onchange={handleAttachmentToggle}></lightning-input>
-                                                    </div>
+                                                <template if:true={attSections.fichas}>
+                                                    <template for:each={availableAttachments.fichas} for:item="ficha">
+                                                        <div key={ficha.id} class="att-item slds-grid slds-grid_vertical-align-center slds-m-bottom_xx-small">
+                                                            <lightning-input class="slds-col" type="checkbox" label={ficha.name} data-id={ficha.id} data-type="File" onchange={handleAttachmentToggle}></lightning-input>
+                                                            <a href={ficha.downloadUrl} target="_blank" class="slds-m-left_x-small" title="Ver/Descargar">
+                                                                <lightning-icon icon-name="utility:download" size="xx-small" class="slds-icon-text-default"></lightning-icon>
+                                                            </a>
+                                                        </div>
+                                                    </template>
                                                 </template>
                                             </template>
                                         </div>
@@ -181,15 +205,15 @@
 
                     <!-- 3. FOOTER DEL PANEL (FIJO AL FONDO) -->
                     <div class="panel-footer slds-p-top_small border-top">
-                        <div class="slds-file-selector slds-file-selector_files">
-                            <div class="slds-file-selector__dropzone">
-                                <input type="file" class="slds-file-selector__input slds-assistive-text" id="file-upload-input-01" />
-                                <label class="slds-file-selector__body slds-size_1-of-1" for="file-upload-input-01">
-                                    <span class="slds-file-selector__button slds-button slds-button_neutral slds-size_1-of-1">
-                                        <lightning-icon icon-name="utility:upload" size="x-small" class="slds-m-right_x-small"></lightning-icon>Subir archivo local
-                                    </span>
-                                </label>
-                            </div>
+                        <div class="slds-p-around_x-small">
+                            <lightning-file-upload
+                                label="Subir archivo local"
+                                name="fileUploader"
+                                accept={acceptedFormats}
+                                record-id={recordId}
+                                onuploadfinished={handleUploadFinished}
+                                multiple>
+                            </lightning-file-upload>
                         </div>
                     </div>
                 </div>

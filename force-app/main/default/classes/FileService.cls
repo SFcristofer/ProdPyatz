@@ -24,18 +24,20 @@ public with sharing class FileService {
     public static Map<String, List<Map<String, String>>> getAvailableAttachments(Id oppId) {
         Map<String, List<Map<String, String>>> result = new Map<String, List<Map<String, String>>>();
         List<Map<String, String>> quotes = new List<Map<String, String>>();
-        for (Quote q : [SELECT Id, Name, QuoteNumber FROM Quote WHERE OpportunityId = :oppId ORDER BY CreatedDate DESC]) quotes.add(new Map<String, String>{'id' => q.Id, 'name' => 'Presupuesto: ' + q.QuoteNumber + ' - ' + q.Name, 'type' => 'Quote'});
+        for (Quote q : [SELECT Id, Name, QuoteNumber FROM Quote WHERE OpportunityId = :oppId ORDER BY CreatedDate DESC]) quotes.add(new Map<String, String>{'id' => q.Id, 'name' => 'Presupuesto: ' + q.QuoteNumber + ' - ' + q.Name, 'type' => 'Quote', 'downloadUrl' => '/apex/QuoteTechnicalPDF?id=' + q.Id});
         result.put('quotes', quotes);
+        
         List<Map<String, String>> surveys = new List<Map<String, String>>();
-        for (AggregateResult ar : [SELECT Tipo_Servicio__c FROM Levantamiento_Tecnico__c WHERE Oportunidad__c = :oppId GROUP BY Tipo_Servicio__c]) surveys.add(new Map<String, String>{'id' => oppId, 'name' => 'Levantamiento: ' + (String)ar.get('Tipo_Servicio__c'), 'type' => 'Survey', 'subType' => (String)ar.get('Tipo_Servicio__c')});
+        for (AggregateResult ar : [SELECT Tipo_Servicio__c FROM Levantamiento_Tecnico__c WHERE Oportunidad__c = :oppId GROUP BY Tipo_Servicio__c]) surveys.add(new Map<String, String>{'id' => oppId, 'name' => 'Levantamiento: ' + (String)ar.get('Tipo_Servicio__c'), 'type' => 'Survey', 'subType' => (String)ar.get('Tipo_Servicio__c'), 'downloadUrl' => '/apex/QuoteTechnicalPDF?id=' + oppId + '&surveyOnly=true'});
         result.put('surveys', surveys);
+        
         List<Map<String, String>> files = new List<Map<String, String>>();
-        for (ContentDocumentLink cdl : [SELECT ContentDocumentId, ContentDocument.Title, ContentDocument.FileExtension FROM ContentDocumentLink WHERE LinkedEntityId = :oppId AND ContentDocument.FileExtension = 'pdf']) files.add(new Map<String, String>{'id' => cdl.ContentDocumentId, 'name' => 'Archivo: ' + cdl.ContentDocument.Title, 'type' => 'File'});
+        for (ContentDocumentLink cdl : [SELECT ContentDocumentId, ContentDocument.Title, ContentDocument.FileExtension FROM ContentDocumentLink WHERE LinkedEntityId = :oppId AND ContentDocument.FileExtension IN ('pdf', 'PDF', 'xls', 'xlsx', 'csv', 'png', 'jpg', 'jpeg', 'docx', 'doc')]) files.add(new Map<String, String>{'id' => cdl.ContentDocumentId, 'name' => 'Archivo: ' + cdl.ContentDocument.Title + '.' + cdl.ContentDocument.FileExtension, 'type' => 'File', 'downloadUrl' => '/sfc/servlet.shepherd/document/download/' + cdl.ContentDocumentId});
         result.put('files', files);
         
         List<Map<String, String>> fichas = new List<Map<String, String>>();
         for (ContentWorkspaceDoc cwd : [SELECT ContentDocumentId, ContentDocument.Title FROM ContentWorkspaceDoc WHERE ContentWorkspace.Name = 'Fichas Técnicas' OR ContentWorkspace.Name = 'Fichas Tecnicas']) {
-            fichas.add(new Map<String, String>{'id' => cwd.ContentDocumentId, 'name' => cwd.ContentDocument.Title, 'type' => 'File'});
+            fichas.add(new Map<String, String>{'id' => cwd.ContentDocumentId, 'name' => cwd.ContentDocument.Title, 'type' => 'File', 'downloadUrl' => '/sfc/servlet.shepherd/document/download/' + cwd.ContentDocumentId});
         }
         result.put('fichas', fichas);
         

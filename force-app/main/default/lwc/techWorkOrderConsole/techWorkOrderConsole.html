@@ -239,6 +239,11 @@
                     </div>
                 </div>
             </div>
+
+            <!-- BOTÓN INFERIOR (Duplicado para comodidad) -->
+            <div class="slds-m-top_large slds-text-align_right">
+                <lightning-button label={saveButtonLabel} variant="brand" icon-name="utility:record_create" onclick={handleGenerateODTs} disabled={isSaving}></lightning-button>
+            </div>
         </template>
 
         <!-- NAVEGADOR DE ZONAS (DRAWER) -->
