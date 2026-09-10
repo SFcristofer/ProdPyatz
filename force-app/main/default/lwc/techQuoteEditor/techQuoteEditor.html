@@ -174,12 +174,12 @@
                 <div class="section-card slds-m-bottom_large">
                     <div class="section-header"><h2 class="slds-text-heading_small"><abbr class="slds-required" title="required">* </abbr>Partidas del Presupuesto</h2></div>
                     <div class="slds-p-around_none datatable-container">
-                        <table class="slds-table slds-table_bordered slds-no-row-hover">
+                        <table class="slds-table slds-table_bordered slds-no-row-hover slds-table_fixed-layout">
                             <thead>
                                 <tr>
                                     <th style="width: 40px;"></th>
-                                    <th>Servicio / Descripción</th>
-                                    <th>Sede(s)</th>
+                                    <th style="width: auto;">Servicio / Descripción</th>
+                                    <th style="width: 200px;">Sede(s)</th>
                                     <template if:true={showQuantityCol}>
                                         <th style="width: 80px; text-align: center;">Cant.</th>
                                     </template>
@@ -208,16 +208,16 @@
                                         </template>
 
                                         <template if:false={item.isSeparator}>
-                                            <td>
+                                            <td class="slds-cell-wrap">
                                                 <div class="slds-text-title_bold">{item.descripcion}</div>
                                                 <template if:true={item.areas}>
-                                                    <div class="slds-text-color_weak slds-text-body_small">
+                                                    <div class="slds-text-color_weak slds-text-body_small" style="white-space: normal; word-break: break-word;">
                                                         <lightning-icon icon-name="utility:checkin" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
                                                         Áreas: {item.areas}
                                                     </div>
                                                 </template>
                                             </td>
-                                            <td><div class="slds-truncate" title={item.sedes}>{item.sedes}</div></td>
+                                            <td class="slds-cell-wrap"><div class="slds-line-clamp" title={item.sedes}>{item.sedes}</div></td>
                                             <template if:true={showQuantityCol}>
                                                 <td style="text-align: center;">{item.cantidad}</td>
                                             </template>
