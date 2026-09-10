@@ -693,7 +693,7 @@
 
                                     <td style="text-align:center;"><strong>{!item.Product2.Name}</strong></td>
 
-                                    <td style="text-align:center;">{!item.Quantity}</td>
+                                    <td style="text-align:center;"><apex:outputText value="{0, number, 0}"><apex:param value="{!item.Quantity}"/></apex:outputText></td>
 
                                     <apex:outputPanel rendered="{!config['show_line_prices']}" layout="none">
 

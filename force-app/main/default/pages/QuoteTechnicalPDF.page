@@ -72,12 +72,13 @@
             <div class="page-counter">P&#225;g. <span class="pgNum"></span> de <span class="pgCount"></span></div>
             <img src="{!$Resource.Watermark}" class="watermark"/>
 
-            <!-- SECCIÓN 1: INTRODUCCIÓN -->
-            <table style="width:100%; border-collapse:collapse;">
+            <!-- TABLA MAESTRA DE DISEÑO -->
+            <table style="width:100%; border-collapse:collapse; -fs-table-paginate: paginate;">
                 <thead><tr><td class="hdr-spacer">&#160;</td></tr></thead>
                 <tfoot><tr><td class="ftr-spacer">&#160;</td></tr></tfoot>
                 <tbody>
                     <tr><td style="padding:0; vertical-align:top;">
+                        <!-- SECCIÓN 1: INTRODUCCIÓN -->
                         <div class="content-body">
                             <table class="hdr-table">
                                 <tr>
@@ -99,16 +100,21 @@
                             </apex:outputPanel>
                         </div>
                     </td></tr>
-                </tbody>
-            </table>
+                    
+                    <!-- SALTO DE PÁGINA CONDICIONAL -->
+                    <apex:outputPanel rendered="{!NOT(ISBLANK(technicalQuote.Introduction_Text__c))}" layout="none">
+                        <tr style="page-break-after:always;"><td style="height:0; padding:0; border:none;"></td></tr>
+                    </apex:outputPanel>
+                    <!-- MARGEN SUPERIOR CUANDO NO HAY SALTO -->
+                    <apex:outputPanel rendered="{!ISBLANK(technicalQuote.Introduction_Text__c)}" layout="none">
+                        <tr><td style="height:10pt; padding:0; border:none;"></td></tr>
+                    </apex:outputPanel>
 
-            <!-- SECCIÓN 2 y 3 UNIFICADAS: SERVICIOS, TOTALES Y FIRMAS -->
-            <div class="content-body" style="page-break-before:always;">
-                <table class="tbl-svc" style="width:100%; border-collapse:collapse;">
-                    <thead>
-                        <tr><td colspan="{!dynamicColspan}" class="hdr-spacer"></td></tr>
-                    </thead>
-                    <tbody>
+                    <tr><td style="padding:0; vertical-align:top;">
+                        <!-- SECCIÓN 2 y 3 UNIFICADAS: SERVICIOS, TOTALES Y FIRMAS -->
+                        <div class="content-body">
+                            <table class="tbl-svc" style="width:100%; border-collapse:collapse;">
+                                <tbody>
                         <!-- BLOQUE: SERVICIOS -->
                         <apex:repeat value="{!technicalQuote.QuoteLineItems}" var="item">
                             <apex:outputPanel rendered="{!BLANKVALUE(item.Quantity, 0) == 0}" layout="none">
@@ -123,7 +129,7 @@
                                 </tr>
                                 <tr class="row-item" style="page-break-inside:avoid;">
                                     <td style="text-align:center;"><strong>{!item.Product2.Name}</strong></td>
-                                    <td style="text-align:center; display:{!IF(showQuantityCol, 'table-cell', 'none')};">{!item.Quantity}</td>
+                                    <td style="text-align:center; display:{!IF(showQuantityCol, 'table-cell', 'none')};"><apex:outputText value="{0, number, 0}"><apex:param value="{!item.Quantity}"/></apex:outputText></td>
                                     <td style="text-align:center; display:{!IF(showUnitPriceCol, 'table-cell', 'none')};"><apex:outputText value="{0, number, currency}"><apex:param value="{!BLANKVALUE(item.UnitPrice, 0)}"/></apex:outputText></td>
                                     <td style="text-align:center; display:{!IF(showTotalPriceCol, 'table-cell', 'none')};"><apex:outputText value="{0, number, currency}"><apex:param value="{!BLANKVALUE(item.TotalPrice, 0)}"/></apex:outputText></td>
                                 </tr>
@@ -186,9 +192,11 @@
                             </div>
                         </td></tr>
                     </tbody>
-                    <tfoot><tr><td colspan="{!dynamicColspan}" class="ftr-spacer"></td></tr></tfoot>
-                </table>
-            </div>
+                </table> <!-- End tbl-svc -->
+            </div> <!-- End content-body -->
+            </td></tr> <!-- End of inner master table row -->
+            </tbody>
+            </table> <!-- End master table -->
             <img src="{!$Resource.FooterPDF}" class="footer-img"/>
         </body>
     </html>
