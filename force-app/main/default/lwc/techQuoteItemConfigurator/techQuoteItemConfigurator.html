@@ -96,9 +96,8 @@
                                                     <td><lightning-input type="number" step="0.01" value={row.importeTotal} data-id={row.id} data-field="importeTotal" onchange={handleModalInputChange} variant="label-hidden" disabled={row.isDisabled}></lightning-input></td>
                                                     <td>
                                                         <select class="custom-select-native" data-id={row.id} data-field="tipoDescuento" onchange={handleModalInputChange}>
-                                                            <template for:each={discountOptions} for:item="opt">
-                                                                <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                                            </template>
+                                                            <option value="monto" selected={row.isMonto}>$</option>
+                                                            <option value="porcentaje" selected={row.isPorcentaje}>%</option>
                                                         </select>
                                                     </td>
                                                     <td>
@@ -129,6 +128,7 @@
                                             <span class="slds-text-color_weak slds-text-body_small">Este detalle aparecerá en el PDF final</span>
                                             </div>
                                             <lightning-input-rich-text
+                                            key={richTextKey}
                                             value={modalDescription}
                                             onchange={handleDescriptionChange}>
                                             </lightning-input-rich-text>

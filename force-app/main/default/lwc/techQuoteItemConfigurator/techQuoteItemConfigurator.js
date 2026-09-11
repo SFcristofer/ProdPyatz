@@ -36,8 +36,10 @@ export default class TechQuoteItemConfigurator extends LightningElement {
     @track productPriceOptions = [];
     @track modalTableData = []; 
     @track modalDescription = '';
+    richTextKey = 0;
     @track isUnitario = true;
     @track isTotal = false;
+    @track imageSizes = {};
 
     get mappedHistoricalZones() {
         const allPossibleZones = new Set([...this.allHistoricalZones]);
@@ -138,6 +140,7 @@ export default class TechQuoteItemConfigurator extends LightningElement {
         this.selectedPbeId = item.pbeId;
         this.selectedProductName = item.descripcion;
         this.modalDescription = this.formatDescription(item.detalleTecnico);
+        this.imageSizes = {};
         const rawAreas = item.areas ? item.areas.split(',').map(a => a.trim()).filter(a => a !== '') : [];
         this.zonasAfectadas = [...new Set(rawAreas)];
         if (this.allHistoricalZones && this.allHistoricalZones.length > 0) this.normalizeExistingZones();
@@ -197,15 +200,31 @@ export default class TechQuoteItemConfigurator extends LightningElement {
         }
     }
 
-    handleDescriptionChange(event) { this.modalDescription = event.target.value; }
+    handleDescriptionChange(event) {
+        this.modalDescription = (event.target.value || '').replace(/<img[^>]*>/g, (tag) => {
+            if (/margin\s*:/.test(tag)) return tag;
+            if (/style="/.test(tag)) return tag.replace(/style="/, 'style="margin:6pt 10pt 6pt 0;');
+            return tag.replace('<img', '<img style="margin:6pt 10pt 6pt 0;"');
+        });
+    }
 
     get descriptionImages() {
         const html = this.modalDescription || '';
         const matches = html.match(/<img[^>]*>/g) || [];
         return matches.map((tag, index) => {
             const srcMatch = tag.match(/src="([^"]*)"/);
-            const widthMatch = tag.match(/width:\s*(\d+)%/);
-            return { index, key: 'img-' + index, src: srcMatch ? srcMatch[1] : '', width: widthMatch ? parseInt(widthMatch[1], 10) : 100 };
+            const src = srcMatch ? srcMatch[1] : `img-${index}`;
+            
+            let currentWidth = 100;
+            if (this.imageSizes[src] !== undefined) {
+                currentWidth = this.imageSizes[src];
+            } else {
+                const widthMatch = tag.match(/width:\s*(\d+)%/);
+                currentWidth = widthMatch ? parseInt(widthMatch[1], 10) : 100;
+                this.imageSizes[src] = currentWidth;
+            }
+
+            return { index, key: 'img-' + index, src: src, width: currentWidth };
         });
     }
 
@@ -219,22 +238,18 @@ export default class TechQuoteItemConfigurator extends LightningElement {
             attrs = (attrs || '').replace(/\sclass="ql-align-justify"/, '');
             return justify ? `<p${attrs} class="ql-align-justify">` : `<p${attrs}>`;
         });
+        this.richTextKey++;
     }
 
     handleImageSizeChange(event) {
         const targetIndex = parseInt(event.currentTarget.dataset.index, 10);
         const newWidth = event.detail.value;
-        let counter = -1;
-        this.modalDescription = (this.modalDescription || '').replace(/<img[^>]*>/g, (tag) => {
-            counter++;
-            if (counter !== targetIndex) return tag;
-            if (/style="/.test(tag)) {
-                return /width:\s*\d+%/.test(tag)
-                    ? tag.replace(/width:\s*\d+%/, `width:${newWidth}%`)
-                    : tag.replace(/style="/, `style="width:${newWidth}%;`);
-            }
-            return tag.replace('<img', `<img style="width:${newWidth}%"`);
-        });
+        
+        const imgDef = this.descriptionImages[targetIndex];
+        if (imgDef) {
+            this.imageSizes[imgDef.src] = newWidth;
+            this.imageSizes = { ...this.imageSizes };
+        }
     }
 
     loadProductPrices() {
@@ -287,23 +302,35 @@ export default class TechQuoteItemConfigurator extends LightningElement {
         const id = event.target.dataset.id;
         const field = event.target.dataset.field;
         const checked = event.target.checked;
-        const val = field === 'isSelected' ? checked : (field === 'tipoDescuento' ? event.target.value : (parseFloat(event.target.value) || 0));
+        const val = field === 'isSelected' ? checked : (field === 'tipoDescuento' ? event.target.value : event.target.value);
         this.modalTableData = this.modalTableData.map(row => (row.id === id ? { ...row, [field]: val } : row));
         this.recalculateModalData();
     }
 
     recalculateModalData() {
         this.modalTableData = this.modalTableData.map(row => {
-            let base = this.isUnitario ? (row.importeTotal * row.cantidad) : (row.importeTotal || 0);
+            let parsedImporte = parseFloat(row.importeTotal) || 0;
+            let parsedCant = parseFloat(row.cantidad) || 0;
+            let parsedDesc = parseFloat(row.descuento) || 0;
+
+            let base = this.isUnitario ? (parsedImporte * parsedCant) : parsedImporte;
             let finalTotal = base;
             if (row.tipoDescuento === 'monto') {
-                let totalDescAmount = this.isUnitario ? ((row.descuento || 0) * row.cantidad) : (row.descuento || 0);
+                let totalDescAmount = this.isUnitario ? (parsedDesc * parsedCant) : parsedDesc;
                 finalTotal = base - totalDescAmount;
             } else if (row.tipoDescuento === 'porcentaje') {
-                finalTotal = base * (1 - ((row.descuento || 0) / 100));
+                finalTotal = base * (1 - (parsedDesc / 100));
             }
-            let unitarioBase = row.cantidad !== 0 ? (base / row.cantidad) : 0;
-            return { ...row, totalSinImpuestos: finalTotal, subtotalBruto: base, precioVenta: unitarioBase };
+            let unitarioBase = parsedCant !== 0 ? (base / parsedCant) : 0;
+            
+            return { 
+                ...row, 
+                totalSinImpuestos: finalTotal, 
+                subtotalBruto: base, 
+                precioVenta: unitarioBase,
+                isMonto: row.tipoDescuento === 'monto',
+                isPorcentaje: row.tipoDescuento === 'porcentaje'
+            };
         });
     }
 
@@ -311,6 +338,29 @@ export default class TechQuoteItemConfigurator extends LightningElement {
 
     handleSave() {
         const selectedRows = this.modalTableData.filter(r => r.isSelected);
+
+        let finalHtml = this.modalDescription || '';
+        if (Object.keys(this.imageSizes).length > 0) {
+            finalHtml = finalHtml.replace(/<img[^>]*>/g, (tag) => {
+                const srcMatch = tag.match(/src="([^"]*)"/);
+                const src = srcMatch ? srcMatch[1] : null;
+                if (src && this.imageSizes[src] !== undefined) {
+                    const w = this.imageSizes[src];
+                    let newTag = tag.replace(/style="[^"]*"/, (styleAttr) => {
+                        if (/width:\s*\d+%/.test(styleAttr)) {
+                            return styleAttr.replace(/width:\s*\d+%/, `width:${w}%`);
+                        }
+                        return styleAttr.replace(/style="/, `style="width:${w}%;`);
+                    });
+                    if (!/style="/.test(newTag)) {
+                        newTag = newTag.replace('<img', `<img style="width:${w}%"`);
+                    }
+                    return newTag;
+                }
+                return tag;
+            });
+        }
+
         const newItems = selectedRows.map(row => ({
             id: this._editItem ? this._editItem.id : (Date.now().toString() + Math.random()),
             pbeId: this.selectedPbeId,
@@ -325,7 +375,7 @@ export default class TechQuoteItemConfigurator extends LightningElement {
             isUnitario: this.isUnitario,
             sedes: row.sede,
             areas: this.zonasAfectadas.join(', '),
-            detalleTecnico: this.modalDescription,
+            detalleTecnico: finalHtml,
             solucionId: this.selectedSolucionId,
             rowClass: 'row-service'
         }));
