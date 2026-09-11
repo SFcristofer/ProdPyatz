@@ -199,6 +199,44 @@ export default class TechQuoteItemConfigurator extends LightningElement {
 
     handleDescriptionChange(event) { this.modalDescription = event.target.value; }
 
+    get descriptionImages() {
+        const html = this.modalDescription || '';
+        const matches = html.match(/<img[^>]*>/g) || [];
+        return matches.map((tag, index) => {
+            const srcMatch = tag.match(/src="([^"]*)"/);
+            const widthMatch = tag.match(/width:\s*(\d+)%/);
+            return { index, key: 'img-' + index, src: srcMatch ? srcMatch[1] : '', width: widthMatch ? parseInt(widthMatch[1], 10) : 100 };
+        });
+    }
+
+    get hasDescriptionImages() { return this.descriptionImages.length > 0; }
+
+    get isDescriptionJustified() { return /<p[^>]*class="[^"]*ql-align-justify/.test(this.modalDescription || ''); }
+
+    handleJustifyToggle(event) {
+        const justify = event.target.checked;
+        this.modalDescription = (this.modalDescription || '').replace(/<p(\s[^>]*)?>/g, (tag, attrs) => {
+            attrs = (attrs || '').replace(/\sclass="ql-align-justify"/, '');
+            return justify ? `<p${attrs} class="ql-align-justify">` : `<p${attrs}>`;
+        });
+    }
+
+    handleImageSizeChange(event) {
+        const targetIndex = parseInt(event.currentTarget.dataset.index, 10);
+        const newWidth = event.detail.value;
+        let counter = -1;
+        this.modalDescription = (this.modalDescription || '').replace(/<img[^>]*>/g, (tag) => {
+            counter++;
+            if (counter !== targetIndex) return tag;
+            if (/style="/.test(tag)) {
+                return /width:\s*\d+%/.test(tag)
+                    ? tag.replace(/width:\s*\d+%/, `width:${newWidth}%`)
+                    : tag.replace(/style="/, `style="width:${newWidth}%;`);
+            }
+            return tag.replace('<img', `<img style="width:${newWidth}%"`);
+        });
+    }
+
     loadProductPrices() {
         if (!this.selectedProductId) return;
         getProductPrices({ product2Id: this.selectedProductId }).then(res => { this.productPriceOptions = res.map(opt => ({ ...opt, className: opt.pbeId === this.selectedPbeId ? 'price-option-card selected' : 'price-option-card' })); });

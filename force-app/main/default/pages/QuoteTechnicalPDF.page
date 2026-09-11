@@ -23,12 +23,13 @@
                 .asunto         { margin-top:5pt; font-size:11pt; font-family:'Poppins-Bold','Helvetica','Arial',sans-serif; font-weight:bold; border-bottom:1pt solid #ddd; padding-bottom:4pt; }
                 .sede-title     { font-size:13pt; font-family:'Poppins-Bold','Helvetica','Arial',sans-serif; font-weight:bold; margin-top:8pt; border-bottom:1pt solid #ddd; padding-bottom:4pt; }
 
-                .tbl-svc              { width:100%; border-collapse:collapse; margin-top:4pt; -fs-table-paginate: paginate; }
+                .tbl-svc              { width:100%; table-layout:fixed; border-collapse:collapse; margin-top:4pt; -fs-table-paginate: paginate; }
                 .tbl-svc th           { background-color:#0a315e; color:#ffffff; text-align:center; border-bottom:1.5pt solid #0070d2; padding:7pt 6pt; font-size:8pt; text-transform:uppercase; font-weight:bold; font-family:'Poppins-Bold','Helvetica','Arial',sans-serif; }
                 .row-sep td           { background-color:#eef2f9; color:#0070d2; font-weight:bold; font-size:9.5pt; padding:8pt; border-top:2pt solid #0070d2; }
                 .row-item td          { padding:7pt 6pt; font-size:10pt; border-bottom:0.5pt solid #f0f0f0; background-color:#fff; vertical-align:middle; }
                 .row-detail td        { padding:3pt 0 10pt 0; border-bottom:0.5pt solid #eee; font-size:9pt; color:#444; line-height:1.15; }
                 .detail-inner         { border-left:2pt solid #dde; padding-left:10pt; }
+                .detail-inner img, .rich-block img, .warranty-block img { max-width:100%; height:auto; display:block; margin:6pt auto; }
                 b, strong, .detail-inner b, .detail-inner strong { font-family: 'Poppins-Bold', 'Helvetica', 'Arial', sans-serif; font-weight: bold; }
                 .detail-inner i, .detail-inner em { font-style: italic; }
                 .detail-inner u { text-decoration: underline; }
@@ -96,7 +97,7 @@
                             </table>
                             <div class="asunto"><strong>Asunto:&#160;{!technicalQuote.Name}</strong></div>
                             <apex:outputPanel rendered="{!NOT(ISBLANK(technicalQuote.Introduction_Text__c))}">
-                                <div style="margin-top:8pt; padding:0 10pt;"><apex:outputText value="{!technicalQuote.Introduction_Text__c}" escape="false"/></div>
+                                <div style="margin-top:8pt; padding:0 10pt;" class="rich-block"><apex:outputText value="{!technicalQuote.Introduction_Text__c}" escape="false"/></div>
                             </apex:outputPanel>
                         </div>
                     </td></tr>

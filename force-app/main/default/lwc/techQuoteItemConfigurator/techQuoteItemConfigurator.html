@@ -132,6 +132,22 @@
                                             value={modalDescription}
                                             onchange={handleDescriptionChange}>
                                             </lightning-input-rich-text>
+                                            <lightning-input type="checkbox" label="Justificar texto en el PDF" checked={isDescriptionJustified} onchange={handleJustifyToggle} class="slds-m-top_x-small"></lightning-input>
+                                            <template if:true={hasDescriptionImages}>
+                                                <div class="slds-box slds-theme_shade slds-m-top_x-small">
+                                                    <p class="slds-text-body_small slds-text-color_weak slds-m-bottom_x-small">Ajustar tamaño de imágenes en el PDF</p>
+                                                    <template for:each={descriptionImages} for:item="img">
+                                                        <div key={img.key} class="slds-grid slds-grid_vertical-align-center slds-m-bottom_x-small">
+                                                            <div class="slds-col slds-size_1-of-6">
+                                                                <img src={img.src} style="max-width:60px; max-height:45px;" alt="Vista previa" />
+                                                            </div>
+                                                            <div class="slds-col slds-size_5-of-6">
+                                                                <lightning-slider label="Tamaño" min="10" max="100" step="5" value={img.width} data-index={img.index} onchange={handleImageSizeChange}></lightning-slider>
+                                                            </div>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </template>
                                             </div>
                                 </div>
                             </div>
