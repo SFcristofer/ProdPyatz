@@ -40,6 +40,7 @@ export default class TechQuoteItemConfigurator extends LightningElement {
     @track isUnitario = true;
     @track isTotal = false;
     @track imageSizes = {};
+    @track isPreviewMode = false;
 
     get mappedHistoricalZones() {
         const allPossibleZones = new Set([...this.allHistoricalZones]);
@@ -334,11 +335,11 @@ export default class TechQuoteItemConfigurator extends LightningElement {
         });
     }
 
-    handleCancel() { this.dispatchEvent(new CustomEvent('close')); }
+    handleTogglePreview(event) {
+        this.isPreviewMode = event.target.checked;
+    }
 
-    handleSave() {
-        const selectedRows = this.modalTableData.filter(r => r.isSelected);
-
+    get previewHtml() {
         let finalHtml = this.modalDescription || '';
         if (Object.keys(this.imageSizes).length > 0) {
             finalHtml = finalHtml.replace(/<img[^>]*>/g, (tag) => {
@@ -347,19 +348,28 @@ export default class TechQuoteItemConfigurator extends LightningElement {
                 if (src && this.imageSizes[src] !== undefined) {
                     const w = this.imageSizes[src];
                     let newTag = tag.replace(/style="[^"]*"/, (styleAttr) => {
-                        if (/width:\s*\d+%/.test(styleAttr)) {
-                            return styleAttr.replace(/width:\s*\d+%/, `width:${w}%`);
-                        }
-                        return styleAttr.replace(/style="/, `style="width:${w}%;`);
+                        let cleanStyle = styleAttr.replace(/width:\s*\d+%;?\s*/, '')
+                                                  .replace(/display:\s*block;?\s*/, '')
+                                                  .replace(/margin:\s*0\s+auto;?\s*/, '');
+                        return cleanStyle.replace(/style="/, `style="width:${w}%; display:block; margin:0 auto; `);
                     });
                     if (!/style="/.test(newTag)) {
-                        newTag = newTag.replace('<img', `<img style="width:${w}%"`);
+                        newTag = newTag.replace('<img', `<img style="width:${w}%; display:block; margin:0 auto;"`);
                     }
                     return newTag;
                 }
                 return tag;
             });
         }
+        return finalHtml;
+    }
+
+    handleCancel() { this.dispatchEvent(new CustomEvent('close')); }
+
+    handleSave() {
+        const selectedRows = this.modalTableData.filter(r => r.isSelected);
+
+        const finalHtml = this.previewHtml;
 
         const newItems = selectedRows.map(row => ({
             id: this._editItem ? this._editItem.id : (Date.now().toString() + Math.random()),
