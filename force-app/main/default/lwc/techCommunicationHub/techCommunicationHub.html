@@ -96,9 +96,14 @@
                                 <!-- SECCIÓN: COLAS INTERNAS PYATZ (Modo Enhorabuena) -->
                                 <template if:true={isInternalMode}>
                                     <div class="slds-p-vertical_small">
-                                        <div class="slds-text-title_bold slds-m-bottom_small slds-p-horizontal_x-small">
-                                            <lightning-icon icon-name="standard:groups" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
-                                            COLAS PYATZ:
+                                        <div class="slds-text-title_bold slds-m-bottom_small slds-p-horizontal_x-small slds-grid slds-grid_vertical-align-center">
+                                            <div class="slds-col slds-grow-none">
+                                                <lightning-icon icon-name="standard:groups" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
+                                                COLAS PYATZ:
+                                            </div>
+                                            <div class="slds-col slds-m-left_small">
+                                                <lightning-button-icon icon-name="utility:settings" size="small" variant="bare" alternative-text="Configurar Colas" onclick={handleManageQueues} title="Configurar Colas en Setup"></lightning-button-icon>
+                                            </div>
                                         </div>
                                         <div class="slds-p-horizontal_x-small">
                                             <template for:each={pyatzQueues} for:item="q">

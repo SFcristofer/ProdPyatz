@@ -300,6 +300,14 @@ export default class TechCommunicationHub extends NavigationMixin(LightningEleme
         this.selectedUserPills = this.selectedUserPills.filter(p => p.id !== userId);
     }
 
+    handleManageQueues(event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        window.open('/lightning/setup/Queues/home', '_blank');
+    }
+
     handleQueueToggle(event) {
         const queueId = event.target.dataset.id;
         const checked = event.target.checked;
