@@ -622,7 +622,7 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
         }
     }
 
-    handleAddServiceItems(event) {
+    async handleAddServiceItems(event) {
         const newItems = event.detail;
         if (this.itemToEdit) {
             this.serviciosData = this.serviciosData.map(item => item.id === this.itemToEdit.id ? newItems[0] : item);
@@ -632,6 +632,13 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
         this.calculateTotals();
         this.showModal = false;
         this.itemToEdit = null;
+
+        // Auto-guardado silencioso de la partida
+        try {
+            await this.handleSave('Borrador');
+        } catch (error) {
+            console.error('Error en autoguardado:', error);
+        }
     }
 
     calculateTotals() {
