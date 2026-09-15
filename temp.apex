@@ -1,0 +1,1 @@
+for (QuoteLineItem qli : [SELECT Id, Descripcion_Detallada__c FROM QuoteLineItem ORDER BY LastModifiedDate DESC LIMIT 1000]) { if (qli.Descripcion_Detallada__c != null && qli.Descripcion_Detallada__c.containsIgnoreCase('<img')) { System.debug('FOUND_HTML:' + qli.Descripcion_Detallada__c); break; } }

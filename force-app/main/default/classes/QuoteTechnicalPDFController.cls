@@ -33,7 +33,7 @@ public with sharing class QuoteTechnicalPDFController {
         this.htmlDescriptions = new Map<Id, String>();
         
         // 1. Cargamos datos
-        this.technicalQuote = [SELECT Id, Name, QuoteNumber, AccountId, Account.Name, ContactId, Contact.Name, Opportunity.Name, 
+        this.technicalQuote = [SELECT Id, Name, QuoteNumber, AccountId, Account.Name, Account.Razon_Social__c, ContactId, Contact.Name, Opportunity.Name, 
                                      Show_Introduction__c, Introduction_Text__c, Phone, Email, Discount,
                                      Show_Warranty__c, Warranty_Text__c, Markers_Data__c, Show_Subtotal__c, Show_Tax__c,
                                      Show_Discount__c, Show_Subtotal_2__c, Show_Total__c,
@@ -209,6 +209,16 @@ public with sharing class QuoteTechnicalPDFController {
             if(!versions.isEmpty()) {
                 this.versionId = versions[0].Id;
             }
+        }
+
+        // Custom PDF file name
+        if (ApexPages.currentPage() != null) {
+            String currentDate = Datetime.now().format('yyyy-MM-dd');
+            String cleanAccount = (this.technicalQuote.Account.Name != null) ? this.technicalQuote.Account.Name.replaceAll('[^a-zA-Z0-9 ]', '') : 'CLIENTE';
+            String cleanOpp = (this.technicalQuote.Opportunity.Name != null) ? this.technicalQuote.Opportunity.Name.replaceAll('[^a-zA-Z0-9 ]', '') : 'OPORTUNIDAD';
+            String quoteNum = (this.quoteNumberShort != null) ? this.quoteNumberShort : this.technicalQuote.QuoteNumber;
+            String fileName = currentDate + ' COT PYATZ ' + quoteNum + ' @' + cleanAccount + ' - ' + cleanOpp + '.pdf';
+            ApexPages.currentPage().getHeaders().put('content-disposition', 'inline; filename="' + fileName + '"');
         }
     }
 

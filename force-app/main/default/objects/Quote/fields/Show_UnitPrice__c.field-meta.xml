@@ -3,8 +3,7 @@
     <fullName>Show_UnitPrice__c</fullName>
     <defaultValue>true</defaultValue>
     <description>Oculta o muestra la columna de precio unitario en el PDF</description>
-    <externalId>false</externalId>
     <label>Ver Precio Unitario</label>
-    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
     <type>Checkbox</type>
 </CustomField>

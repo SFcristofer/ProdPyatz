@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>Show_Quantity__c</fullName>
+    <fullName>Show_Introduction__c</fullName>
     <defaultValue>true</defaultValue>
-    <description>Oculta o muestra la columna de cantidad en el PDF</description>
-    <label>Ver Cantidad</label>
+    <label>Mostrar Introducción</label>
     <trackHistory>false</trackHistory>
     <type>Checkbox</type>
 </CustomField>

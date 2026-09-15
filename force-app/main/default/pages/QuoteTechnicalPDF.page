@@ -84,8 +84,8 @@
                             <table class="hdr-table">
                                 <tr>
                                     <td width="62%" style="vertical-align:top; padding:0;">
-                                        <div class="nombre-comercial">{!technicalQuote.Account.Name}</div>
-                                        <div style="font-size:11pt; font-family:'Poppins-Bold','Helvetica','Arial',sans-serif; font-weight:bold; margin-top:2pt;">{!technicalQuote.Technical_Sedes__c}</div>
+                                        <div class="nombre-comercial">{!technicalQuote.Account.Razon_Social__c}</div>
+                                        <div style="font-size:11pt; font-family:'Poppins-Bold','Helvetica','Arial',sans-serif; font-weight:bold; margin-top:2pt;">{!technicalQuote.Account.Name}</div>
                                         <div style="font-size:11pt; margin-top:2pt;">Atenci&#243;n:&#160;{!atencionNames}</div>
                                     </td>
                                     <td width="38%" style="vertical-align:top; text-align:right; font-size:10pt; padding:2pt 0 0 0;">
