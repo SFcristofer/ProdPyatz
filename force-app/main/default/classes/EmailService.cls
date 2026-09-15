@@ -152,12 +152,13 @@ public with sharing class EmailService {
      */
     public static void sendInternalEmail(Id oppId, String toEmail, String ccEmail, String bccEmail, String subject, String body, List<Id> queueIds, List<Id> userIds, List<Map<String, String>> selectedAttachments) {
         try {
+            Set<String> toEmailsSet = new Set<String>();
             Set<String> bccEmailsSet = new Set<String>();
 
             // 1. Obtener correos de los usuarios directos seleccionados
             if (userIds != null && !userIds.isEmpty()) {
                 for (User u : [SELECT Email FROM User WHERE Id IN :userIds AND IsActive = true AND Email != null]) {
-                    bccEmailsSet.add(u.Email);
+                    toEmailsSet.add(u.Email);
                 }
             }
 
@@ -172,7 +173,7 @@ public with sharing class EmailService {
                 }
                 if (!memberUserIds.isEmpty()) {
                     for (User u : [SELECT Email FROM User WHERE Id IN :memberUserIds AND IsActive = true AND Email != null]) {
-                        bccEmailsSet.add(u.Email);
+                        toEmailsSet.add(u.Email);
                     }
                 }
             }
@@ -187,15 +188,18 @@ public with sharing class EmailService {
             // 3. Preparar el correo
             Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
             
-            // Si el usuario especificó "Para" explícitamente, lo usamos, si no, nos enviamos a nosotros mismos como pivote
+            // Si el usuario especificó "Para" explícitamente, lo sumamos al set
             if (String.isNotBlank(toEmail)) {
-                List<String> toEmailsList = new List<String>();
                 for (String emailAddr : toEmail.split(',')) {
-                    if (String.isNotBlank(emailAddr)) toEmailsList.add(emailAddr.trim());
+                    if (String.isNotBlank(emailAddr)) toEmailsSet.add(emailAddr.trim());
                 }
-                if (!toEmailsList.isEmpty()) mail.setToAddresses(toEmailsList);
-                else mail.setToAddresses(new String[]{ UserInfo.getUserEmail() }); 
+            }
+            
+            // Asignar campo TO definitivo
+            if (!toEmailsSet.isEmpty()) {
+                mail.setToAddresses(new List<String>(toEmailsSet));
             } else {
+                // Fallback extremo solo si la cola está vacía y no hay "Para"
                 mail.setToAddresses(new String[]{ UserInfo.getUserEmail() }); 
             }
 
