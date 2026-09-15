@@ -348,6 +348,20 @@ export default class TechCommunicationHub extends NavigationMixin(LightningEleme
         return !this.toEmail || !this.subject || this.isSending;
     }
 
+    get sendButtonTooltip() {
+        if (this.isSending) return 'Enviando...';
+        if (this.isInternalMode) {
+            if (!this.selectedUserPills.length && !this.selectedQueueIds.length) {
+                return 'Falta seleccionar al menos una Cola o un Usuario Interno.';
+            }
+            if (!this.subject) return 'Falta ingresar el asunto.';
+        } else {
+            if (!this.toEmail) return 'Falta ingresar un destinatario (Para).';
+            if (!this.subject) return 'Falta ingresar el asunto.';
+        }
+        return 'Enviar correo';
+    }
+
     handleFolderChange(event) {
         this.selectedFolder = event.detail.value;
         this.selectedTemplateId = '';
@@ -482,6 +496,7 @@ export default class TechCommunicationHub extends NavigationMixin(LightningEleme
         this.bccEmail = '';
         this.subject = '';
         this.emailBody = '';
+        this._currentDraftBody = '';
         this.selectedAttachments = [];
         this.selectedTemplateId = '';
         this.selectedFolder = '';
@@ -490,15 +505,9 @@ export default class TechCommunicationHub extends NavigationMixin(LightningEleme
         this.userSearchTerm = '';
         this.userSearchResults = [];
         
-        // Desmarcar checkboxes de adjuntos en el DOM
-        const checkboxes = this.template.querySelectorAll('lightning-input[data-type]');
+        // Desmarcar todos los checkboxes
+        const checkboxes = this.template.querySelectorAll('lightning-input[type="checkbox"]');
         checkboxes.forEach(cb => {
-            cb.checked = false;
-        });
-
-        // Desmarcar contactos
-        const contactChecks = this.template.querySelectorAll('lightning-input[data-email]');
-        contactChecks.forEach(cb => {
             cb.checked = false;
         });
     }

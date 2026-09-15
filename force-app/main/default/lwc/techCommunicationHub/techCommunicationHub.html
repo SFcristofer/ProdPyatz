@@ -320,7 +320,8 @@
                                 icon-name="utility:send" 
                                 onclick={handleSendEmail} 
                                 loading={isSending}
-                                disabled={isSendDisabled}>
+                                disabled={isSendDisabled}
+                                title={sendButtonTooltip}>
                             </lightning-button>
                         </template>
                         <template if:true={isInternalMode}>
@@ -330,7 +331,8 @@
                                 icon-name="utility:send" 
                                 onclick={handleSendEmail} 
                                 loading={isSending}
-                                disabled={isSendDisabled}>
+                                disabled={isSendDisabled}
+                                title={sendButtonTooltip}>
                             </lightning-button>
                         </template>
                     </div>
