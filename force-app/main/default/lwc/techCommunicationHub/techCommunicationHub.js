@@ -426,7 +426,7 @@ export default class TechCommunicationHub extends NavigationMixin(LightningEleme
             const userIds = this.selectedUserPills.map(p => p.id);
             sendInternalEmail({
                 oppId: this.recordId,
-                toEmail: this.toEmail,
+                toEmail: '', // CORRECCIÓN: Se ignora toEmail para no filtrar el correo del cliente oculto
                 ccEmail: this.ccEmail,
                 bccEmail: this.bccEmail,
                 subject: this.subject,
