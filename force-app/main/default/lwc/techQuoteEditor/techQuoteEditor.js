@@ -206,7 +206,7 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
                     if (q.Markers_Data__c) {
                         try {
                             const decoded = JSON.parse(decodeURIComponent(escape(window.atob(q.Markers_Data__c))));
-                            if (decoded.serviciosData) this.serviciosData = decoded.serviciosData;
+                            if (decoded.serviciosData) this.serviciosData = decoded.serviciosData.filter(Boolean);
                             if (decoded.selectedSedesIds) this.selectedSedesIds = decoded.selectedSedesIds;
                             if (decoded.selectedSedesObjects) this.selectedSedesObjects = decoded.selectedSedesObjects;
                             if (decoded.estrategiaVenta) {
@@ -623,7 +623,8 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
     }
 
     async handleAddServiceItems(event) {
-        const newItems = event.detail;
+        const newItems = (event.detail || []).filter(Boolean);
+        if (newItems.length === 0) return;
         if (this.itemToEdit) {
             this.serviciosData = this.serviciosData.map(item => item.id === this.itemToEdit.id ? newItems[0] : item);
         } else {

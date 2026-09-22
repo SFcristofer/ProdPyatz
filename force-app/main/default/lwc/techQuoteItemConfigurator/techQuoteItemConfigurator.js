@@ -122,7 +122,7 @@ export default class TechQuoteItemConfigurator extends LightningElement {
 
     get priceTypeOptions() { return [ { label: 'Unitario', value: 'UNITARIO' }, { label: 'Total', value: 'TOTAL' } ]; }
     get selectedPriceType() { return this.isUnitario ? 'UNITARIO' : 'TOTAL'; }
-    get isAddDisabled() { return !this.selectedProductId && !this.selectedPbeId; }
+    get isAddDisabled() { return (!this.selectedProductId && !this.selectedPbeId) || !this.modalTableData.some(r => r.isSelected); }
     get modalTitle() { return this._editItem ? 'Editar Partida Técnica' : 'Configurador de Partida Técnica'; }
     get saveButtonLabel() { return this._editItem ? 'Actualizar Partida' : 'Confirmar Partida'; }
     get discountOptions() { return [ { label: '$', value: 'monto' }, { label: '%', value: 'porcentaje' } ]; }
@@ -368,6 +368,7 @@ export default class TechQuoteItemConfigurator extends LightningElement {
 
     handleSave() {
         const selectedRows = this.modalTableData.filter(r => r.isSelected);
+        if (selectedRows.length === 0) return;
 
         const finalHtml = this.previewHtml;
 

@@ -142,4 +142,43 @@ private class OperationsControllerTest {
         ContentDocument doc = [SELECT Title FROM ContentDocument WHERE Id = :docId];
         System.assert(doc.Title.contains('[CL_DOC]'));
     }
+
+    @isTest
+    static void testCloneOpportunity() {
+        Opportunity opp = [SELECT Id FROM Opportunity LIMIT 1];
+        
+        Product2 prod = new Product2(Name = 'Test Prod', IsActive = true);
+        insert prod;
+        PricebookEntry pbe = new PricebookEntry(Pricebook2Id = Test.getStandardPricebookId(), Product2Id = prod.Id, UnitPrice = 100, IsActive = true);
+        insert pbe;
+        OpportunityLineItem oli = new OpportunityLineItem(OpportunityId = opp.Id, PricebookEntryId = pbe.Id, Quantity = 1, UnitPrice = 100);
+        insert oli;
+        
+        Levantamiento_Tecnico__c lev = new Levantamiento_Tecnico__c(Oportunidad__c = opp.Id, Tipo_Servicio__c = 'BIOENZIMÁTICO');
+        insert lev;
+        
+        Quote q = new Quote(Name = 'Test Quote', OpportunityId = opp.Id, Pricebook2Id = Test.getStandardPricebookId());
+        insert q;
+        QuoteLineItem qli = new QuoteLineItem(QuoteId = q.Id, PricebookEntryId = pbe.Id, Quantity = 1, UnitPrice = 100);
+        insert qli;
+        
+        Test.startTest();
+        Id clonedId = OperationsController.cloneOpportunity(opp.Id);
+        Test.stopTest();
+        
+        Opportunity clonedOpp = [SELECT Name, StageName, Subetapa__c FROM Opportunity WHERE Id = :clonedId];
+        System.assert(clonedOpp.Name.contains('(Copia)'));
+        
+        List<OpportunityLineItem> clonedOlis = [SELECT Id FROM OpportunityLineItem WHERE OpportunityId = :clonedId];
+        System.assertEquals(1, clonedOlis.size());
+        
+        List<Levantamiento_Tecnico__c> clonedLevs = [SELECT Id FROM Levantamiento_Tecnico__c WHERE Oportunidad__c = :clonedId];
+        System.assertEquals(1, clonedLevs.size());
+        
+        List<Quote> clonedQuotes = [SELECT Id FROM Quote WHERE OpportunityId = :clonedId];
+        System.assertEquals(1, clonedQuotes.size());
+        
+        List<QuoteLineItem> clonedQlis = [SELECT Id FROM QuoteLineItem WHERE QuoteId = :clonedQuotes[0].Id];
+        System.assertEquals(1, clonedQlis.size());
+    }
 }

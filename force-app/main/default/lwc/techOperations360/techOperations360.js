@@ -9,13 +9,15 @@ import STAGE_FIELD from '@salesforce/schema/Opportunity.StageName';
 import SUBSTAGE_FIELD from '@salesforce/schema/Opportunity.Subetapa__c';
 import STATUS_FIELD from '@salesforce/schema/Opportunity.Estado_Subetapa__c';
 import OWNER_FIELD from '@salesforce/schema/Opportunity.OwnerId';
+import NAME_FIELD from '@salesforce/schema/Opportunity.Name';
 
-const OPPORTUNITY_FIELDS = [STAGE_FIELD, SUBSTAGE_FIELD, STATUS_FIELD, OWNER_FIELD];
+const OPPORTUNITY_FIELDS = [NAME_FIELD, STAGE_FIELD, SUBSTAGE_FIELD, STATUS_FIELD, OWNER_FIELD];
 import getActiveUsers from '@salesforce/apex/OperationsController.getActiveUsers';
 import getOpportunitiesList from '@salesforce/apex/OperationsController.getOpportunitiesList';
 import getOpportunitiesByAccount from '@salesforce/apex/OperationsController.getOpportunitiesByAccount';
 import saveStageTracking from '@salesforce/apex/OperationsController.saveStageTracking';
 import getProcessHistory from '@salesforce/apex/OperationsController.getProcessHistory';
+import cloneOpportunity from '@salesforce/apex/OperationsController.cloneOpportunity';
 import saveTechnicalData from '@salesforce/apex/QuoteController.saveTechnicalData';
 import getQuotesList from '@salesforce/apex/QuoteController.getQuotesList';
 import TechSlackModal from 'c/techSlackModal';
@@ -93,6 +95,7 @@ export default class TechOperations360 extends NavigationMixin(LightningElement)
         { label: 'Propietario', fieldName: 'owner', type: 'text' },
         { type: 'action', typeAttributes: { rowActions: [
             { label: 'Abrir Expediente 360', name: 'open_360', iconName: 'standard:omni_channel' },
+            { label: 'Clonar Oportunidad', name: 'clone', iconName: 'utility:copy' },
             { label: 'Eliminar', name: 'delete', iconName: 'utility:delete', variant: 'destructive' }
         ] } }
     ];
@@ -214,6 +217,7 @@ export default class TechOperations360 extends NavigationMixin(LightningElement)
     @track quoteViewMode = 'list';
     @track selectedQuoteId = null;
     @track selectedContractId = null;
+    @track isClonedOpportunity = false;
 
     // Control de sincronización para evitar reinicio involuntario
     _metadataLoaded = false;
@@ -265,6 +269,8 @@ export default class TechOperations360 extends NavigationMixin(LightningElement)
     wiredOppRecordEffective({ error, data }) {
         if (data) {
             this.currentOwnerId = data.fields.OwnerId ? data.fields.OwnerId.value : null;
+            const oppName = data.fields.Name ? data.fields.Name.value : '';
+            this.isClonedOpportunity = oppName.includes('(Copia)');
         }
     }
 
@@ -275,6 +281,8 @@ export default class TechOperations360 extends NavigationMixin(LightningElement)
             this._pendingStage = data.fields.StageName.value;
             this._pendingSubStage = data.fields.Subetapa__c.value;
             this._pendingStatus = data.fields.Estado_Subetapa__c.value;
+            const oppName = data.fields.Name ? data.fields.Name.value : '';
+            this.isClonedOpportunity = oppName.includes('(Copia)');
             this._recordLoaded = true;
             this.applyPersistence();
         } else if (error) {
@@ -449,6 +457,21 @@ export default class TechOperations360 extends NavigationMixin(LightningElement)
             // No reseteamos currentStep aquí, dejamos que la persistencia actúe
             this.quoteViewMode = 'list';
             this.loadProcessHistory();
+        } else if (actionName === 'clone') {
+            this.isLoading = true;
+            cloneOpportunity({ oppId: row.id })
+                .then(newId => {
+                    this.dispatchEvent(new ShowToastEvent({ title: 'Éxito', message: 'Oportunidad clonada correctamente.', variant: 'success' }));
+                    this.activeOppId = newId;
+                    this.viewingDashboard = false;
+                    this.quoteViewMode = 'list';
+                    this.loadProcessHistory();
+                    this.loadOpportunities();
+                })
+                .catch(error => {
+                    this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: error.body ? error.body.message : 'Error al clonar', variant: 'error' }));
+                    this.isLoading = false;
+                });
         } else if (actionName === 'delete') {
             if (confirm('¿Está seguro de que desea eliminar esta oportunidad?')) {
                 this.isLoading = true;
