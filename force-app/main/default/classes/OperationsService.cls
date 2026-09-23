@@ -62,7 +62,8 @@ public with sharing class OperationsService {
                 'id' => cdl.ContentDocumentId, 'type' => typeLabel, 'label' => typeLabel, 'subject' => cdl.ContentDocument.Title,
                 'date' => cdl.ContentDocument.CreatedDate.getTime(), 'icon' => icon, 'desc' => 'Documento vinculado al expediente.',
                 'owner' => cdl.ContentDocument.Owner != null ? cdl.ContentDocument.Owner.Name : 'N/A',
-                'isNote' => (fType == 'SNOTE')
+                'isNote' => (fType == 'SNOTE'),
+                'isFile' => (fType != 'SNOTE' && icon != 'doctype:image')
             };
             if (icon == 'doctype:image') docItem.put('previewUrl', '/sfc/servlet.shepherd/document/download/' + cdl.ContentDocumentId);
             history.add(docItem);

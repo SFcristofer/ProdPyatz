@@ -181,6 +181,13 @@
                                                         <lightning-button variant="base" label="Leer Nota Completa" icon-name="utility:preview" data-id={item.id} data-title={item.subject} onclick={handleViewNote}></lightning-button>
                                                     </div>
                                                 </template>
+
+                                                <!-- ACCIÓN ARCHIVO (VER COMPLETO) -->
+                                                <template if:true={item.isFile}>
+                                                    <div class="slds-m-top_small slds-border_top slds-p-top_small slds-text-align_right">
+                                                        <lightning-button variant="base" label="Abrir Archivo" icon-name="utility:preview" data-id={item.id} onclick={previewAttachment}></lightning-button>
+                                                    </div>
+                                                </template>
                                                 
                                                 <!-- PREVISUALIZACIÓN DE IMAGEN -->
                                                 <template if:true={item.previewUrl}>
