@@ -72,6 +72,25 @@ public with sharing class QuoteEngineService {
                 insert q; rid = q.Id;
             }
 
+            if (rid != null && q != null) {
+                Boolean needsImageUpdate = false;
+                if (String.isNotBlank(q.Introduction_Text__c) && q.Introduction_Text__c.contains('data:image')) {
+                    q.Introduction_Text__c = processBase64Images(q.Introduction_Text__c, rid);
+                    needsImageUpdate = true;
+                }
+                if (String.isNotBlank(q.Warranty_Text__c) && q.Warranty_Text__c.contains('data:image')) {
+                    q.Warranty_Text__c = processBase64Images(q.Warranty_Text__c, rid);
+                    needsImageUpdate = true;
+                }
+                if (String.isNotBlank(q.Description) && q.Description.contains('data:image')) {
+                    q.Description = processBase64Images(q.Description, rid);
+                    needsImageUpdate = true;
+                }
+                if (needsImageUpdate) {
+                    update q;
+                }
+            }
+
             if (String.isNotBlank((String)p.get('markersData')) && rid != null) {
                 LevantamientoService.processLevantamientos(rid, (String)p.get('markersData'));
                 QuoteTechnicalController.syncServiceZones(rid, (String)p.get('markersData'));
@@ -80,28 +99,61 @@ public with sharing class QuoteEngineService {
             if (String.isNotBlank(itemsJson) && rid != null) {
                 List<Object> items = (List<Object>)JSON.deserializeUntyped(itemsJson);
                 delete [SELECT Id FROM QuoteLineItem WHERE QuoteId = :rid];
+
+                // Permite elegir precio de cualquier lista en el modal: cada línea se ancla
+                // al PricebookEntry del MISMO producto en la lista propia de la Quote
+                // (requisito de la plataforma), pero conserva el precio elegido vía UnitPrice.
+                Set<Id> pbeIds = new Set<Id>();
+                Set<Id> prodIds = new Set<Id>();
+                for (Object obj : items) {
+                    Map<String, Object> it = (Map<String, Object>)obj;
+                    String pbeIdStr = (String)it.get('pbeId'); if (String.isBlank(pbeIdStr) || pbeIdStr == 'null') pbeIdStr = (String)it.get('id');
+                    if (String.isNotBlank(pbeIdStr) && pbeIdStr.length() >= 15) pbeIds.add((Id)pbeIdStr);
+                    String prodIdStr = (String)it.get('productId');
+                    if (String.isNotBlank(prodIdStr) && prodIdStr.length() >= 15) prodIds.add((Id)prodIdStr);
+                }
+                Map<Id, Id> pbeToProduct = new Map<Id, Id>();
+                for (PricebookEntry pbe : [SELECT Id, Product2Id FROM PricebookEntry WHERE Id IN :pbeIds]) {
+                    pbeToProduct.put(pbe.Id, pbe.Product2Id);
+                    prodIds.add(pbe.Product2Id);
+                }
+                Map<Id, Id> prodToOwnPbe = new Map<Id, Id>();
+                for (PricebookEntry pbe : [SELECT Id, Product2Id FROM PricebookEntry WHERE Product2Id IN :prodIds AND Pricebook2Id = :q.Pricebook2Id AND IsActive = true]) {
+                    prodToOwnPbe.put(pbe.Product2Id, pbe.Id);
+                }
+
                 List<QuoteLineItem> qlis = new List<QuoteLineItem>();
                 for (Object obj : items) {
                     Map<String, Object> it = (Map<String, Object>)obj;
                     String pbeIdStr = (String)it.get('pbeId'); if (String.isBlank(pbeIdStr) || pbeIdStr == 'null') pbeIdStr = (String)it.get('id');
                     if (String.isBlank(pbeIdStr) || pbeIdStr.length() < 15) continue;
                     try {
+                        String prodIdStr = (String)it.get('productId');
+                        Id productId = (String.isNotBlank(prodIdStr) && prodIdStr.length() >= 15) ? (Id)prodIdStr : pbeToProduct.get((Id)pbeIdStr);
+                        Id ownPbeId = productId != null ? prodToOwnPbe.get(productId) : null;
+                        Id finalPbeId = ownPbeId != null ? ownPbeId : (Id)pbeIdStr;
+
                         Decimal can = Decimal.valueOf(String.valueOf(it.get('cantidad') != null ? it.get('cantidad') : 1));
                         Decimal tot = Decimal.valueOf(String.valueOf(it.get('totalSinImpuestos') != null ? it.get('totalSinImpuestos') : 0));
                         Decimal precioVenta = it.containsKey('precioVenta') && it.get('precioVenta') != null ? Decimal.valueOf(String.valueOf(it.get('precioVenta'))) : (can > 0 ? (tot/can) : tot);
-                        
+
                         Decimal discountPct = 0;
                         if (precioVenta > 0 && (precioVenta * can) > tot) {
                             discountPct = (((precioVenta * can) - tot) / (precioVenta * can)) * 100.0;
                         }
 
+                        String detalleTecnico = (String)it.get('detalleTecnico');
+                        if (String.isNotBlank(detalleTecnico) && detalleTecnico.contains('data:image')) {
+                            detalleTecnico = processBase64Images(detalleTecnico, rid);
+                        }
+
                         qlis.add(new QuoteLineItem(
-                            QuoteId = rid, 
-                            PricebookEntryId = (Id)pbeIdStr, 
-                            Quantity = (can > 0 ? can : 1), 
+                            QuoteId = rid,
+                            PricebookEntryId = finalPbeId,
+                            Quantity = (can > 0 ? can : 1),
                             UnitPrice = precioVenta,
                             Discount = discountPct,
-                            Descripcion_Detallada__c = (String)it.get('detalleTecnico'),
+                            Descripcion_Detallada__c = detalleTecnico,
                             Zonas_a_Tratar__c = (String)it.get('areas'),
                             Solucion_Tecnica__c = (it.get('solucionId') != null && String.valueOf(it.get('solucionId')) != '') ? (Id)it.get('solucionId') : null
                         ));
@@ -154,5 +206,54 @@ public with sharing class QuoteEngineService {
             results.add(new Map<String, Object>{ 'id' => best.Id, 'productId' => p.Id, 'name' => p.Name, 'sku' => p.ProductCode, 'description' => p.Description_product__c != null ? p.Description_product__c : p.Description, 'unitPrice' => best.UnitPrice, 'pricebookName' => best.Pricebook2.Name });
         }
         return results;
+    }
+
+    private static String processBase64Images(String htmlText, Id linkedRecordId) {
+        if (String.isBlank(htmlText) || !htmlText.contains('data:image')) return htmlText;
+        
+        Pattern imgPattern = Pattern.compile('(?i)<img[^>]+src="data:image/([^;]+);base64,([^"]+)"[^>]*>');
+        Matcher m = imgPattern.matcher(htmlText);
+        
+        List<ContentVersion> cvsToInsert = new List<ContentVersion>();
+        
+        while (m.find()) {
+            ContentVersion cv = new ContentVersion();
+            cv.Title = 'Img_' + System.now().getTime() + '_' + cvsToInsert.size() + '.' + m.group(1);
+            cv.PathOnClient = cv.Title;
+            cv.VersionData = EncodingUtil.base64Decode(m.group(2));
+            cv.IsMajorVersion = true;
+            cvsToInsert.add(cv);
+        }
+        
+        if (cvsToInsert.isEmpty()) return htmlText;
+        insert cvsToInsert;
+        
+        List<ContentDocumentLink> cdls = new List<ContentDocumentLink>();
+        Map<Id, ContentVersion> cvMap = new Map<Id, ContentVersion>([SELECT Id, ContentDocumentId FROM ContentVersion WHERE Id IN :cvsToInsert]);
+        
+        for (ContentVersion cv : cvMap.values()) {
+            ContentDocumentLink cdl = new ContentDocumentLink();
+            cdl.ContentDocumentId = cv.ContentDocumentId;
+            cdl.LinkedEntityId = linkedRecordId;
+            cdl.ShareType = 'V';
+            cdl.Visibility = 'AllUsers';
+            cdls.add(cdl);
+        }
+        if (!cdls.isEmpty()) insert cdls;
+        
+        String updatedHtml = htmlText;
+        Matcher m2 = imgPattern.matcher(htmlText);
+        Integer index = 0;
+        String baseUrl = URL.getOrgDomainUrl().toExternalForm();
+        while (m2.find()) {
+            String fullMatch = m2.group(0);
+            ContentVersion cv = cvsToInsert[index];
+            String downloadUrl = baseUrl + '/sfc/servlet.shepherd/version/download/' + cv.Id;
+            String newImgTag = fullMatch.replaceAll('src="data:image/[^"]+"', 'src="' + downloadUrl + '"');
+            updatedHtml = updatedHtml.replace(fullMatch, newImgTag);
+            index++;
+        }
+        
+        return updatedHtml;
     }
 }

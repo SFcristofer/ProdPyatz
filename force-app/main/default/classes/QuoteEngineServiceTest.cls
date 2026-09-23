@@ -138,4 +138,27 @@ private class QuoteEngineServiceTest {
         Test.stopTest();
         System.assertNotEquals(null, quoteId);
     }
+    
+    @isTest
+    static void testSaveTechnicalData_withBase64Images() {
+        Opportunity opp = [SELECT Id FROM Opportunity LIMIT 1];
+        String dummyImage = '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==" alt="test">';
+        
+        Map<String, Object> data = new Map<String, Object>{
+            'opportunityId' => opp.Id,
+            'name' => 'Quote with Images',
+            'status' => 'Draft',
+            'intro' => 'Intro ' + dummyImage,
+            'warranty' => 'Warranty ' + dummyImage,
+            'observacionesPago' => 'Pago ' + dummyImage
+        };
+        Test.startTest();
+        Id quoteId = QuoteEngineService.saveTechnicalData(data);
+        Test.stopTest();
+        
+        Quote q = [SELECT Introduction_Text__c, Warranty_Text__c, Description FROM Quote WHERE Id = :quoteId];
+        System.assert(q.Introduction_Text__c.contains('/sfc/servlet.shepherd/version/download/'), 'Intro should contain file URL');
+        System.assert(q.Warranty_Text__c.contains('/sfc/servlet.shepherd/version/download/'), 'Warranty should contain file URL');
+        System.assert(q.Description.contains('/sfc/servlet.shepherd/version/download/'), 'Description should contain file URL');
+    }
 }

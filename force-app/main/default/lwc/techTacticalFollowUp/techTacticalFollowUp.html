@@ -175,10 +175,17 @@
                                                     </div>
                                                 </template>
                                                 
+                                                <!-- ACCIÓN NOTA (VER COMPLETO) -->
+                                                <template if:true={item.isNote}>
+                                                    <div class="slds-m-top_small slds-border_top slds-p-top_small slds-text-align_right">
+                                                        <lightning-button variant="base" label="Leer Nota Completa" icon-name="utility:preview" data-id={item.id} data-title={item.subject} onclick={handleViewNote}></lightning-button>
+                                                    </div>
+                                                </template>
+                                                
                                                 <!-- PREVISUALIZACIÓN DE IMAGEN -->
                                                 <template if:true={item.previewUrl}>
-                                                    <div class="slds-m-top_small preview-box">
-                                                        <img src={item.previewUrl} alt={item.subject}/>
+                                                    <div class="slds-m-top_small preview-box" style="cursor: pointer;" data-id={item.id} onclick={previewAttachment} title="Ver imagen completa">
+                                                        <img src={item.previewUrl} alt={item.subject} style="max-height: 150px; border-radius: 4px; border: 1px solid #ccc;"/>
                                                     </div>
                                                 </template>
                                             </div>
@@ -245,6 +252,38 @@
                 </div>
                 <footer class="slds-modal__footer">
                     <lightning-button label="Cerrar" onclick={closeEmailModal}></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+    <!-- MODAL DE NOTA COMPLETA -->
+    <template if:true={showNoteModal}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_medium">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning-button-icon icon-name="utility:close" onclick={closeNoteModal} alternative-text="Cerrar" class="slds-modal__close" variant="bare-inverse"></lightning-button-icon>
+                    <h2 class="slds-text-heading_medium slds-hyphenate">
+                        <template if:true={isLoadingNote}>Cargando...</template>
+                        <template if:false={isLoadingNote}>{selectedNote.title}</template>
+                    </h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <template if:true={isLoadingNote}>
+                        <div class="slds-is-relative slds-p-around_large" style="height: 150px;">
+                            <lightning-spinner alternative-text="Cargando contenido..." size="medium"></lightning-spinner>
+                        </div>
+                    </template>
+                    
+                    <template if:false={isLoadingNote}>
+                        <div class="email-body-container slds-box slds-theme_shade slds-m-bottom_medium" style="background: white; min-height: 150px;">
+                            <lightning-formatted-rich-text value={selectedNote.content}></lightning-formatted-rich-text>
+                        </div>
+                    </template>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning-button label="Cerrar" onclick={closeNoteModal}></lightning-button>
                 </footer>
             </div>
         </section>

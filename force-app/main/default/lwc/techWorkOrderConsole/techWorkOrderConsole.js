@@ -525,7 +525,18 @@ export default class TechWorkOrderConsole extends NavigationMixin(LightningEleme
     }
 
     handleBackToContract() { this.dispatchEvent(new CustomEvent('back')); }
-    handleViewQuote() { /* Lógica para abrir PDF */ }
+    handleViewQuote() {
+        const targetQuoteId = this.internalQuoteId || this.quoteId;
+        if (targetQuoteId) {
+            window.open(`/apex/QuoteTechnicalPDF?id=${targetQuoteId}&t=${Date.now()}`, '_blank');
+        } else {
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Aviso',
+                message: 'No hay un presupuesto (Cotización) asociado para visualizar el PDF.',
+                variant: 'warning'
+            }));
+        }
+    }
     handleAddCandidateDates() { this.showSchedulingSection = !this.showSchedulingSection; }
 
     toggleAccordion(event) {

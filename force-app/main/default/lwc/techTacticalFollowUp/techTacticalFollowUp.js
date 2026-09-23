@@ -6,6 +6,7 @@ import saveNote from '@salesforce/apex/OperationsController.saveNote';
 import getTacticalHistory from '@salesforce/apex/OperationsController.getTacticalHistory';
 import updateTaskActivity from '@salesforce/apex/OperationsController.updateTaskActivity';
 import getEmailDetails from '@salesforce/apex/OperationsController.getEmailDetails';
+import getNoteDetails from '@salesforce/apex/OperationsController.getNoteDetails';
 
 export default class TechTacticalFollowUp extends NavigationMixin(LightningElement) {
     @api recordId; // Opportunity ID
@@ -19,6 +20,11 @@ export default class TechTacticalFollowUp extends NavigationMixin(LightningEleme
     @track showEmailModal = false;
     @track selectedEmail = {};
     @track isLoadingEmail = false;
+
+    // --- ESTADO MODAL NOTA ---
+    @track showNoteModal = false;
+    @track selectedNote = {};
+    @track isLoadingNote = false;
 
     // --- MANEJO DE TARJETAS DE ACCIÓN ---
     get noteCardClass() { return this.activeAction === 'note' ? 'action-card active-card' : 'action-card'; }
@@ -271,6 +277,34 @@ export default class TechTacticalFollowUp extends NavigationMixin(LightningEleme
     closeEmailModal() {
         this.showEmailModal = false;
         this.selectedEmail = {};
+    }
+
+    handleViewNote(event) {
+        const noteId = event.target.dataset.id;
+        const noteTitle = event.target.dataset.title;
+        this.showNoteModal = true;
+        this.isLoadingNote = true;
+        this.selectedNote = { title: noteTitle, content: '' };
+        
+        getNoteDetails({ documentId: noteId })
+            .then(result => {
+                this.selectedNote.content = result;
+                this.isLoadingNote = false;
+            })
+            .catch(error => {
+                console.error('Error loading note details:', error);
+                this.isLoadingNote = false;
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Error',
+                    message: 'No se pudo cargar la nota.',
+                    variant: 'error'
+                }));
+            });
+    }
+
+    closeNoteModal() {
+        this.showNoteModal = false;
+        this.selectedNote = {};
     }
 
     previewAttachment(event) {

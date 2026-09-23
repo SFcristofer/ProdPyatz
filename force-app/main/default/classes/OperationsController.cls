@@ -114,6 +114,11 @@ public with sharing class OperationsController {
         return OperationsService.saveNote(parentId, title, content);
     }
 
+    @AuraEnabled
+    public static String getNoteDetails(Id documentId) {
+        return OperationsService.getNoteDetails(documentId);
+    }
+
     @AuraEnabled(cacheable=true)
     public static List<Map<String, String>> getOpenOpportunities() {
         List<Map<String, String>> options = new List<Map<String, String>>();
