@@ -709,6 +709,7 @@ export default class TechOperations360 extends NavigationMixin(LightningElement)
         const lastStage = this.stages[this.stages.length - 1];
         return this.currentStep === lastStage.value && this.currentSubStep === lastStage.subStages.length.toString();
     }
+    get isNextDisabled() { return this.isLastStep || this.isLoading; }
 
     handleStepClick(event) {
         this.currentStep = event.currentTarget.dataset.value || event.target.value;
@@ -748,6 +749,7 @@ export default class TechOperations360 extends NavigationMixin(LightningElement)
     }
 
     async handleNext() {
+        if (this.isLoading) return;
         const statusCombo = this.template.querySelector('.status-combobox');
         if (statusCombo && !statusCombo.checkValidity()) {
             statusCombo.reportValidity();

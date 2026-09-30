@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Entregables – Sesiones con PYATZ</title>
+<style>
+body{font-family:Segoe UI,Arial,sans-serif;margin:24px;color:#222;background:#f7f8fa}
+h1{margin:0 0 4px}h2{margin-top:32px;border-bottom:2px solid #0b5cab;padding-bottom:4px;color:#0b5cab}
+p.meta{color:#555;margin:0 0 16px}
+table{border-collapse:collapse;width:100%;background:#fff;font-size:14px}
+th,td{border:1px solid #d9dde3;padding:8px;vertical-align:top;text-align:left}
+th{background:#eef2f7}td:first-child{width:40px;text-align:center}
+td.src{width:110px;white-space:nowrap;font-size:12px;color:#555}td.st{width:120px}
+.b{display:inline-block;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;color:#fff}
+.pend{background:#c23934}.done{background:#2e844a}.f2{background:#706e6b}.cli{background:#dd7a01}.mon{background:#0176d3}.info{background:#8a8a8a}
+.legend span{margin-right:8px}
+ul{margin:4px 0 0 18px;padding:0}
+.note{background:#fff8e1;border-left:4px solid #dd7a01;padding:8px 12px;margin:12px 0}
+</style>
+</head>
+<body>
+<h1>Entregables – Sesiones de revisión con PYATZ</h1>
+<p class="meta"><b>T1</b> = transcripcion_completa.txt (sesión de cotizador, perfiles y correos) · <b>T2</b> = transcripcion_completa (1).txt (sesión de contratos, ODT/SA, reportes de servicio y licencias)</p>
+<p class="legend">
+<span class="b pend">Pendiente</span><span class="b done">Hecho</span><span class="b mon">Monitorear</span><span class="b cli">Acción cliente</span><span class="b f2">Fase 2</span><span class="b info">Aclarado / info</span>
+</p>
+
+<h2>1. Cotizador – Editor de texto</h2>
+<table><tr><th>#</th><th>Entregable</th><th>Origen</th><th>Estado</th></tr>
+<tr><td>1</td><td><b>Tamaño de fuente por defecto 12</b> (hoy 13) en las cajas de Introducción, Notas, Partidas, Condiciones y Anexos. El usuario debe poder seguir cambiándolo. No cambiar títulos ni la parte superior.</td><td class="src">T1 · 33–39 min</td><td class="st"><span class="b pend">Pendiente</span></td></tr>
+<tr><td>2</td><td>Al cambiar el tamaño de fuente en el editor enriquecido <b>se pierde la selección</b> del texto. Corregir.</td><td class="src">T1</td><td class="st"><span class="b pend">Pendiente</span></td></tr>
+<tr><td>3</td><td><b>Pérdida de datos</b> al salir a agregar la zona. Validar que el autoguardado al agregar la partida lo cubra.</td><td class="src">T1</td><td class="st"><span class="b pend">Pendiente</span></td></tr>
+<tr><td>4</td><td>Al volver a entrar al wizard, <b>retomar en el último paso alcanzado</b>.</td><td class="src">Sesión previa</td><td class="st"><span class="b done">Hecho (desplegado a prod)</span></td></tr>
+</table>
+
+<h2>2. Cotizador – PDF del presupuesto</h2>
+<table><tr><th>#</th><th>Entregable</th><th>Origen</th><th>Estado</th></tr>
+<tr><td>5</td><td>El PDF debe respetar el tamaño definido en el editor. Hoy <b>se reduce automáticamente</b>: se ve en 13 en el editor pero más chico en el PDF.</td><td class="src">T1 · 33–39 min</td><td class="st"><span class="b pend">Pendiente</span></td></tr>
+<tr><td>6</td><td><b>Interlineado inconsistente</b>: unos párrafos salen seguidos y otros a doble espacio o 1.5. Los números se ven más grandes que las letras y hay textos más chicos que otros. Unificar.</td><td class="src">T1</td><td class="st"><span class="b pend">Pendiente</span></td></tr>
+<tr><td>7</td><td>Hacer más angostas las columnas <b>“Método de pago” y “Tipo de trabajo”</b> para dar más espacio a <b>“Descripción”</b>.</td><td class="src">T1</td><td class="st"><span class="b pend">Pendiente</span></td></tr>
+<tr><td>8</td><td>Al final del wizard (“Siguiente”), <b>abrir directamente el PDF en grande</b>, como en el contrato, sin los clics extra de “confirmar y finalizar” y “abrir en ventana nueva”. Es solo un visualizador.</td><td class="src">T1</td><td class="st"><span class="b pend">Pendiente (deseable)</span></td></tr>
+<tr><td>9</td><td>La <b>Introducción técnica</b> trae solo el nombre del contacto; falta el <b>tratamiento</b> del Contacto (Lic., Ing.).</td><td class="src">T1</td><td class="st"><span class="b pend">Pendiente</span></td></tr>
+</table>
+
+<h2>3. Contratos</h2>
+<table><tr><th>#</th><th>Entregable</th><th>Origen</th><th>Estado</th></tr>
+<tr><td>10</td><td><b>Folio del contrato independiente, iniciando en 2250.</b> Hoy toma el folio del presupuesto (ej. 6033). Los presupuestos (6000) y las ODT (16000) están bien.</td><td class="src">T1 · T2 3:21, 8:37</td><td class="st"><span class="b pend">Pendiente</span></td></tr>
+<tr><td>11</td><td><b>Nueva estructura del PDF del contrato</b> (modelo IGEO):<ul>
+<li><b>Carátula</b>: título “Contrato”, nombre comercial, cliente, dirección, dirección del servicio y código de lo contratado. Hoy sale la portada de la cotización.</li>
+<li>Después, el formato/texto del contrato y las firmas.</li>
+<li>Después de las firmas, <b>“Anexo 1”</b> con la cotización completa: introducción y partidas, igual que en la cotización, <u>sin las condiciones</u>.</li></ul></td><td class="src">T2 · 3:28–5:52</td><td class="st"><span class="b pend">Pendiente</span></td></tr>
+<tr><td>12</td><td>Si <b>no se selecciona plantilla de contrato</b>, igual genera uno con texto base (default). Revisar el comportamiento esperado.</td><td class="src">T1 · T2 5:31, 7:36</td><td class="st"><span class="b pend">Pendiente</span></td></tr>
+<tr><td>13</td><td><b>La plantilla seleccionada no se aplica</b>: al regresar y elegir otra (prueba “ABC 123”), sigue usando el formato anterior. Cris: “te lo reviso”.</td><td class="src">T2 · 7:21–7:44</td><td class="st"><span class="b pend">Pendiente</span></td></tr>
+<tr><td>14</td><td><b>Control de regeneración</b>: hoy se puede regresar y rehacer el contrato sin ningún filtro, reemitiéndolo con el mismo folio y aunque ya tenga fechas de inicio y fin. Antes había un botón “Editar” con la advertencia “ya imprimiste este contrato; si generas cambios harás otro”. Restaurar ese control o aviso.</td><td class="src">T2 · 6:03–7:13</td><td class="st"><span class="b pend">Pendiente</span></td></tr>
+<tr><td>15</td><td>Error “No puedo crear un contrato vacío / al menos 1 servicio”: pasaba porque no se había dado <b>Confirmar</b> en el presupuesto, que es lo que lo sincroniza con el contrato. Se sugiere un aviso más claro en la interfaz.</td><td class="src">T2 · 0:51–2:13</td><td class="st"><span class="b info">Aclarado</span></td></tr>
+</table>
+
+<h2>4. ODT / Citas de servicio (SA) / Reporte de servicio</h2>
+<table><tr><th>#</th><th>Entregable</th><th>Origen</th><th>Estado</th></tr>
+<tr><td>16</td><td><b>Trazabilidad de las ODT desde la oportunidad/contrato</b>: no hay un resumen de las SA generadas (ej. 13 órdenes) dentro del flujo de la oportunidad; hay que salir a buscarlas. Mostrar una lista o resumen de las ODT (SA) del contrato.</td><td class="src">T2 · 9:53–12:16</td><td class="st"><span class="b pend">Pendiente</span></td></tr>
+<tr><td>17</td><td><b>Folio único por visita en el PDF</b>: todas las visitas muestran el mismo folio (16001, de la Work Order). El folio principal debe ser el de la <b>SA</b> (SA-00xx). Jerarquía acordada: presupuesto, contrato, Work Order (póliza/servicio, 16xxx), varias SA (ODT) y, dentro de cada SA, sus revisiones.</td><td class="src">T2 · 15:00–17:10</td><td class="st"><span class="b pend">Pendiente</span></td></tr>
+<tr><td>18</td><td>Renombrar el documento de <b>“Certificado de servicio” a “Reporte de servicio”</b>. Encabezado: folio SA como principal; debajo, en pequeño, “Número de póliza” (Work Order) y, opcionalmente, el número de contrato. Irving está de acuerdo.</td><td class="src">T2 · 17:39–18:30</td><td class="st"><span class="b pend">Pendiente</span></td></tr>
+<tr><td>19</td><td><b>Eliminar “Registro COFEPRIS”</b> del reporte.</td><td class="src">T2 · 18:32</td><td class="st"><span class="b pend">Pendiente</span></td></tr>
+<tr><td>20</td><td><b>Cuadro de texto fijo al final</b> de todos los reportes/órdenes: contactos administrativo y operativo (teléfono y correo). Sustituye los textos que hoy se meten en cada partida. Gaby enviará el texto.</td><td class="src">T2 · 19:11–22:38</td><td class="st"><span class="b pend">Pendiente</span> <span class="b cli">Texto: cliente</span></td></tr>
+<tr><td>21</td><td><b>Verificación con firma automática</b>: hoy “Verificar” pide escribir un nombre a mano, no cambia nada visual y no trae firma. Debe:<ul>
+<li>Detectar al usuario que verifica y traer <b>su nombre y su firma</b>.</li>
+<li>Mostrar las 3 firmas: <b>técnico, cliente y verificador</b>.</li>
+<li>Cambiar el título al quedar verificado. En IGEO pasa de “Orden de trabajo” a “Certificado de servicio”; confirmar con el cliente cómo encaja con el renombre del #18.</li>
+<li>Opcional, como en IGEO: preguntar si se envía por correo al verificar.</li></ul></td><td class="src">T2 · 22:52–31:41</td><td class="st"><span class="b pend">Pendiente</span></td></tr>
+<tr><td>22</td><td>Asegurar que la <b>hora de inicio y fin</b> aparezca en el reporte; Gaby lo marcó como muy importante.</td><td class="src">T2 · 31:46</td><td class="st"><span class="b pend">Pendiente</span></td></tr>
+<tr><td>23</td><td><b>“Cerrar orden de trabajo”</b> (sin firma) no respondía desde la computadora de Gaby; desde la de Irving sí funcionó. Revisar el permiso o el navegador.</td><td class="src">T2 · 27:11–29:37</td><td class="st"><span class="b mon">Monitorear</span></td></tr>
+<tr><td>24</td><td>El formulario desde web no permite subir fotos: se hace desde la <b>app Field Service</b> (Play Store / App Store), con usuario técnico.</td><td class="src">T2 · 12:42–13:35</td><td class="st"><span class="b info">Aclarado</span></td></tr>
+<tr><td>25</td><td>Navegación: para regresar se usan las <b>subpestañas</b> de la consola (barra inferior).</td><td class="src">T2 · 14:07–14:46</td><td class="st"><span class="b info">Aclarado</span></td></tr>
+<tr><td>26</td><td>En Fase 1 se mantiene el proceso actual: descargar el PDF verificado y subirlo a Drive.</td><td class="src">T2 · 30:48–31:07</td><td class="st"><span class="b info">Info</span></td></tr>
+</table>
+
+<h2>5. Notas y seguimiento</h2>
+<table><tr><th>#</th><th>Entregable</th><th>Origen</th><th>Estado</th></tr>
+<tr><td>27</td><td><b>“Añadir nota”</b>: al guardar solo aparece “documento vinculado al expediente” y no el texto. Mostrar el texto o comentario como vista previa; las notas deben funcionar como notas reales.</td><td class="src">T1</td><td class="st"><span class="b pend">Pendiente</span></td></tr>
+<tr><td>28</td><td>En notas se rechazan <b>imágenes de más de 1 MB</b>, aunque “Subir archivos” sí las acepta. Igualar el límite.</td><td class="src">T1</td><td class="st"><span class="b pend">Pendiente</span></td></tr>
+<tr><td>29</td><td>Los adjuntos en seguimiento y notas <b>no tienen enlace para abrir o previsualizar</b>, a diferencia de Cierre. Agregarlo. El commit “Mejora de previsualizacion de archivos en notas” puede cubrir parte; validar.</td><td class="src">T1</td><td class="st"><span class="b pend">Validar</span></td></tr>
+</table>
+
+<h2>6. Correos</h2>
+<table><tr><th>#</th><th>Entregable</th><th>Origen</th><th>Estado</th></tr>
+<tr><td>30</td><td><b>Dominio remitente (DKIM)</b>: los correos llegan con el remitente de Salesforce. Enviar a Gaby los registros DKIM ya generados y explicarle el proceso de validación.</td><td class="src">T1</td><td class="st"><span class="b pend">Pendiente</span> <span class="b cli">DNS: cliente</span></td></tr>
+<tr><td>31</td><td>El <b>asunto repite el título entre paréntesis</b> al enviar desde la cajita de correo. No pasó desde seguimiento y no se reprodujo en la segunda prueba.</td><td class="src">T1</td><td class="st"><span class="b mon">Monitorear</span></td></tr>
+</table>
+
+<h2>7. Perfiles, usuarios y licencias</h2>
+<table><tr><th>#</th><th>Entregable</th><th>Origen</th><th>Estado</th></tr>
+<tr><td>32</td><td>Nuevo perfil <b>“Asistente de Dirección”</b> (clonado de Analista, con permiso para editar la descripción de producto), asignado a Aylin Cortés Alba. Se revirtió el permiso que Gaby había dado a Analista. <b>Falta confirmar que Aylin pueda editar</b> (limpiar caché si hace falta).</td><td class="src">T1</td><td class="st"><span class="b done">Hecho</span> <span class="b pend">Confirmar</span></td></tr>
+<tr><td>33</td><td><b>Usuario y licencia para Donovan</b>: no hay licencias libres; desactivar (no borrar) un usuario, p. ej. Andrea Castillo o Carlos Godínez. El correo debe ser real; el username puede ser distinto. No llegaron los correos de verificación/reset a proyectos02@piatz.</td><td class="src">T1</td><td class="st"><span class="b pend">Pendiente</span></td></tr>
+<tr><td>34</td><td>La <b>contraseña no expira</b> en todos los perfiles.</td><td class="src">T1</td><td class="st"><span class="b done">Hecho</span></td></tr>
+<tr><td>35</td><td>Se explicó a Gaby cómo <b>limpiar la caché</b> del navegador (candado → cookies).</td><td class="src">T1</td><td class="st"><span class="b done">Hecho</span></td></tr>
+<tr><td>36</td><td>Se confirmó que existe la <b>auditoría</b> de quién modificó qué.</td><td class="src">T1</td><td class="st"><span class="b done">Hecho</span></td></tr>
+<tr><td>37</td><td>Recomendación: que un <b>administrador interno</b> gestione perfiles, permisos y licencias.</td><td class="src">T1</td><td class="st"><span class="b cli">Acción cliente</span></td></tr>
+<tr><td>38</td><td><b>Licencias de Field Service</b>:<ul>
+<li>La org tiene 18 licencias Salesforce (17 usadas, 1 libre), 10 Field Service Mobile (PSL add-on, requiere licencia base Salesforce) y 1 Dispatcher.</li>
+<li>Solo hay 7 técnicos dados de alta; faltan 3 para usar las 10.</li>
+<li>Asignar Field Service Mobile <b>solo a los técnicos que la usarán</b>; Gaby no la quiere.</li>
+<li>Priorizar usuarios técnicos para que ninguno quede fuera o desactivado.</li></ul></td><td class="src">T2 · 33:47–39:50, 46:30–58:53</td><td class="st"><span class="b pend">Pendiente</span></td></tr>
+<tr><td>39</td><td>Gaby no tiene permiso de Field Service (solo los técnicos). Para probar el flujo en la app, usar el usuario de un técnico real.</td><td class="src">T2 · 32:47–33:05, 39:23</td><td class="st"><span class="b info">Aclarado</span></td></tr>
+<tr><td>40</td><td>Necesitan <b>16 técnicos</b> y hoy hay 10 licencias de Mobile, así que deberán comprar más. Gaby hablará con la vendedora (Claudia Boon) por el malentendido: pensaban que las licencias Mobile eran independientes de la licencia base.</td><td class="src">T2 · 39:50–1:00:08</td><td class="st"><span class="b cli">Acción cliente</span></td></tr>
+<tr><td>41</td><td><b>Licencia Dispatcher</b>: no se implementó porque no se ajusta a su operación, pero ya la pagan. Gaby pide revisar si se le puede sacar provecho, por ejemplo para la programación de técnicos por turno y zona que hoy hacen a mano.</td><td class="src">T2 · 40:31–43:52</td><td class="st"><span class="b pend">Por evaluar</span></td></tr>
+<tr><td>42</td><td>Cuenta <b>comodín de técnico</b> para que Irving, Andrea o Carlos entren como técnico si hace falta. En IGEO usan la cuenta de un técnico. Definir la forma según las licencias disponibles.</td><td class="src">T2 · 40:11–40:31</td><td class="st"><span class="b pend">Por definir</span></td></tr>
+</table>
+
+<h2>8. Acciones del cliente</h2>
+<table><tr><th>#</th><th>Entregable</th><th>Origen</th><th>Estado</th></tr>
+<tr><td>43</td><td><b>Imágenes de firma</b>: se subieron en PNG pero con fondo blanco. Gaby o un diseñador quitarán el fondo.</td><td class="src">T1</td><td class="st"><span class="b cli">Acción cliente</span></td></tr>
+<tr><td>44</td><td>Enviar el <b>texto fijo</b> para el reporte de servicio (#20).</td><td class="src">T2 · 22:38</td><td class="st"><span class="b cli">Acción cliente</span></td></tr>
+<tr><td>45</td><td>Gaby tiene <b>más observaciones de ODT</b> por compartir.</td><td class="src">T1</td><td class="st"><span class="b cli">Acción cliente</span></td></tr>
+<tr><td>46</td><td>Configurar los registros <b>DKIM</b> en su DNS (#30).</td><td class="src">T1</td><td class="st"><span class="b cli">Acción cliente</span></td></tr>
+</table>
+
+<h2>9. Documentación y soporte</h2>
+<table><tr><th>#</th><th>Entregable</th><th>Origen</th><th>Estado</th></tr>
+<tr><td>47</td><td>Dónde editar los textos (condiciones, anexos, observaciones sobre pago, introducción técnica): Configuración → Plantillas de correo Classic → carpetas “Cierre” y “Cláusulas y anexos”. Ya se explicó; <b>falta enviarle el manual actualizado</b>.</td><td class="src">T1</td><td class="st"><span class="b pend">Enviar manual</span></td></tr>
+</table>
+
+<h2>10. Fase 2</h2>
+<table><tr><th>#</th><th>Entregable</th><th>Origen</th><th>Estado</th></tr>
+<tr><td>48</td><td><b>Información del cliente reutilizable</b> entre oportunidades (ubicaciones, universo). Por ahora se maneja por oportunidad, y la clonación copia todo, incluyendo presupuesto y partidas.</td><td class="src">T1</td><td class="st"><span class="b f2">Fase 2</span></td></tr>
+</table>
+
+<div class="note">Cierre de T2: Gaby pidió <b>avanzar con los cambios</b> mientras resuelve las licencias con la vendedora (1:00:18).</div>
+</body>
+</html>

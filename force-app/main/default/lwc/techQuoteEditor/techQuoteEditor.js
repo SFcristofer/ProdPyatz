@@ -31,6 +31,7 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
 
     @track parentOpportunityId;
     @track currentStep = '1';
+    resumeStep = '1'; // Paso más avanzado alcanzado, se persiste en Markers_Data__c
     @track isLoading = false;
 
     // --- DATOS PRESUPUESTO ---
@@ -231,6 +232,10 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
                                 this.necesidadNombre = decoded.necesidadNombre;
                                 this.necesidadSeleccionada = decoded.necesidadNombre;
                             }
+                            if (decoded.lastStep) {
+                                this.resumeStep = decoded.lastStep;
+                                this.currentStep = decoded.lastStep;
+                            }
                             this.calculateTotals();
                             if (this.selectedSedesIds.length > 0) this.fetchContacts(this.selectedSedesIds[0]);
                         } catch (e) { console.error('Error parse markers:', e); }
@@ -336,6 +341,10 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
 
         if (this.currentStep !== '4') {
             this.isLoading = true;
+            // Guardamos el paso al que se avanza (máx. 3) para retomar desde ahí al volver a entrar
+            const targetStep = Math.min(parseInt(this.currentStep) + 1, 3);
+            const prevResumeStep = this.resumeStep;
+            if (targetStep > parseInt(this.resumeStep)) this.resumeStep = targetStep.toString();
             try {
                 // Forzamos el guardado y esperamos que termine
                 const savedId = await this.handleSave('Borrador');
@@ -351,6 +360,7 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
                     }
                 }
             } catch (error) {
+                this.resumeStep = prevResumeStep;
                 console.error('Error al avanzar de paso:', error);
                 this.dispatchEvent(new ShowToastEvent({
                     title: 'Error al guardar',
@@ -571,7 +581,8 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
             pagoTransferencia: this.pagoTransferencia, pagoTarjeta: this.pagoTarjeta, trabajoPuntual: this.trabajoPuntual, 
             ventaProducto: this.ventaProducto, trabajoMantenimiento: this.trabajoMantenimiento, observacionesPago: this.observacionesPago,
             selectedContactIds: this.selectedContactIds, selectedContactNames: this.selectedContactNames,
-            selectedLines: this.selectedLines
+            selectedLines: this.selectedLines,
+            lastStep: this.resumeStep
         };
         const encoded = btoa(encodeURIComponent(JSON.stringify(markers)).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode('0x' + p1)));
         const payload = {

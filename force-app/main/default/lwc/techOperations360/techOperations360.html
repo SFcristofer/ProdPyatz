@@ -230,7 +230,7 @@
                     <div class="slds-m-right_medium" style="width: 250px;">
                         <lightning-combobox label="Estado" placeholder="Estado..." value={currentStatus} options={statusOptions} onchange={handleStatusChange} variant="label-hidden" class="status-combobox" required></lightning-combobox>
                     </div>
-                    <lightning-button label="Guardar y Continuar" variant="brand" icon-name="utility:forward" icon-position="right" onclick={handleNext} disabled={isLastStep}></lightning-button>
+                    <lightning-button label="Guardar y Continuar" variant="brand" icon-name="utility:forward" icon-position="right" onclick={handleNext} disabled={isNextDisabled}></lightning-button>
                 </div>
             </div>
         </div>
