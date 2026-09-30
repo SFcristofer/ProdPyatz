@@ -174,7 +174,7 @@
                             <table class="tbl-payment" style="width:100%; margin-top:10pt;">
                                 <thead>
                                     <tr><th colspan="3" style="text-align:center; font-size:10pt; background-color:#0070d2; color:#fff; border-bottom:none;">Datos de Pago</th></tr>
-                                    <tr><th width="25%">Método de Pago</th><th width="50%" style="text-align:center;">Descripción</th><th width="25%">Tipo de Trabajo</th></tr>
+                                    <tr><th width="18%">Método de Pago</th><th width="64%" style="text-align:center;">Descripción</th><th width="18%">Tipo de Trabajo</th></tr>
                                 </thead>
                                 <tbody>
                                     <tr><td style="text-align:center; vertical-align:middle;">{!metodoPago}</td><td style="text-align:center; vertical-align:middle; font-size:8.5pt; line-height:1.15;"><apex:outputText value="{!descripcionPago}" escape="false"/></td><td style="text-align:center; vertical-align:middle;">{!tipoTrabajo}</td></tr>

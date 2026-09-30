@@ -456,7 +456,7 @@ public with sharing class ServiceReviewPDFController {
 
         String safeAcct = safeFileName(this.accountName != null ? this.accountName : '');
         ApexPages.currentPage().getHeaders().put('content-disposition',
-            'inline; filename="Certificado-OT' + this.workOrderNum
+            'inline; filename="Reporte-Servicio-OT' + this.workOrderNum
             + (String.isNotBlank(safeAcct) ? '-' + safeAcct : '') + '.pdf"');
     }
 

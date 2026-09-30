@@ -60,7 +60,7 @@
 
 
 
-                .tbl-svc              { width:100%; border-collapse:collapse; margin-top:4pt; -fs-table-paginate: paginate; }
+                .tbl-svc              { width:100%; table-layout:fixed; border-collapse:collapse; margin-top:4pt; -fs-table-paginate: paginate; }
 
                 .tbl-svc th           { background-color:#0a315e; color:#ffffff; text-align:center; border-bottom:1.5pt solid #0070d2; padding:7pt 6pt; font-size:8pt; text-transform:uppercase; font-weight:bold; }
 
@@ -68,9 +68,9 @@
 
                 .row-item td          { padding:7pt 6pt; font-size:10pt; border-bottom:0.5pt solid #f0f0f0; background-color:#fff; vertical-align:middle; }
 
-                .row-detail td        { padding:3pt 32pt 10pt 16pt; border-bottom:0.5pt solid #eee; font-size:9pt; color:#444; line-height:1.15; }
+                .row-detail td        { padding:3pt 32pt 10pt 16pt; border-bottom:0.5pt solid #eee; font-size:9pt; color:#444; line-height:1.15; overflow:hidden; word-wrap:break-word; }
 
-                .detail-inner         { border-left:2pt solid #dde; padding-left:10pt; }
+                .detail-inner         { border-left:2pt solid #dde; padding-left:10pt; overflow:hidden; word-wrap:break-word; }
 
                 .detail-inner b, .detail-inner strong { font-weight: bold; }
 
@@ -173,12 +173,9 @@
                  tfoot=2.3cm reserva espacio sobre el footer fijo.            -->
 
 
-            <table style="width:100%; border-collapse:collapse; -fs-table-paginate: paginate;">
-
+            <table style="width:100%; border-collapse:collapse; table-layout:fixed; -fs-table-paginate: paginate;">
                 <thead>
-
                     <tr><td style="height:3.8cm; padding:0; line-height:0; font-size:0;">&#160;</td></tr>
-
                 </thead>
 
                 <tfoot>
@@ -275,7 +272,7 @@
 
             <!-- ═══ SECCIÓN 4: CONTRATO REPSE ════════════════════════════ -->
 
-            <table style="width:100%; border-collapse:collapse; -fs-table-paginate: paginate;">
+            <table style="width:100%; border-collapse:collapse; table-layout:fixed; -fs-table-paginate: paginate;">
 
                 <thead>
 
@@ -835,7 +832,7 @@
 
                                       <tr><th colspan="3" style="text-align:center; font-size:10pt; background-color:#0070d2; color:#fff; border-bottom:none;">Datos de Pago</th></tr>
 
-                                      <tr><th width="25%">M&#233;todo de Pago</th><th width="50%" style="text-align:center;">Descripci&#243;n</th><th width="25%">Tipo de Trabajo</th></tr>
+                                      <tr><th width="18%">M&#233;todo de Pago</th><th width="64%" style="text-align:center;">Descripci&#243;n</th><th width="18%">Tipo de Trabajo</th></tr>
 
                                   </thead>
 
@@ -956,4 +953,3 @@
     </html>
 
 </apex:page>
-

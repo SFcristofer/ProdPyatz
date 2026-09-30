@@ -220,8 +220,9 @@ public with sharing class QuoteController {
     @AuraEnabled(cacheable=true)
     public static List<Map<String, String>> getSedeContacts(Id sedeId) {
         List<Map<String, String>> results = new List<Map<String, String>>();
-        for (Contact c : [SELECT Id, Name, Title FROM Contact WHERE AccountId = :sedeId AND IsEmailBounced = false ORDER BY Name ASC LIMIT 50]) {
-            results.add(new Map<String, String>{ 'label' => c.Name, 'value' => c.Id, 'name' => c.Name, 'title' => c.Title != null ? c.Title : '' });
+        for (Contact c : [SELECT Id, Name, Salutation, Title FROM Contact WHERE AccountId = :sedeId AND IsEmailBounced = false ORDER BY Name ASC LIMIT 50]) {
+            String fullName = (String.isNotBlank(c.Salutation) ? c.Salutation + ' ' : '') + c.Name;
+            results.add(new Map<String, String>{ 'label' => fullName, 'value' => c.Id, 'name' => fullName, 'title' => c.Title != null ? c.Title : '' });
         }
         return results;
     }
