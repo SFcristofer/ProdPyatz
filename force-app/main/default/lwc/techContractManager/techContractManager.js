@@ -206,7 +206,7 @@ export default class TechContractManager extends NavigationMixin(LightningElemen
         getEmailTemplatesByFolder({ folderName: 'Pyatz - Condiciones de Contrato' })
             .then(result => {
                 if (result && result.length > 0) {
-                    this.plantillaOptions = result.map(t => ({ label: t.name, value: t.id }));
+                    this.plantillaOptions = [{ label: '-- Sin plantilla --', value: '' }, ...result.map(t => ({ label: t.name, value: t.id }))];
                 }
             })
             .catch(error => console.error('Error cargando plantillas de contrato:', error));
@@ -463,6 +463,8 @@ export default class TechContractManager extends NavigationMixin(LightningElemen
                     console.error('Error renderizando plantilla:', error);
                     this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: 'No se pudo cargar la plantilla.', variant: 'error' }));
                 });
+        } else {
+            this.contenidoLegal = ''; // sin plantilla = el contrato no imprime condiciones/clausulas/anexos
         }
     }
 
@@ -552,7 +554,9 @@ export default class TechContractManager extends NavigationMixin(LightningElemen
         const selectedIds = this.quoteLineItems.filter(item => item.isSelected).map(item => item.Id);
         if (selectedIds.length === 0) {
             await LightningAlert.open({
-                message: 'No puedes generar un contrato vacío. Debes marcar al menos un servicio (inciso) en la tabla.',
+                message: this.quoteLineItems.length === 0
+                    ? 'El presupuesto no tiene servicios sincronizados. Regresa al presupuesto y da clic en "Confirmar" para que sus partidas pasen al contrato.'
+                    : 'No puedes generar un contrato vacío. Debes marcar al menos un servicio (inciso) en la tabla.',
                 theme: 'error',
                 label: 'Contrato Vacío'
             });

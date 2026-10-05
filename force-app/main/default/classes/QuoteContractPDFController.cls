@@ -23,6 +23,9 @@ public with sharing class QuoteContractPDFController {
 
     
     public String quoteNumberShort {get; set;}
+    public String atencionNames {get; set;}
+    public String direccionCliente {get; set;}
+    public String contenidoLegal {get; set;}
     public String firmanteNombre {get; set;}
     public String firmanteCargo {get; set;}
     public String firmanteCliente {get; set;}
@@ -45,7 +48,7 @@ public String fechaContrato {get; set;}
         this.fechaContrato = String.valueOf(hoy.day()) + ' DE ' + meses[hoy.month()-1] + ' DEL ' + String.valueOf(hoy.year());
 
         this.quoteRecord = [SELECT Id, Name, QuoteNumber,
-                                   Account.Name, Account.BillingStreet, Account.BillingCity, Account.Phone,
+                                   Account.Name, Account.Razon_Social__c, Account.BillingStreet, Account.BillingCity, Account.Phone,
                                    Account.Nombre_RL__c, Account.RFC__c, Account.Registro_IMSS__c,
                                    Account.Escritura_Publica__c, Account.Dia_Esc_Pub__c, Account.Mes_Esc_Pub__c, Account.Ano_Esc_Pub__c,
                                    Account.Notaria__c, Account.Ciudad_Notaria__c,
@@ -75,7 +78,25 @@ public String fechaContrato {get; set;}
             this.quoteNumberShort = (String.isNotBlank(digits) ? prefix + String.valueOf(Integer.valueOf(digits)) : this.quoteRecord.QuoteNumber);
         }
 
+        // Direccion de caratula: solo campos con valor (sin comas sueltas)
+        Account acc = this.quoteRecord.Account;
+        List<String> calle = new List<String>();
+        for (String f : new List<String>{'Calle_de_envio__c', 'No_Ext__c', 'No_Int__c'}) {
+            Object v = acc?.get(f);
+            if (v != null && String.isNotBlank(String.valueOf(v))) calle.add(String.valueOf(v));
+        }
+        List<String> dir = new List<String>();
+        if (!calle.isEmpty()) dir.add(String.join(calle, ' '));
+        for (String f : new List<String>{'Colonia__c', 'Ciudad_de_envio__c', 'Codigo_postal_de_envio__c', 'Estado_o_provincia_de_envio__c'}) {
+            Object v = acc?.get(f);
+            if (v != null && String.isNotBlank(String.valueOf(v))) dir.add((f == 'Codigo_postal_de_envio__c' ? 'C.P. ' : '') + String.valueOf(v));
+        }
+        this.direccionCliente = String.join(dir, ', ');
+        this.atencionNames = this.quoteRecord.Contact?.Name;
+
         Map<String, String> params = ApexPages.currentPage().getParameters();
+        String fileAcc = String.isNotBlank(acc?.Name) ? acc.Name.replaceAll('[^A-Za-z0-9]+', '_') : '';
+        ApexPages.currentPage().getHeaders().put('content-disposition', 'inline; filename="Contrato_' + this.quoteNumberShort + '_' + fileAcc + '.pdf"');
         this.config = new Map<String, Boolean>();
         List<String> keys = new List<String>{'show_total', 'show_line_prices'};
         for (String key : keys) {
@@ -159,7 +180,8 @@ public String fechaContrato {get; set;}
             try {
                 String decodedJson = EncodingUtil.base64Decode(this.quoteRecord.Markers_Data__c).toString();
                 Map<String, Object> fullState = (Map<String, Object>)JSON.deserializeUntyped(decodedJson);
-                
+                if (fullState.containsKey('selectedContactNames')) this.atencionNames = (String)fullState.get('selectedContactNames');
+
                 List<String> metodos = new List<String>();
                 if (fullState.containsKey('pagoTransferencia') && (Boolean)fullState.get('pagoTransferencia')) metodos.add('Transferencia');
                 if (fullState.containsKey('pagoTarjeta') && (Boolean)fullState.get('pagoTarjeta')) metodos.add('Tarjeta');
@@ -193,7 +215,7 @@ public String fechaContrato {get; set;}
 
         // 3. Formatear campos long text para el PDF
         if(String.isNotBlank(this.quoteRecord.Introduction_Text__c)){
-            this.quoteRecord.Introduction_Text__c = fixListStyles(this.quoteRecord.Introduction_Text__c);
+            this.quoteRecord.Introduction_Text__c = fixListStyles(this.quoteRecord.Introduction_Text__c).replace('[[ATENCION]]', String.isNotBlank(this.atencionNames) ? this.atencionNames : '');
         }
         
         this.showSubtotal = this.quoteRecord.Show_Subtotal__c != null ? this.quoteRecord.Show_Subtotal__c : true;
@@ -205,6 +227,11 @@ public String fechaContrato {get; set;}
         if(this.quoteRecord.Show_Warranty__c == true && String.isNotBlank(this.quoteRecord.Warranty_Text__c)){
             this.quoteRecord.Warranty_Text__c = fixListStyles(this.quoteRecord.Warranty_Text__c);
             this.quoteRecord.Warranty_Text__c = fixParagraphStyles(this.quoteRecord.Warranty_Text__c);
+        }
+        // Plantilla de condiciones/clausulas/anexos elegida en techContractManager (vacia = no se imprime)
+        List<ServiceContract> scs = [SELECT Legal_Content__c FROM ServiceContract WHERE Quote_Source__c = :this.quoteRecord.Id ORDER BY CreatedDate DESC LIMIT 1];
+        if (!scs.isEmpty() && String.isNotBlank(scs[0].Legal_Content__c)) {
+            this.contenidoLegal = fixParagraphStyles(fixListStyles(scs[0].Legal_Content__c));
         }
         if (String.isNotBlank(this.quoteRecord.Description)) {
             if (!this.quoteRecord.Description.contains('<')) {
