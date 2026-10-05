@@ -37,3 +37,7 @@ Formato: Fecha | Componente | Tipo | Acción | Notas
 
 2026-10-05 | ServiceContractApprovalStatus + QuoteController + QuoteControllerTest + QuoteContractPDFController + QuoteContractPDF + TechWorkOrderController + QuoteTechnicalController + techContractManager | StandardValueSet + ApexClass + ApexPage + LWC | Modificado | Punto #14 Fase 2: valor ApprovalStatus "Reemplazado"; boton "Crear nuevo contrato" desde uno Terminado (copiar/en blanco, reemplazar/conservar ambos; ParentServiceContractId al reemplazar) via techCrearNuevoContrato; selector de version en LWC (versiones anteriores solo lectura + reimprimir); getContractInitialData(oppId, contractId) devuelve versions/isLatestContract; PDF leyenda "Sustituye al contrato No. X"; TechWorkOrderController y QuoteTechnicalController usan el contrato vigente (excluye Reemplazado). thead/tfoot intactos. Validado 0Afan000003qKFRCA2 (283 tests OK) y desplegado a produccion_pyatz.
 
+2026-10-05 | QuoteContractPDF + QuoteController + techContractManager | ApexPage + ApexClass + LWC | Modificado | Punto #14 Fase 2 ajuste: se quita del PDF la leyenda "Sustituye al contrato No. X" y se muestra en la interfaz de edicion del contrato (query trae ParentServiceContract.ContractNumber). Validado 0Afan000003qLMnCAM (283 tests OK) y desplegado a produccion_pyatz.
+
+2026-10-05 | Entregables_Transcripciones.html | Documento | Modificado | Punto #14 marcado como Hecho con observacion sobre ODT (contrato reemplazado / contrato en Borrador) pendiente de definir con el cliente.
+

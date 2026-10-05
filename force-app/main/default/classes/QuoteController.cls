@@ -298,7 +298,7 @@ public with sharing class QuoteController {
             List<ServiceContract> existingContracts = [SELECT Id, StartDate, EndDate, First_Service_Date__c, Service_Limit_Date__c,
                                                       Legal_Content__c, Private_Observations__c, Renewal_Observations__c, Description,
                                                       Contract_Creator__c, Contract_Creator__r.Name, Contract_Manager__c, Contract_Manager__r.Name,
-                                                      Client_Signer__c, Client_Signer__r.Name, ApprovalStatus, ContractNumber, LastModifiedDate, CreatedDate
+                                                      Client_Signer__c, Client_Signer__r.Name, ApprovalStatus, ContractNumber, LastModifiedDate, CreatedDate, ParentServiceContract.ContractNumber
                                                       FROM ServiceContract WHERE Quote_Source__c = :opp.SyncedQuoteId ORDER BY CreatedDate DESC];
             // Fase 2: versiones del contrato; el primero (más reciente) es el vigente/de trabajo
             List<Map<String, Object>> versions = new List<Map<String, Object>>();

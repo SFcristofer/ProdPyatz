@@ -67,6 +67,7 @@ export default class TechContractManager extends NavigationMixin(LightningElemen
     // Punto 14 Fase 2: versiones del contrato
     selectedContractId = null;
     isLatestContract = true;
+    sustituyeA = ''; // No. del contrato reemplazado (solo en UI, no en PDF)
     @track contractVersions = [];
     showNuevoModal = false;
     nuevoCopiar = 'copiar';
@@ -207,6 +208,8 @@ export default class TechContractManager extends NavigationMixin(LightningElemen
                 this.contractVersions = result.versions || [];
                 this.isLatestContract = result.isLatestContract !== false;
                 this.selectedContractId = result.existingContract ? result.existingContract.Id : null;
+                const pcn = result.existingContract && result.existingContract.ParentServiceContract ? result.existingContract.ParentServiceContract.ContractNumber : '';
+                this.sustituyeA = pcn ? String(parseInt(pcn, 10) || pcn) : '';
                 this.contractFinalDate = result.existingContract
                     ? new Date(result.existingContract.LastModifiedDate).toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' })
                     : '';

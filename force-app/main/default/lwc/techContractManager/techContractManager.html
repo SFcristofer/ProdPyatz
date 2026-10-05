@@ -78,6 +78,9 @@
                     <template if:true={hasVersions}>
                         <lightning-combobox class="slds-m-top_small" label="Versión del contrato" options={versionOptions} value={selectedContractId} onchange={handleVersionChange}></lightning-combobox>
                     </template>
+                    <template if:true={sustituyeA}>
+                        <p class="slds-m-top_small slds-text-body_small"><lightning-icon icon-name="utility:replace" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Este contrato sustituye al contrato No. {sustituyeA}</p>
+                    </template>
                     <template if:true={isTerminado}>
                         <div class="slds-notify slds-notify_alert slds-alert_warning slds-m-top_small" role="alert">
                             <lightning-icon icon-name="utility:lock" size="x-small" class="slds-m-right_x-small"></lightning-icon>
