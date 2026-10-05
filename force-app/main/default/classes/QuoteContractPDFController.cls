@@ -23,6 +23,7 @@ public with sharing class QuoteContractPDFController {
 
     
     public String quoteNumberShort {get; set;}
+    public String numeroContrato {get; set;}
     public String atencionNames {get; set;}
     public String direccionCliente {get; set;}
     public String contenidoLegal {get; set;}
@@ -96,7 +97,11 @@ public String fechaContrato {get; set;}
 
         Map<String, String> params = ApexPages.currentPage().getParameters();
         String fileAcc = String.isNotBlank(acc?.Name) ? acc.Name.replaceAll('[^A-Za-z0-9]+', '_') : '';
-        ApexPages.currentPage().getHeaders().put('content-disposition', 'inline; filename="Contrato_' + this.quoteNumberShort + '_' + fileAcc + '.pdf"');
+        // Folio del contrato = ServiceContract.ContractNumber (sin ceros); sin contrato usa el de la cotizacion
+        List<ServiceContract> scs = [SELECT Legal_Content__c, ContractNumber FROM ServiceContract WHERE Quote_Source__c = :this.quoteRecord.Id ORDER BY CreatedDate DESC LIMIT 1];
+        String cn = scs.isEmpty() ? null : scs[0].ContractNumber;
+        this.numeroContrato = String.isBlank(cn) ? this.quoteNumberShort : (cn.isNumeric() ? String.valueOf(Long.valueOf(cn)) : cn);
+        ApexPages.currentPage().getHeaders().put('content-disposition', 'inline; filename="Contrato_' + this.numeroContrato + '_' + fileAcc + '.pdf"');
         this.config = new Map<String, Boolean>();
         List<String> keys = new List<String>{'show_total', 'show_line_prices'};
         for (String key : keys) {
@@ -229,7 +234,6 @@ public String fechaContrato {get; set;}
             this.quoteRecord.Warranty_Text__c = fixParagraphStyles(this.quoteRecord.Warranty_Text__c);
         }
         // Plantilla de condiciones/clausulas/anexos elegida en techContractManager (vacia = no se imprime)
-        List<ServiceContract> scs = [SELECT Legal_Content__c FROM ServiceContract WHERE Quote_Source__c = :this.quoteRecord.Id ORDER BY CreatedDate DESC LIMIT 1];
         if (!scs.isEmpty() && String.isNotBlank(scs[0].Legal_Content__c)) {
             this.contenidoLegal = fixParagraphStyles(fixListStyles(scs[0].Legal_Content__c));
         }
