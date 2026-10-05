@@ -849,13 +849,13 @@
                 <div class="slds-form-element slds-m-bottom_small">
                     <label class="slds-form-element__label">Nombre completo del Firmante</label>
                     <div class="slds-form-element__control">
-                        <input type="text" class="slds-input" placeholder="Nombre completo de quien valida" value={modalFirmante} onchange={handleVerifyModalFirmanteChange} />
+                        <input type="text" class="slds-input" placeholder="Nombre completo de quien valida" value={modalFirmante} oninput={handleVerifyModalFirmanteChange} />
                     </div>
                 </div>
                 <div class="slds-form-element">
                     <label class="slds-form-element__label">Cargo del Firmante</label>
                     <div class="slds-form-element__control">
-                        <input type="text" class="slds-input" placeholder="Puesto o cargo" value={modalCargo} onchange={handleVerifyModalCargoChange} />
+                        <input type="text" class="slds-input" placeholder="Puesto o cargo" value={modalCargo} oninput={handleVerifyModalCargoChange} />
                     </div>
                 </div>
             </div>

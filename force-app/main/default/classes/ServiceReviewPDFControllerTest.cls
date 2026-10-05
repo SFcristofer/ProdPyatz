@@ -49,6 +49,28 @@ private class ServiceReviewPDFControllerTest {
     }
 
     @isTest
+    static void testConstructor_saVerificada() {
+        ServiceAppointment sa = [SELECT Id FROM ServiceAppointment LIMIT 1];
+        sa.Verificado__c = true;
+        sa.Verificado_Por__c = 'Verificador Test';
+        sa.Fecha_Verificacion__c = Datetime.now();
+        sa.Nombre_Firmante__c = 'Cliente Firmante';
+        sa.Cargo_Firmante__c = 'Gerente';
+        update sa;
+        PageReference page = Page.ServiceReviewPDF;
+        Test.setCurrentPage(page);
+        ApexPages.currentPage().getParameters().put('id', sa.Id);
+        Test.startTest();
+        ServiceReviewPDFController ctrl = new ServiceReviewPDFController();
+        Test.stopTest();
+        System.assertEquals(true, ctrl.verificado);
+        System.assertEquals('Verificador Test', ctrl.verificadoPor);
+        System.assertNotEquals(null, ctrl.fechaVerificacion);
+        System.assertEquals('Cliente Firmante', ctrl.nombreFirmante);
+        System.assertEquals('Gerente', ctrl.cargoFirmante);
+    }
+
+    @isTest
     static void testConstructor_withPhotosAndSig() {
         ServiceAppointment sa = [SELECT Id FROM ServiceAppointment LIMIT 1];
         Revision_Cita_Servicio__c rev = [SELECT Id FROM Revision_Cita_Servicio__c LIMIT 1];

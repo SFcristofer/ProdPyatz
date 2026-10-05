@@ -147,7 +147,8 @@ public with sharing class ServiceReviewPDFController {
             SELECT Id, AppointmentNumber, Status, Subject, ParentRecordId,
                    Zonas_a_Tratar__c, Cita_Padre__c, SchedStartTime, SchedEndTime, Duration,
                    Producto_Relacionado__c, Producto_Relacionado__r.Name, Producto_Relacionado__r.ProductCode,
-                   Nombre_Firmante__c, Cargo_Firmante__c
+                   Nombre_Firmante__c, Cargo_Firmante__c,
+                   Verificado__c, Verificado_Por__c, Fecha_Verificacion__c
             FROM ServiceAppointment
             WHERE Id = :saId
             LIMIT 1
@@ -180,6 +181,16 @@ public with sharing class ServiceReviewPDFController {
                 ];
                 loadWorkOrderAndAccountData(wo);
             } catch (Exception e) {}
+        }
+
+        // Verificacion propia de la cita (tiene prioridad sobre la de la ODT)
+        Boolean saFirmante = this.saRecord.Verificado__c && String.isNotBlank(this.saRecord.Nombre_Firmante__c);
+        if (this.saRecord.Verificado__c) {
+            applyVerification(true, this.saRecord.Verificado_Por__c, this.saRecord.Fecha_Verificacion__c);
+            if (saFirmante) {
+                this.nombreFirmante = this.saRecord.Nombre_Firmante__c;
+                this.cargoFirmante  = this.saRecord.Cargo_Firmante__c != null ? this.saRecord.Cargo_Firmante__c : '';
+            }
         }
 
         // Zona y tratamiento del SA + citas hijas fusionadas
@@ -240,7 +251,7 @@ public with sharing class ServiceReviewPDFController {
             if (w.hasSignature && w.rev.Status__c == 'Completada') {
                 this.clientSigUrl   = w.sigUrl;
                 this.clientSigName  = w.sigName;
-                if (String.isNotBlank(w.rev.Nombre_Firmante__c)) {
+                if (String.isNotBlank(w.rev.Nombre_Firmante__c) && !saFirmante) {
                     this.nombreFirmante = w.rev.Nombre_Firmante__c;
                     this.cargoFirmante  = w.rev.Cargo_Firmante__c != null ? w.rev.Cargo_Firmante__c : '';
                 }
@@ -460,6 +471,23 @@ public with sharing class ServiceReviewPDFController {
             + (String.isNotBlank(safeAcct) ? '-' + safeAcct : '') + '.pdf"');
     }
 
+    private void applyVerification(Boolean isVerified, String porNombre, Datetime fecha) {
+        this.verificado = isVerified;
+        if (isVerified) {
+            this.verificadoPor = porNombre;
+            if (fecha != null) {
+                String[] meses = new String[]{'Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'};
+                Datetime d = fecha;
+                this.fechaVerificacion = d.day() + ' / ' + meses[d.month() - 1] + ' / ' + d.year()
+                    + ' ' + String.valueOf(d.hour()).leftPad(2,'0')
+                    + ':' + String.valueOf(d.minute()).leftPad(2,'0');
+            }
+            if (String.isNotBlank(porNombre)) {
+                this.verificacionSigUrl = findSignatureUrl(porNombre);
+            }
+        }
+    }
+
     private void loadWorkOrderAndAccountData(WorkOrder wo) {
         this.accountName  = wo.Account != null ? wo.Account.Name : '';
         this.workOrderNum = wo.WorkOrderNumber;
@@ -494,20 +522,7 @@ public with sharing class ServiceReviewPDFController {
         this.nombreFirmante = wo.Nombre_Firmante__c != null ? wo.Nombre_Firmante__c : '';
         this.cargoFirmante  = wo.Cargo_Firmante__c  != null ? wo.Cargo_Firmante__c  : '';
 
-        this.verificado = wo.Verificado__c;
-        if (wo.Verificado__c) {
-            this.verificadoPor = wo.Verificado_Por__c;
-            if (wo.Fecha_Verificacion__c != null) {
-                String[] meses = new String[]{'Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'};
-                Datetime d = wo.Fecha_Verificacion__c;
-                this.fechaVerificacion = d.day() + ' / ' + meses[d.month() - 1] + ' / ' + d.year()
-                    + ' ' + String.valueOf(d.hour()).leftPad(2,'0')
-                    + ':' + String.valueOf(d.minute()).leftPad(2,'0');
-            }
-            if (String.isNotBlank(wo.Verificado_Por__c)) {
-                this.verificacionSigUrl = findSignatureUrl(wo.Verificado_Por__c);
-            }
-        }
+        applyVerification(wo.Verificado__c, wo.Verificado_Por__c, wo.Fecha_Verificacion__c);
 
         if (wo.ServiceContractId != null) {
             try {

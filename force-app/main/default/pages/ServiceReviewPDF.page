@@ -152,7 +152,7 @@
                 <div style="padding:0 28pt;">
 
                     <!-- Título -->
-                    <div class="cert-svc-title">REPORTE DE SERVICIO N&#176;<br/>{!workOrderNum}</div>
+                    <div class="cert-svc-title">{!IF(verificado,'CERTIFICADO DE SERVICIO','REPORTE DE SERVICIO')} N&#176;<br/>{!workOrderNum}</div>
                     <apex:outputPanel rendered="{!NOT(ISBLANK(woSubject))}" layout="none">
                         <div class="cert-svc-type">{!woSubject}</div>
                     </apex:outputPanel>
