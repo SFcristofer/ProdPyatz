@@ -15,6 +15,8 @@ import getProductPrices from '@salesforce/apex/QuoteController.getProductPrices'
 import getFilteredSedes from '@salesforce/apex/QuoteController.getFilteredSedes';
 import searchParentAccounts from '@salesforce/apex/QuoteController.searchParentAccounts';
 import cloneQuote from '@salesforce/apex/QuoteController.cloneQuote';
+import { loadStyle } from 'lightning/platformResourceLoader';
+import TECH_RTE_CSS from '@salesforce/resourceUrl/tech_RichTextEditor';
 
 export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
     @api recordId;
@@ -164,7 +166,20 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
         return `quote_editor_step_${this.recordId || this.opportunityId || 'new'}`;
     }
 
+    // Selector de tamano muestra 12 (igual que el PDF) cuando el texto no tiene tamano propio
+    handleRteFocus(event) {
+        const rte = event.target;
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
+        setTimeout(() => {
+            try {
+                const size = rte.getFormat().size;
+                if (!size || Number(size) === 13) rte.setFormat({ size: 12 });
+            } catch (e) { /* sin cambios si el editor no lo soporta */ }
+        }, 0);
+    }
+
     connectedCallback() {
+        loadStyle(this, TECH_RTE_CSS).catch(e => console.error('tech_RichTextEditor', e));
         if (this.opportunityId) this.parentOpportunityId = this.opportunityId;
         
         const savedStep = sessionStorage.getItem(this.storageKey);

@@ -1,0 +1,4 @@
+/* Editores de texto enriquecido de la cotizacion: misma fuente y tamano base que el PDF (12px = 9pt) */
+@font-face { font-family:'Poppins'; src:url('/resource/Poppins/Poppins-Regular.ttf'); font-weight:normal; font-style:normal; }
+@font-face { font-family:'Poppins'; src:url('/resource/Poppins/Poppins-Bold.ttf'); font-weight:bold; font-style:normal; }
+.tech-rte .ql-editor { font-family:'Poppins','Helvetica','Arial',sans-serif !important; font-size:12px !important; }

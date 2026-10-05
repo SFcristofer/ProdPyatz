@@ -239,6 +239,10 @@ public with sharing class QuoteTechnicalPDFController {
 
     private static String fixListStyles(String html) {
         return html
+            // Fuentes del editor que el PDF no tiene (caerian a Times) se mapean a su equivalente integrado
+            .replaceAll('(?i)font-family\\s*:(?:&quot;|[^;"])*courier(?:&quot;|[^;"])*', 'font-family:Courier')
+            .replaceAll('(?i)font-family\\s*:(?:&quot;|[^;"])*(?:times|garamond)(?:&quot;|[^;"])*', 'font-family:Times')
+            .replaceAll('(?i)font-family\\s*:(?!Courier|Times)(?:&quot;|[^;"])*', 'font-family:Helvetica')
             .replaceAll('(?i)<ul([^>]*)>', '<ul$1 style="list-style-position:inside;padding:0;margin:4pt 0;">')
             .replaceAll('(?i)<ol([^>]*)>', '<ol$1 style="list-style-position:inside;padding:0;margin:4pt 0;">')
             .replaceAll('(?i)<li([^>]*)>', '<li$1 style="margin-bottom:2pt;">');

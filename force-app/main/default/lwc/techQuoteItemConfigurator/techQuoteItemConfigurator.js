@@ -4,8 +4,26 @@ import getProductPrices from '@salesforce/apex/QuoteController.getProductPrices'
 import getProductInfoByPBE from '@salesforce/apex/QuoteController.getProductInfoByPBE';
 import getOpportunitySoluciones from '@salesforce/apex/QuoteController.getOpportunitySoluciones';
 import getHistoricalZones from '@salesforce/apex/QuoteController.getHistoricalZones';
+import { loadStyle } from 'lightning/platformResourceLoader';
+import TECH_RTE_CSS from '@salesforce/resourceUrl/tech_RichTextEditor';
 
 export default class TechQuoteItemConfigurator extends LightningElement {
+    connectedCallback() {
+        loadStyle(this, TECH_RTE_CSS).catch(e => console.error('tech_RichTextEditor', e));
+    }
+
+    // Selector de tamano muestra 12 (igual que el PDF) cuando el texto no tiene tamano propio
+    handleRteFocus(event) {
+        const rte = event.target;
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
+        setTimeout(() => {
+            try {
+                const size = rte.getFormat().size;
+                if (!size || Number(size) === 13) rte.setFormat({ size: 12 });
+            } catch (e) { /* sin cambios si el editor no lo soporta */ }
+        }, 0);
+    }
+
     @api recordId;
     @api opportunityId;
     @api accountId; 

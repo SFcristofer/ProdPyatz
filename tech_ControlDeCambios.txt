@@ -1,0 +1,13 @@
+CONTROL DE CAMBIOS - PYAT (produccion_pyatz)
+Formato: Fecha | Componente | Tipo | Acción | Notas
+=====================================================
+
+## Punto 1 - Editores de texto enriquecido en 12 por defecto
+2026-10-04 | tech_RichTextEditor | StaticResource (CSS) | Creado | .tech-rte .ql-editor: 12px (=9pt PDF) y fuente Poppins (/resource/Poppins). El usuario puede cambiar el tamaño desde la barra
+2026-10-04 | techQuoteEditor | LWC (html/js) | Modificado | class="tech-rte" en Introducción, Condiciones y Observaciones de pago; loadStyle en connectedCallback
+2026-10-04 | techQuoteItemConfigurator | LWC (html/js) | Modificado | class="tech-rte" en descripción de partida; connectedCallback con loadStyle
+2026-10-04 | tech_RichTextEditor + techQuoteEditor + techQuoteItemConfigurator | Deploy | Desplegado a produccion_pyatz | Quick deploy 0Afan000003qF1FCAU (280 tests OK). Punto #1: editores en 12px por defecto
+2026-10-04 | techQuoteEditor | LWC | Modificado + desplegado prod (quick deploy 0Afan000003qFCXCA2) | handleRteFocus + onfocus en 3 editores: selector de tamano en 12 si el texto no tiene tamano
+2026-10-04 | techQuoteItemConfigurator | LWC | Modificado + desplegado prod (quick deploy 0Afan000003qFCXCA2) | handleRteFocus + onfocus en editor de descripcion
+2026-10-04 | QuoteTechnicalPDFController + QuoteContractPDFController + ServiceReviewPDFController | ApexClass | Modificado + desplegado prod (quick deploy 0Afan000003qFCYCA2, 280 tests OK) | fixListStyles quita font-family inline del editor (verdana/Arial caian a Times); PDF usa Poppins y respeta tamanos
+2026-10-04 | QuoteTechnicalPDFController + QuoteContractPDFController + ServiceReviewPDFController | ApexClass | Modificado + desplegado prod (quick deploy 0Afan000003qFKbCAM, 280 tests OK) | fixListStyles ya no quita la fuente: la mapea (Arial/Verdana/Tahoma->Helvetica, Times/Garamond->Times, Courier->Courier); sin fuente = Poppins

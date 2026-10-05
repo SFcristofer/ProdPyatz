@@ -132,6 +132,8 @@
                                         </div>
                                         <template if:false={isPreviewMode}>
                                             <lightning-input-rich-text
+                                                class="tech-rte"
+                                                onfocus={handleRteFocus}
                                                 key={richTextKey}
                                                 value={modalDescription}
                                                 onchange={handleDescriptionChange}>

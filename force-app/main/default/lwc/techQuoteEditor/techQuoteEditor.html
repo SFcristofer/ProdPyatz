@@ -143,7 +143,7 @@
                                 </div>
                                 <div class="slds-m-top_medium">
                                     <p class="slds-text-title_bold slds-m-bottom_x-small">Cuerpo de la Introducción:</p>
-                                    <lightning-input-rich-text value={introduccion} onblur={handleIntroChange} variant="bottom-toolbar"></lightning-input-rich-text>
+                                    <lightning-input-rich-text class="tech-rte" onfocus={handleRteFocus} value={introduccion} onblur={handleIntroChange} variant="bottom-toolbar"></lightning-input-rich-text>
                                 </div>
                             </div>
                         </div>
@@ -346,7 +346,7 @@
                         </lightning-button-menu>
                     </div>
                     <div class="slds-p-around_large">
-                        <lightning-input-rich-text value={warranty} onblur={handleWarrantyChange} variant="bottom-toolbar"></lightning-input-rich-text>
+                        <lightning-input-rich-text class="tech-rte" onfocus={handleRteFocus} value={warranty} onblur={handleWarrantyChange} variant="bottom-toolbar"></lightning-input-rich-text>
                     </div>
                 </div>
 
@@ -376,7 +376,7 @@
                                         </template>
                                     </lightning-button-menu>
                                 </div>
-                                <lightning-input-rich-text value={observacionesPago} onblur={handleObservacionesPagoChange} variant="bottom-toolbar"></lightning-input-rich-text>
+                                <lightning-input-rich-text class="tech-rte" onfocus={handleRteFocus} value={observacionesPago} onblur={handleObservacionesPagoChange} variant="bottom-toolbar"></lightning-input-rich-text>
                             </div>
                         </div>
                     </div>
