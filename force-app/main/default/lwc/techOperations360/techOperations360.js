@@ -232,8 +232,9 @@ export default class TechOperations360 extends NavigationMixin(LightningElement)
             subStages: [
                 { value: '1', label: 'Contrato' },
                 { value: '2', label: "Creación ODT's" },
-                { value: '3', label: 'Calendario' },
-                { value: '4', label: 'Enhorabuena' }
+                { value: '3', label: "ODT's Generadas" },
+                { value: '4', label: 'Calendario' },
+                { value: '5', label: 'Enhorabuena' }
             ]
         }
     ];
@@ -600,8 +601,9 @@ export default class TechOperations360 extends NavigationMixin(LightningElement)
     get isAutorizacionPhase() { return this.currentStep === 'Cierre' && this.currentSubStep === '1'; }
     get isContratoPhase() { return this.currentStep === 'Organización' && this.currentSubStep === '1'; }
     get isWorkOrderPhase() { return this.currentStep === 'Organización' && this.currentSubStep === '2'; }
-    get isCalendarioPhase() { return this.currentStep === 'Organización' && this.currentSubStep === '3'; }
-    get isEnhorabuenaPhase() { return this.currentStep === 'Organización' && this.currentSubStep === '4'; }
+    get isOdtGeneradasPhase() { return this.currentStep === 'Organización' && this.currentSubStep === '3'; }
+    get isCalendarioPhase() { return this.currentStep === 'Organización' && this.currentSubStep === '4'; }
+    get isEnhorabuenaPhase() { return this.currentStep === 'Organización' && this.currentSubStep === '5'; }
 
     handleLogCall() { this.navigateToGlobalAction('LogACall'); }
     handleNewTask() { this.navigateToGlobalAction('NewTask'); }
@@ -700,6 +702,14 @@ export default class TechOperations360 extends NavigationMixin(LightningElement)
         this.selectedContractId = event.detail;
         this.currentStatus = 'Realizado';
         this.currentSubStep = '2'; 
+        await this.syncOpportunityStatus();
+    }
+
+    // Punto 16: al generar las ODT se queda en el flujo y avanza a "ODT's Generadas"
+    async handleOdtsGenerated(event) {
+        if (event.detail && event.detail.contractId) this.selectedContractId = event.detail.contractId;
+        this.currentStatus = 'Realizado';
+        this.currentSubStep = '3';
         await this.syncOpportunityStatus();
     }
 

@@ -1,3 +1,4 @@
+import updateSAProducto from '@salesforce/apex/OdtViewerController.updateSAProducto';
 import { LightningElement, api, wire, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
@@ -23,6 +24,7 @@ import updateSADetails from '@salesforce/apex/OdtViewerController.updateSADetail
 import updateSAStatus from '@salesforce/apex/OdtViewerController.updateSAStatus';
 import getProductosForContract from '@salesforce/apex/OdtViewerController.getProductosForContract';
 
+import getInitialWorkOrderData from '@salesforce/apex/TechWorkOrderController.getInitialWorkOrderData';
 import getActivePicklistOptions from '@salesforce/apex/OdtViewerController.getActivePicklistOptions';
 
 const STATUS_MAP = {
@@ -54,7 +56,31 @@ const REV_STATUS_MAP = {
 };
 
 export default class TechOdtViewer extends NavigationMixin(LightningElement) {
-    @api recordId;
+    // Account Id (modo normal). En modo flujo se resuelve desde la oportunidad.
+    _accountId;
+    @api get recordId() { return this._accountId; }
+    set recordId(v) { this._accountId = v; }
+
+    // Punto 16: modo flujo (techOperations360 > ODT's Generadas). Solo muestra el contrato del flujo.
+    @api flowMode = false;
+    @api opportunityId;
+    @api quoteId;
+    @api contractId;
+    _flowContractId;
+    _flowResolved = false;
+    _flowRefreshed = false;
+
+    connectedCallback() {
+        if (!this.flowMode) return;
+        getInitialWorkOrderData({ oppId: this.opportunityId, quoteId: this.quoteId || null, serviceContractId: this.contractId || null })
+            .then(data => {
+                this._flowContractId = data.serviceContractId || this.contractId;
+                this.filterContract = this._flowContractId || '';
+                this._accountId = data.accountId;
+            })
+            .catch(() => { this.isLoading = false; })
+            .finally(() => { this._flowResolved = true; });
+    }
 
     @track isLoading        = true;
     @track isRefreshing     = false;
@@ -207,6 +233,16 @@ export default class TechOdtViewer extends NavigationMixin(LightningElement) {
 
     get saStatusOptions() { return this._saStatusOptions || []; }
 
+    // Edicion en linea: listas nativas (no se recortan dentro de la tabla)
+    get inlineStatusOptions() {
+        const cur = this.editRowData?.status || '';
+        return this.statusOptions.map(o => ({ ...o, selected: o.value === cur }));
+    }
+    get inlineTerritoryOptions() {
+        const cur = this.editRowData?.territoryId || '';
+        return this.territoryOptions.map(o => ({ ...o, selected: o.value === cur }));
+    }
+
     get statusOptions() { return this._woStatusOptions || []; }
 
     @track _woStatusOptions = [];
@@ -219,9 +255,14 @@ export default class TechOdtViewer extends NavigationMixin(LightningElement) {
     wiredSaStatus({ data }) { if (data) this._saStatusOptions = data; }
 
     _wiredResult;
-    @wire(getOdtsByAccount, { accountId: '$recordId' })
+    @wire(getOdtsByAccount, { accountId: '$_accountId' })
     wiredData(result) {
         this._wiredResult = result;
+        // Modo flujo: las ODT se acaban de crear, evitar datos en cache
+        if (this.flowMode && result.data && !this._flowRefreshed) {
+            this._flowRefreshed = true;
+            refreshApex(result);
+        }
         const { data, error } = result;
         this.isLoading = false;
         if (data) {
@@ -383,12 +424,26 @@ export default class TechOdtViewer extends NavigationMixin(LightningElement) {
     }
 
     get totalWorkOrders() {
+        if (this.flowMode) return this._flowGroup ? this._flowGroup.woCount : 0;
         return this.groups.reduce((s, g) => s + g.woCount, 0);
     }
 
+    // ── Modo flujo (Punto 16) ────────────────────────────────────────────
+    get isNormalMode() { return !this.flowMode; }
+    get _flowGroup() { return this.groups.find(g => g.id === this._flowContractId); }
+    get flowHasOdts() { return this.flowMode && !this.isLoading && !!this._flowGroup && this._flowGroup.woCount > 0; }
+    get flowIsEmpty() { return this.flowMode && this._flowResolved && !this.isLoading && !this.flowHasOdts; }
+    get flowBannerText() {
+        const g = this._flowGroup;
+        if (!g) return '';
+        const txt = g.woCount === 1 ? 'Se generó 1 orden de trabajo' : `Se generaron ${g.woCount} órdenes de trabajo`;
+        return `${txt} para el contrato ${g.displayName}.`;
+    }
+    handleGoCalendario() { this.dispatchEvent(new CustomEvent('gocalendario')); }
+
     get selectedCount() { return this.selectedIds.size; }
     get hasSelected()   { return this.selectedIds.size > 0; }
-    get isEmpty()       { return !this.isLoading && this.groups.length === 0; }
+    get isEmpty()       { return !this.flowMode && !this.isLoading && this.groups.length === 0; }
 
     // ── Handlers filtros ─────────────────────────────────────────────────
     handleContractFilter(e) { this.filterContract = e.target.value; }
@@ -404,12 +459,12 @@ export default class TechOdtViewer extends NavigationMixin(LightningElement) {
     }
 
     handleClearFilters() {
-        this.filterContract = '';
+        this.filterContract = this.flowMode ? (this._flowContractId || '') : '';
         this.filterDateFrom = '';
         this.filterDateTo   = '';
         this.filterStatus   = '';
-        this.template.querySelectorAll('select').forEach(s => s.value = '');
-        this.template.querySelectorAll('input[type="date"]').forEach(i => i.value = '');
+        this.template.querySelectorAll('select.filter-select').forEach(s => s.value = '');
+        this.template.querySelectorAll('input.filter-input').forEach(i => i.value = '');
     }
 
     handleToggleWithOdts(e)    { this.showWithOdts    = e.target.checked; }

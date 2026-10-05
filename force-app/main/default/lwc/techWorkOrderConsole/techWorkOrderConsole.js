@@ -17,6 +17,7 @@ export default class TechWorkOrderConsole extends NavigationMixin(LightningEleme
     @api recordId; // Opportunity ID
     @api quoteId;  // Quote ID específico
     @api serviceContractId; // ID del contrato formal nativo
+    @api stayInFlow = false; // Punto 16: si es true no redirige a la WO; avisa al padre con 'odtsgenerated'
 
     @track isLoading = true;
     @track isSaving = false;
@@ -614,10 +615,16 @@ export default class TechWorkOrderConsole extends NavigationMixin(LightningEleme
                     message: 'Órdenes de Trabajo generadas correctamente.',
                     variant: 'success'
                 }));
-                this[NavigationMixin.Navigate]({
-                    type: 'standard__recordPage',
-                    attributes: { recordId: woId, objectApiName: 'WorkOrder', actionName: 'view' }
-                });
+                if (this.stayInFlow) {
+                    this.dispatchEvent(new CustomEvent('odtsgenerated', {
+                        detail: { woId, contractId: this.internalServiceContractId, accountId: this.accountId }
+                    }));
+                } else {
+                    this[NavigationMixin.Navigate]({
+                        type: 'standard__recordPage',
+                        attributes: { recordId: woId, objectApiName: 'WorkOrder', actionName: 'view' }
+                    });
+                }
                 this.isSaving = false;
             })
             .catch(error => {

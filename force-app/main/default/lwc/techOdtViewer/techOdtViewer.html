@@ -14,7 +14,7 @@
                     <span class="selected-badge slds-m-left_small">{selectedCount} seleccionadas</span>
                 </template>
             </div>
-            <div class="toolbar-right">
+            <div class="toolbar-right" if:true={isNormalMode}>
                 <label class="filter-toggle slds-m-right_medium">
                     <input type="checkbox" checked={showWithOdts} onchange={handleToggleWithOdts} />
                     <span>Con ODT</span>
@@ -26,8 +26,30 @@
             </div>
         </div>
 
+        <!-- PUNTO 16: AVISO MODO FLUJO -->
+        <template if:true={flowHasOdts}>
+            <div class="flow-banner">
+                <div class="flow-banner-text">
+                    <lightning-icon icon-name="utility:success" variant="success" size="small" class="slds-m-right_small"></lightning-icon>
+                    <div>
+                        <strong>{flowBannerText}</strong>
+                        <p>Revísalas aquí abajo. Cuando estés listo, pulsa «Siguiente: Calendario» para programarlas.</p>
+                    </div>
+                </div>
+                <lightning-button label="Siguiente: Calendario" variant="brand" icon-name="utility:event" icon-position="right" onclick={handleGoCalendario}></lightning-button>
+            </div>
+        </template>
+        <template if:true={flowIsEmpty}>
+            <div class="empty-state">
+                <lightning-icon icon-name="utility:info" size="large" class="slds-m-bottom_small"></lightning-icon>
+                <p><strong>Aún no hay órdenes de trabajo generadas para este contrato.</strong></p>
+                <p>Regresa a la pestaña «Creación ODT's» y pulsa «Generar órdenes de trabajo».</p>
+            </div>
+        </template>
+
         <!-- BARRA DE ACCIONES MASIVAS -->
         <template if:true={hasSelected}>
+          <template if:true={isNormalMode}>
             <div class="bulk-bar">
                 <div class="bulk-bar-left">
                     <lightning-icon icon-name="utility:check" size="x-small" class="slds-m-right_x-small"></lightning-icon>
@@ -57,11 +79,12 @@
                     </lightning-button-icon>
                 </div>
             </div>
+          </template>
         </template>
 
         <!-- BARRA DE FILTROS -->
         <div class="filter-bar">
-            <div class="filter-group">
+            <div class="filter-group" if:true={isNormalMode}>
                 <label class="filter-label">Contrato</label>
                 <select class="filter-select" onchange={handleContractFilter}>
                     <option value="">Todos</option>
@@ -134,6 +157,7 @@
                         <div class="slds-grid slds-grid_vertical-align-center">
                             <span class="contract-meta slds-m-right_medium">{group.startDate} — {group.endDate}</span>
                             <span class="odt-count-badge slds-m-right_small">{group.filteredCount} ODT</span>
+                            <template if:true={isNormalMode}>
                             <template if:true={group.hasContractId}>
                                 <lightning-button
                                     label="Fusionar Citas"
@@ -144,6 +168,7 @@
                                     data-contract-name={group.displayName}
                                     onclick={handleOpenFusionWizard}>
                                 </lightning-button>
+                            </template>
                             </template>
                         </div>
                     </div>
@@ -232,16 +257,11 @@
                                                     <!-- Estado (editable) -->
                                                     <td class="col-estado">
                                                         <template if:true={wo.isEditing}>
-                                                            <lightning-combobox
-                                                                label="Estado"
-                                                                variant="label-hidden"
-                                                                value={wo.editStatusValue}
-                                                                options={statusOptions}
-                                                                class="inline-combobox"
-                                                                data-id={wo.id}
-                                                                data-field="status"
-                                                                onchange={handleInlineFieldChange}>
-                                                            </lightning-combobox>
+                                                            <select class="inline-input" aria-label="Estado" data-id={wo.id} data-field="status" onchange={handleInlineFieldChange}>
+                                                                <template for:each={inlineStatusOptions} for:item="opt">
+                                                                    <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                                                </template>
+                                                            </select>
                                                         </template>
                                                         <template if:false={wo.isEditing}>
                                                             <span class={wo.statusClass}>{wo.status}</span>
@@ -263,16 +283,11 @@
 
                                                     <td class="col-territorio">
                                                         <template if:true={wo.isEditing}>
-                                                            <lightning-combobox
-                                                                label="Territorio"
-                                                                variant="label-hidden"
-                                                                value={wo.editTerritoryId}
-                                                                options={territoryOptions}
-                                                                class="inline-combobox"
-                                                                data-id={wo.id}
-                                                                data-field="territoryId"
-                                                                onchange={handleInlineFieldChange}>
-                                                            </lightning-combobox>
+                                                            <select class="inline-input" aria-label="Municipio" data-id={wo.id} data-field="territoryId" onchange={handleInlineFieldChange}>
+                                                                <template for:each={inlineTerritoryOptions} for:item="opt">
+                                                                    <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                                                </template>
+                                                            </select>
                                                         </template>
                                                         <template if:false={wo.isEditing}>
                                                             {wo.territory}

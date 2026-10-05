@@ -50,6 +50,7 @@ export default class TechProcessHealthPanel extends LightningElement {
             'Seguimiento': 'SEG',
             'Autorización': 'AUT',
             'Calendario': 'CAL',
+            "ODT's Generadas": 'GEN',
             'Contrato': 'CON',
             "Creación ODT's": 'ODT'
         };

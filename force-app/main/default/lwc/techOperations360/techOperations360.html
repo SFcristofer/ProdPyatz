@@ -204,7 +204,10 @@
                     <c-tech-contract-manager record-id={effectiveRecordId} oncontractgenerated={handleContractGenerated} oncontractfinalized={handleContractFinalized}></c-tech-contract-manager>
                 </template>
                 <template if:true={isWorkOrderPhase}>
-                    <c-tech-work-order-console record-id={effectiveRecordId} quote-id={selectedQuoteId} service-contract-id={selectedContractId}></c-tech-work-order-console>
+                    <c-tech-work-order-console record-id={effectiveRecordId} quote-id={selectedQuoteId} service-contract-id={selectedContractId} stay-in-flow onodtsgenerated={handleOdtsGenerated}></c-tech-work-order-console>
+                </template>
+                <template if:true={isOdtGeneradasPhase}>
+                    <c-tech-odt-viewer flow-mode opportunity-id={effectiveRecordId} quote-id={selectedQuoteId} contract-id={selectedContractId} ongocalendario={handleNext}></c-tech-odt-viewer>
                 </template>
                 <template if:true={isEnhorabuenaPhase}>
                     <c-tech-communication-hub record-id={effectiveRecordId} folder-name="Enhorabuena"></c-tech-communication-hub>
