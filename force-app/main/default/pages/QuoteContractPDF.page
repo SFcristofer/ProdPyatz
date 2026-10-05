@@ -30,6 +30,8 @@
 
                 .watermark    { position:fixed; top:30%; width:100%; z-index:-1; }
 
+                .tech-draft-mark { position:fixed; top:42%; left:0; width:100%; text-align:center; font-size:90pt; font-weight:bold; color:#ececec; letter-spacing:10pt; z-index:-1; }
+
                 .page-counter { position:fixed; top:0.4cm; right:15pt; font-size:7.5pt; color:#fff; z-index:1001; }
 
                 .pgNum:before   { content: counter(page); }
@@ -163,6 +165,8 @@
             <div class="page-counter">P&#225;g. <span class="pgNum"></span> de <span class="pgCount"></span></div>
 
             <img src="{!$Resource.Watermark}" class="watermark"/>
+
+            <apex:outputPanel layout="block" styleClass="tech-draft-mark" rendered="{!esBorrador}">BORRADOR</apex:outputPanel>
 
 
 

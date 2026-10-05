@@ -9,6 +9,13 @@ import getQuoteLineItems from '@salesforce/apex/QuoteContractPDFController.getQu
 import searchUsers from '@salesforce/apex/QuoteController.searchUsers';
 import getContractInitialData from '@salesforce/apex/QuoteController.getContractInitialData';
 import saveContractData from '@salesforce/apex/QuoteController.saveContractData';
+import techFinalizarContrato from '@salesforce/apex/QuoteController.techFinalizarContrato';
+import techCrearNuevoContrato from '@salesforce/apex/QuoteController.techCrearNuevoContrato';
+
+// Punto 14: ApprovalStatus del ServiceContract que significa "Terminado"
+const TECH_TERMINADO = 'Activado';
+const TECH_REEMPLAZADO = 'Reemplazado';
+const TECH_STATUS_LABEL = { Borrador: 'Borrador', Activado: 'Terminado', Reemplazado: 'Reemplazado' };
 import getEmailTemplatesByFolder from '@salesforce/apex/QuoteController.getEmailTemplatesByFolder';
 import renderTemplate from '@salesforce/apex/QuoteController.renderTemplate';
 
@@ -50,6 +57,50 @@ export default class TechContractManager extends NavigationMixin(LightningElemen
             console.error('Error obteniendo usuario actual:', error);
         }
     }
+
+    // Punto 14: estatus del contrato (Borrador / Terminado)
+    @track contractStatus = '';
+    contractStatusQuoteId = '';
+    contractFinalDate = '';
+    finalDocId = '';
+    showPrintModal = false;
+    // Punto 14 Fase 2: versiones del contrato
+    selectedContractId = null;
+    isLatestContract = true;
+    @track contractVersions = [];
+    showNuevoModal = false;
+    nuevoCopiar = 'copiar';
+    nuevoReemplazar = 'reemplazar';
+
+    // Solo lectura: Terminado, Reemplazado o version anterior
+    get isTerminado() {
+        return this.contractStatusQuoteId === this.selectedQuoteId && !!this.contractStatus &&
+            (this.contractStatus === TECH_TERMINADO || this.contractStatus === TECH_REEMPLAZADO || !this.isLatestContract);
+    }
+    get canCrearNuevo() {
+        return this.contractStatus === TECH_TERMINADO && this.isLatestContract && this.contractStatusQuoteId === this.selectedQuoteId;
+    }
+    get hasVersions() { return this.contractVersions.length > 1; }
+    get versionOptions() {
+        return this.contractVersions.map(v => ({
+            label: `Contrato No. ${parseInt(v.contractNumber, 10) || v.contractNumber} – ${TECH_STATUS_LABEL[v.status] || v.status}`,
+            value: v.id
+        }));
+    }
+    get lockMessage() {
+        if (this.contractStatus === TECH_REEMPLAZADO) return 'Este contrato fue reemplazado por uno nuevo. Solo lectura; puedes reimprimir su versión final.';
+        if (!this.isLatestContract) return 'Esta es una versión anterior del contrato. Solo lectura; puedes reimprimir su versión final.';
+        return `Este contrato ya fue impreso como final el ${this.contractFinalDate}. Para hacer cambios crea un nuevo contrato.`;
+    }
+    get copiarOptions() {
+        return [{ label: 'Copiar datos y partidas del contrato actual', value: 'copiar' }, { label: 'Contrato en blanco', value: 'blanco' }];
+    }
+    get reemplazarOptions() {
+        return [{ label: 'Reemplazar el contrato actual (queda como "Reemplazado")', value: 'reemplazar' }, { label: 'Conservar ambos contratos', value: 'ambos' }];
+    }
+    get isNotTerminado() { return !this.isTerminado; }
+    get contractPathStep() { return this.isTerminado ? 'terminado' : 'borrador'; }
+    get contractLockedClass() { return this.isTerminado ? 'tech-locked' : ''; }
 
     // Firmante del Cliente
     @track selectedClientSigner = '';
@@ -121,7 +172,7 @@ export default class TechContractManager extends NavigationMixin(LightningElemen
 
     loadInitialData() {
         this.isLoading = true;
-        getContractInitialData({ oppId: this.recordId })
+        getContractInitialData({ oppId: this.recordId, contractId: this.selectedContractId })
             .then(result => {
                 this.availableQuotes = result.quotes.map(q => ({
                     ...q,
@@ -150,16 +201,28 @@ export default class TechContractManager extends NavigationMixin(LightningElemen
                 }
                 
                 // --- RECUPERAR DATOS DEL CONTRATO EXISTENTE ---
+                this.contractStatus = result.existingContract ? result.existingContract.ApprovalStatus : '';
+                this.contractStatusQuoteId = result.syncedQuoteId;
+                this.finalDocId = result.finalDocId || '';
+                this.contractVersions = result.versions || [];
+                this.isLatestContract = result.isLatestContract !== false;
+                this.selectedContractId = result.existingContract ? result.existingContract.Id : null;
+                this.contractFinalDate = result.existingContract
+                    ? new Date(result.existingContract.LastModifiedDate).toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                    : '';
                 if (result.existingContract) {
                     const ec = result.existingContract;
-                    if (ec.StartDate) this.fechaInicioContrato = ec.StartDate;
-                    if (ec.EndDate) this.fechaFinContrato = ec.EndDate;
-                    if (ec.First_Service_Date__c) this.fechaPrimerServicio = ec.First_Service_Date__c;
-                    if (ec.Service_Limit_Date__c) this.fechaLimiteServicio = ec.Service_Limit_Date__c;
-                    if (ec.Private_Observations__c) this.observacionesPrivadas = ec.Private_Observations__c;
-                    if (ec.Renewal_Observations__c) this.observacionesRenovacion = ec.Renewal_Observations__c;
-                    if (ec.Legal_Content__c) this.contenidoLegal = ec.Legal_Content__c;
+                    // Fase 2: se asigna siempre (al cambiar de version o contrato en blanco no deben quedar datos previos)
+                    this.fechaInicioContrato = ec.StartDate || '';
+                    this.fechaFinContrato = ec.EndDate || '';
+                    this.fechaPrimerServicio = ec.First_Service_Date__c || '';
+                    this.fechaLimiteServicio = ec.Service_Limit_Date__c || '';
+                    this.observacionesPrivadas = ec.Private_Observations__c || '';
+                    this.observacionesRenovacion = ec.Renewal_Observations__c || '';
+                    this.contenidoLegal = ec.Legal_Content__c || '';
                     if (ec.Description) this.introduccionPresupuesto = ec.Description;
+                    this.selectedManager = { id: '', name: '' };
+                    this.selectedClientSigner = '';
                     
                     if (ec.Contract_Creator__c && ec.Contract_Creator__r) {
                         this.selectedCreator = { id: ec.Contract_Creator__c, name: ec.Contract_Creator__r.Name };
@@ -177,6 +240,30 @@ export default class TechContractManager extends NavigationMixin(LightningElemen
             .catch(error => {
                 this.isLoading = false;
                 console.error('Error cargando datos de contrato:', error);
+            });
+    }
+
+    // Punto 14 Fase 2: selector de version y crear nuevo contrato
+    handleVersionChange(event) {
+        this.selectedContractId = event.detail.value;
+        this.loadInitialData();
+    }
+    handleOpenNuevo() { this.nuevoCopiar = 'copiar'; this.nuevoReemplazar = 'reemplazar'; this.showNuevoModal = true; }
+    handleCloseNuevo() { this.showNuevoModal = false; }
+    handleNuevoCopiarChange(event) { this.nuevoCopiar = event.detail.value; }
+    handleNuevoReemplazarChange(event) { this.nuevoReemplazar = event.detail.value; }
+    handleConfirmNuevo() {
+        this.showNuevoModal = false;
+        this.isLoading = true;
+        techCrearNuevoContrato({ quoteId: this.selectedQuoteId, copiar: this.nuevoCopiar === 'copiar', reemplazar: this.nuevoReemplazar === 'reemplazar' })
+            .then(() => {
+                this.dispatchEvent(new ShowToastEvent({ title: 'Contrato creado', message: 'Se creó un nuevo contrato en Borrador.', variant: 'success' }));
+                this.selectedContractId = null;
+                this.loadInitialData();
+            })
+            .catch(error => {
+                this.isLoading = false;
+                this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: (error && error.body && error.body.message) || 'No se pudo crear el contrato.', variant: 'error' }));
             });
     }
 
@@ -608,21 +695,88 @@ export default class TechContractManager extends NavigationMixin(LightningElemen
             this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: 'El campo "Creado por" es obligatorio.', variant: 'error' }));
             return;
         }
+        this.showPrintModal = true;
+    }
 
+    handleClosePrintModal() {
+        this.showPrintModal = false;
+    }
+
+    buildPdfParams() {
+        const selectedIds = this.quoteLineItems.filter(item => item.isSelected).map(item => item.Id);
+        return {
+            id: this.selectedQuoteId,
+            selectedItems: selectedIds.join(','),
+            show_total: String(this.selections.show_total),
+            show_line_prices: String(this.selections.show_line_prices),
+            createdBy: this.selectedCreator.id,
+            managedBy: this.selectedManager.id,
+            sigSource: this.signatureSource,
+            clientSigner: this.selectedClientSigner
+        };
+    }
+
+    openPdf(params) {
+        window.open('/apex/QuoteContractPDF?' + new URLSearchParams(params).toString(), '_blank');
+    }
+
+    // 📝 Borrador: PDF con marca de agua, el contrato sigue editable
+    handlePrintDraft() {
+        this.showPrintModal = false;
         this.handleSaveDraft()
             .then(scId => {
-                const selectedIds = this.quoteLineItems.filter(item => item.isSelected).map(item => item.Id);
-                let url = `/apex/QuoteContractPDF?id=${this.selectedQuoteId}&selectedItems=${selectedIds.join(',')}`;
-                url += `&show_total=${this.selections.show_total}&show_line_prices=${this.selections.show_line_prices}`;
-                url += `&createdBy=${this.selectedCreator.id}&managedBy=${this.selectedManager.id}&sigSource=${this.signatureSource}`;
-                url += `&clientSigner=${encodeURIComponent(this.selectedClientSigner)}`;
-
-                window.open(url, '_blank');
+                this.openPdf({ ...this.buildPdfParams(), draft: '1' });
                 this.dispatchEvent(new CustomEvent('contractfinalized', { detail: scId }));
             })
             .catch(error => {
-                console.error('Error al finalizar contrato:', error);
+                console.error('Error al imprimir borrador:', error);
             });
+    }
+
+    // ✅ Final: guarda, marca Terminado (bloqueado) y adjunta el PDF al contrato
+    handlePrintFinal() {
+        this.showPrintModal = false;
+        let scId;
+        this.handleSaveDraft()
+            .then(id => {
+                scId = id;
+                this.isLoading = true;
+                return techFinalizarContrato({ quoteId: this.selectedQuoteId, pdfParams: this.buildPdfParams() });
+            })
+            .then(docId => {
+                this.isLoading = false;
+                this.finalDocId = docId;
+                this.contractStatus = TECH_TERMINADO;
+                this.contractStatusQuoteId = this.selectedQuoteId;
+                this.contractFinalDate = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                this.openPdf(this.buildPdfParams());
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Contrato Terminado',
+                    message: 'Versión final impresa y guardada en los archivos del contrato.',
+                    variant: 'success'
+                }));
+                this.dispatchEvent(new CustomEvent('contractfinalized', { detail: scId }));
+            })
+            .catch(error => {
+                this.isLoading = false;
+                console.error('Error al imprimir versión final:', error);
+                if (error && error.body) {
+                    this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: error.body.message, variant: 'error' }));
+                }
+            });
+    }
+
+    // Reimprime el PDF final guardado (mismo documento que se entregó)
+    handleReprint() {
+        if (this.finalDocId) {
+            this[NavigationMixin.Navigate]({
+                type: 'standard__namedPage',
+                attributes: { pageName: 'filePreview' },
+                state: { selectedRecordId: this.finalDocId }
+            });
+        } else {
+            this.openPdf(this.buildPdfParams());
+        }
     }
 
     handleGoToQuotes() {

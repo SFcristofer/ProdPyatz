@@ -60,10 +60,33 @@
                         </div>
                     </div>
                     <div>
-                        <lightning-button label="Guardar Borrador" icon-name="utility:save" variant="neutral" onclick={handleSaveDraft} class="slds-m-right_small"></lightning-button>
+                        <template if:true={isNotTerminado}>
+                            <lightning-button label="Guardar Borrador" icon-name="utility:save" variant="neutral" onclick={handleSaveDraft} class="slds-m-right_small"></lightning-button>
+                        </template>
                     </div>
                 </div>
 
+                <!-- PUNTO 14: ESTATUS DEL CONTRATO -->
+                <div class="slds-m-bottom_medium">
+                    <lightning-progress-indicator current-step={contractPathStep} type="path" variant="base">
+                        <lightning-progress-step label="Borrador" value="borrador"></lightning-progress-step>
+                        <lightning-progress-step label="Terminado" value="terminado"></lightning-progress-step>
+                    </lightning-progress-indicator>
+                    <p class="slds-text-body_small slds-text-color_weak slds-m-top_x-small">
+                        Borrador: puedes editar e imprimir con marca de agua "BORRADOR" las veces que necesites. Terminado: se imprimió la versión final, el contrato queda bloqueado y el PDF se guarda en sus archivos.
+                    </p>
+                    <template if:true={hasVersions}>
+                        <lightning-combobox class="slds-m-top_small" label="Versión del contrato" options={versionOptions} value={selectedContractId} onchange={handleVersionChange}></lightning-combobox>
+                    </template>
+                    <template if:true={isTerminado}>
+                        <div class="slds-notify slds-notify_alert slds-alert_warning slds-m-top_small" role="alert">
+                            <lightning-icon icon-name="utility:lock" size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                            <h2>{lockMessage}</h2>
+                        </div>
+                    </template>
+                </div>
+
+                <div class={contractLockedClass}>
                 <!-- SECCIÓN 1: SERVICIOS -->
                 <div class="slds-m-bottom_medium">
                     <div class="slds-grid slds-grid_vertical-align-center slds-m-bottom_small">
@@ -313,18 +336,71 @@
                     </div>
                 </div>
 
+                </div>
+
                 <!-- FOOTER ACCIONES -->
                 <div slot="footer" class="slds-grid slds-grid_align-spread slds-m-top_large">
                     <lightning-button label="Volver a Selección" variant="neutral" onclick={handleBackToSelection}></lightning-button>
                     <div class="slds-grid">
-                        <lightning-button label="Reiniciar" variant="neutral" onclick={handleReset} class="slds-m-right_small"></lightning-button>
-                        <lightning-button label="Finalizar y Descargar Contrato" variant="brand" icon-name="utility:print" onclick={handleGenerateContract} class="slds-m-right_small"></lightning-button>
+                        <template if:true={isNotTerminado}>
+                            <lightning-button label="Reiniciar" variant="neutral" onclick={handleReset} class="slds-m-right_small"></lightning-button>
+                            <lightning-button label="Finalizar y Descargar Contrato" variant="brand" icon-name="utility:print" onclick={handleGenerateContract} class="slds-m-right_small"></lightning-button>
+                        </template>
+                        <template if:true={isTerminado}>
+                            <lightning-button label="Reimprimir" variant="brand" icon-name="utility:print" onclick={handleReprint} class="slds-m-right_small"></lightning-button>
+                        </template>
+                        <template if:true={canCrearNuevo}>
+                            <lightning-button label="Crear nuevo contrato" variant="neutral" icon-name="utility:add" onclick={handleOpenNuevo} class="slds-m-right_small"></lightning-button>
+                        </template>
                         <!-- <lightning-button label="Programar Órdenes de Trabajo" variant="success" icon-name="standard:work_order" onclick={handleGoToWorkOrders}></lightning-button> -->
                     </div>
                 </div>
             </template>
         </div>
     </lightning-card>
+
+    <!-- PUNTO 14: MODAL OPCIONES DE IMPRESIÓN -->
+    <template if:true={showPrintModal}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_small">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header"><h2 class="slds-text-heading_medium">¿Cómo deseas imprimir el contrato?</h2></header>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <div class="slds-box slds-m-bottom_small">
+                        <p class="slds-text-title_bold">📝 Imprimir como borrador</p>
+                        <p class="slds-text-body_small slds-m-vertical_x-small">El PDF lleva la marca de agua "BORRADOR" y el contrato sigue editable. Úsalo para revisión con el cliente.</p>
+                        <lightning-button label="Imprimir borrador" variant="neutral" onclick={handlePrintDraft}></lightning-button>
+                    </div>
+                    <div class="slds-box">
+                        <p class="slds-text-title_bold">✅ Imprimir versión final</p>
+                        <p class="slds-text-body_small slds-m-vertical_x-small">El contrato pasa a "Terminado", queda bloqueado para edición y el PDF final se guarda en sus archivos. Para cambios posteriores habrá que crear un nuevo contrato.</p>
+                        <lightning-button label="Imprimir versión final" variant="brand" onclick={handlePrintFinal}></lightning-button>
+                    </div>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning-button label="Cancelar" onclick={handleClosePrintModal}></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+    <!-- PUNTO 14 FASE 2: MODAL CREAR NUEVO CONTRATO -->
+    <template if:true={showNuevoModal}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_small">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header"><h2 class="slds-text-heading_medium">Crear nuevo contrato</h2></header>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <lightning-radio-group label="Contenido" options={copiarOptions} value={nuevoCopiar} onchange={handleNuevoCopiarChange} class="slds-m-bottom_medium"></lightning-radio-group>
+                    <lightning-radio-group label="Contrato actual" options={reemplazarOptions} value={nuevoReemplazar} onchange={handleNuevoReemplazarChange}></lightning-radio-group>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning-button label="Cancelar" onclick={handleCloseNuevo} class="slds-m-right_x-small"></lightning-button>
+                    <lightning-button label="Crear contrato" variant="brand" onclick={handleConfirmNuevo}></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
 
     <!-- MODAL DE EDICIÓN -->
     <template if:true={showEditModal}>

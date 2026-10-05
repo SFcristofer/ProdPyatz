@@ -205,7 +205,10 @@ public with sharing class QuoteTechnicalController {
         try {
             Quote q = QuoteSelector.getQuoteById(quoteId);
             String scName = 'Contrato: ' + q.QuoteNumber + ' - ' + q.Name;
-            List<ServiceContract> existing = [SELECT Id FROM ServiceContract WHERE Name = :scName AND AccountId = :q.AccountId LIMIT 1];
+            QuoteController.techValidarEditable(quoteId);
+            // Fase 2: contrato vigente (más reciente de la cotización); respaldo por nombre para contratos antiguos sin Quote_Source__c
+            List<ServiceContract> existing = [SELECT Id FROM ServiceContract WHERE Quote_Source__c = :quoteId ORDER BY CreatedDate DESC LIMIT 1];
+            if (existing.isEmpty()) existing = [SELECT Id FROM ServiceContract WHERE Name = :scName AND AccountId = :q.AccountId AND ApprovalStatus != 'Reemplazado' ORDER BY CreatedDate DESC LIMIT 1];
             ServiceContract sc = existing.isEmpty() ? new ServiceContract() : existing[0];
             sc.Name = scName; sc.AccountId = q.AccountId; sc.Pricebook2Id = q.Pricebook2Id;
             if (contractData.containsKey('fechaInicioContrato')) sc.StartDate = Date.valueOf((String)contractData.get('fechaInicioContrato'));

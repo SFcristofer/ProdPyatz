@@ -131,7 +131,7 @@ private class QuoteControllerTest {
         opp.SyncedQuoteId = q.Id;
         update opp;
         Test.startTest();
-        Map<String, Object> result = QuoteController.getContractInitialData(opp.Id);
+        Map<String, Object> result = QuoteController.getContractInitialData(opp.Id, null);
         Test.stopTest();
         System.assert(result.containsKey('opportunity'));
     }
@@ -151,6 +151,93 @@ private class QuoteControllerTest {
             System.assertNotEquals(null, scId);
         } catch (Exception e) {}
         Test.stopTest();
+    }
+
+    @isTest
+    static void testTechFinalizarContrato() {
+        Opportunity opp = [SELECT Id FROM Opportunity LIMIT 1];
+        Quote q = [SELECT Id FROM Quote LIMIT 1];
+        opp.SyncedQuoteId = q.Id;
+        update opp;
+        Map<String, Object> contractData = new Map<String, Object>{
+            'fechaInicioContrato' => String.valueOf(Date.today()),
+            'fechaVencimiento' => String.valueOf(Date.today().addDays(365))
+        };
+        QuoteController.saveContractData(q.Id, contractData);
+        Test.startTest();
+        Id docId = QuoteController.techFinalizarContrato(q.Id, new Map<String, String>{ 'show_total' => 'true', 'draft' => '1' });
+        Test.stopTest();
+        System.assertNotEquals(null, docId);
+        System.assertEquals(QuoteController.TECH_CONTRATO_TERMINADO, [SELECT ApprovalStatus FROM ServiceContract WHERE Quote_Source__c = :q.Id LIMIT 1].ApprovalStatus);
+        Map<String, Object> result = QuoteController.getContractInitialData(opp.Id, null);
+        System.assertEquals(docId, result.get('finalDocId'));
+        // Bloqueo: ya no se puede modificar ni volver a finalizar
+        Boolean bloqueado = false;
+        try { QuoteController.saveContractData(q.Id, contractData); } catch (AuraHandledException e) { bloqueado = true; }
+        System.assert(bloqueado, 'Un contrato Terminado no debe poder modificarse');
+        bloqueado = false;
+        try { QuoteController.techFinalizarContrato(q.Id, null); } catch (AuraHandledException e) { bloqueado = true; }
+        System.assert(bloqueado, 'Un contrato Terminado no debe finalizarse dos veces');
+    }
+
+    @isTest
+    static void testTechCrearNuevoContrato() {
+        Opportunity opp = [SELECT Id FROM Opportunity LIMIT 1];
+        Quote q = [SELECT Id FROM Quote LIMIT 1];
+        opp.SyncedQuoteId = q.Id;
+        update opp;
+        Map<String, Object> contractData = new Map<String, Object>{
+            'fechaInicioContrato' => String.valueOf(Date.today()),
+            'fechaVencimiento' => String.valueOf(Date.today().addDays(365))
+        };
+        Id anteriorId = QuoteController.saveContractData(q.Id, contractData);
+        // Solo desde un contrato Terminado
+        Boolean error = false;
+        try { QuoteController.techCrearNuevoContrato(q.Id, true, true); } catch (AuraHandledException e) { error = true; }
+        System.assert(error, 'Solo se crea un contrato nuevo desde uno Terminado');
+        update new ServiceContract(Id = anteriorId, ApprovalStatus = QuoteController.TECH_CONTRATO_TERMINADO);
+        Test.setCreatedDate(anteriorId, Datetime.now().addDays(-1));
+        Integer lineas = [SELECT COUNT() FROM ContractLineItem WHERE ServiceContractId = :anteriorId];
+        Test.startTest();
+        Id nuevoId = QuoteController.techCrearNuevoContrato(q.Id, true, true);
+        Test.stopTest();
+        ServiceContract nuevo = [SELECT ApprovalStatus, ParentServiceContractId, StartDate FROM ServiceContract WHERE Id = :nuevoId];
+        System.assertEquals('Borrador', nuevo.ApprovalStatus);
+        System.assertEquals(anteriorId, nuevo.ParentServiceContractId);
+        System.assertEquals(Date.today(), nuevo.StartDate);
+        System.assertEquals(lineas, [SELECT COUNT() FROM ContractLineItem WHERE ServiceContractId = :nuevoId]);
+        System.assertEquals(QuoteController.TECH_CONTRATO_REEMPLAZADO, [SELECT ApprovalStatus FROM ServiceContract WHERE Id = :anteriorId].ApprovalStatus);
+        Map<String, Object> result = QuoteController.getContractInitialData(opp.Id, null);
+        System.assertEquals(2, ((List<Object>) result.get('versions')).size());
+        System.assertEquals(true, result.get('isLatestContract'));
+        result = QuoteController.getContractInitialData(opp.Id, anteriorId);
+        System.assertEquals(false, result.get('isLatestContract'));
+        // PDF: leyenda "Sustituye al contrato No."
+        Test.setCurrentPage(Page.QuoteContractPDF);
+        QuoteContractPDFController pdf = new QuoteContractPDFController(new ApexPages.StandardController(q));
+        System.assertNotEquals(null, pdf.sustituyeA);
+    }
+
+    @isTest
+    static void testTechCrearNuevoContratoEnBlanco() {
+        Opportunity opp = [SELECT Id FROM Opportunity LIMIT 1];
+        Quote q = [SELECT Id FROM Quote LIMIT 1];
+        opp.SyncedQuoteId = q.Id;
+        update opp;
+        Map<String, Object> contractData = new Map<String, Object>{
+            'fechaInicioContrato' => String.valueOf(Date.today()),
+            'fechaVencimiento' => String.valueOf(Date.today().addDays(365))
+        };
+        Id anteriorId = QuoteController.saveContractData(q.Id, contractData);
+        update new ServiceContract(Id = anteriorId, ApprovalStatus = QuoteController.TECH_CONTRATO_TERMINADO);
+        Test.startTest();
+        Id nuevoId = QuoteController.techCrearNuevoContrato(q.Id, false, false);
+        Test.stopTest();
+        ServiceContract nuevo = [SELECT ParentServiceContractId, StartDate FROM ServiceContract WHERE Id = :nuevoId];
+        System.assertEquals(null, nuevo.ParentServiceContractId);
+        System.assertEquals(null, nuevo.StartDate);
+        System.assertEquals(0, [SELECT COUNT() FROM ContractLineItem WHERE ServiceContractId = :nuevoId]);
+        System.assertEquals(QuoteController.TECH_CONTRATO_TERMINADO, [SELECT ApprovalStatus FROM ServiceContract WHERE Id = :anteriorId].ApprovalStatus);
     }
 
     @isTest

@@ -269,8 +269,14 @@ public with sharing class QuoteController {
         return results;
     }
 
-    @AuraEnabled(cacheable=true)
-    public static Map<String, Object> getContractInitialData(Id oppId) {
+    // Punto 14: ApprovalStatus 'Activado' = contrato Terminado (impreso como final, bloqueado)
+    public static final String TECH_CONTRATO_TERMINADO = 'Activado';
+    // Punto 14 Fase 2: contrato sustituido por uno nuevo (queda solo lectura)
+    public static final String TECH_CONTRATO_REEMPLAZADO = 'Reemplazado';
+
+    // Sin cacheable: tras finalizar, la recarga debe traer el estatus real
+    @AuraEnabled
+    public static Map<String, Object> getContractInitialData(Id oppId, Id contractId) {
         Map<String, Object> result = new Map<String, Object>();
         Opportunity opp = QuoteSelector.getOpportunityById(oppId);
         result.put('opportunity', opp);
@@ -292,10 +298,24 @@ public with sharing class QuoteController {
             List<ServiceContract> existingContracts = [SELECT Id, StartDate, EndDate, First_Service_Date__c, Service_Limit_Date__c,
                                                       Legal_Content__c, Private_Observations__c, Renewal_Observations__c, Description,
                                                       Contract_Creator__c, Contract_Creator__r.Name, Contract_Manager__c, Contract_Manager__r.Name,
-                                                      Client_Signer__c, Client_Signer__r.Name 
-                                                      FROM ServiceContract WHERE Quote_Source__c = :opp.SyncedQuoteId ORDER BY CreatedDate DESC LIMIT 1];
-            if (!existingContracts.isEmpty()) {
+                                                      Client_Signer__c, Client_Signer__r.Name, ApprovalStatus, ContractNumber, LastModifiedDate, CreatedDate
+                                                      FROM ServiceContract WHERE Quote_Source__c = :opp.SyncedQuoteId ORDER BY CreatedDate DESC];
+            // Fase 2: versiones del contrato; el primero (más reciente) es el vigente/de trabajo
+            List<Map<String, Object>> versions = new List<Map<String, Object>>();
+            ServiceContract elegido = existingContracts.isEmpty() ? null : existingContracts[0];
+            for (ServiceContract v : existingContracts) {
+                versions.add(new Map<String, Object>{ 'id' => v.Id, 'contractNumber' => v.ContractNumber, 'status' => v.ApprovalStatus, 'createdDate' => v.CreatedDate });
+                if (contractId != null && v.Id == contractId) elegido = v;
+            }
+            result.put('versions', versions);
+            if (elegido != null) {
+                existingContracts = new List<ServiceContract>{ elegido };
+                result.put('isLatestContract', elegido.Id == versions[0].get('id'));
                 result.put('existingContract', existingContracts[0]);
+                List<ContentDocumentLink> finalPdf = [SELECT ContentDocumentId FROM ContentDocumentLink
+                                                      WHERE LinkedEntityId = :existingContracts[0].Id AND ContentDocument.Title LIKE '%_final'
+                                                      ORDER BY SystemModstamp DESC LIMIT 1];
+                if (!finalPdf.isEmpty()) result.put('finalDocId', finalPdf[0].ContentDocumentId);
             }
         }
         return result;
@@ -303,12 +323,13 @@ public with sharing class QuoteController {
 
     @AuraEnabled
     public static String saveContractData(Id quoteId, Map<String, Object> contractData) {
+        techValidarEditable(quoteId);
         try {
             Quote q = QuoteSelector.getQuoteById(quoteId);
             String scName = 'Contrato: ' + q.QuoteNumber + ' - ' + q.Name;
             
             // 1. Crear o actualizar Contrato base
-            List<ServiceContract> existingContracts = [SELECT Id FROM ServiceContract WHERE Quote_Source__c = :quoteId LIMIT 1];
+            List<ServiceContract> existingContracts = [SELECT Id FROM ServiceContract WHERE Quote_Source__c = :quoteId ORDER BY CreatedDate DESC LIMIT 1];
             ServiceContract sc = new ServiceContract();
             
             if (!existingContracts.isEmpty()) {
@@ -382,6 +403,91 @@ public with sharing class QuoteController {
             update new Quote(Id = quoteId, Status = 'In Review'); 
             return sc.Id;
         } catch (Exception e) { throw new AuraHandledException('Error al guardar contrato: ' + e.getMessage()); }
+    }
+
+    // Punto 14: un contrato Terminado no se modifica (los cambios van en un contrato nuevo)
+    public static void techValidarEditable(Id quoteId) {
+        for (ServiceContract sc : [SELECT ApprovalStatus FROM ServiceContract WHERE Quote_Source__c = :quoteId ORDER BY CreatedDate DESC LIMIT 1]) {
+            if (sc.ApprovalStatus == TECH_CONTRATO_TERMINADO) {
+                throw techError('Este contrato ya está Terminado; no se puede modificar. Crea un nuevo contrato.');
+            }
+        }
+    }
+
+    private static AuraHandledException techError(String msg) {
+        AuraHandledException e = new AuraHandledException(msg);
+        e.setMessage(msg);
+        return e;
+    }
+
+    /**
+     * Punto 14: imprime la versión final. Genera el PDF (antes de cualquier DML, getContentAsPDF cuenta como callout),
+     * marca el contrato como Terminado y guarda el PDF adjunto al contrato. Devuelve el ContentDocumentId.
+     */
+    @AuraEnabled
+    public static Id techFinalizarContrato(Id quoteId, Map<String, String> pdfParams) {
+        List<ServiceContract> scs = [SELECT Id, ContractNumber, ApprovalStatus FROM ServiceContract WHERE Quote_Source__c = :quoteId ORDER BY CreatedDate DESC LIMIT 1];
+        if (scs.isEmpty()) throw techError('Primero guarda el contrato.');
+        ServiceContract sc = scs[0];
+        if (sc.ApprovalStatus == TECH_CONTRATO_TERMINADO) throw techError('Este contrato ya está Terminado.');
+
+        PageReference pr = Page.QuoteContractPDF;
+        if (pdfParams != null) pr.getParameters().putAll(pdfParams);
+        pr.getParameters().put('id', quoteId);
+        pr.getParameters().remove('draft');
+        Blob pdf = Test.isRunningTest() ? Blob.valueOf('PDF') : pr.getContentAsPDF();
+
+        String cn = sc.ContractNumber;
+        String titulo = 'Contrato_' + (String.isNotBlank(cn) && cn.isNumeric() ? String.valueOf(Long.valueOf(cn)) : cn) + '_final';
+        try {
+            sc.ApprovalStatus = TECH_CONTRATO_TERMINADO;
+            update sc;
+            ContentVersion cv = new ContentVersion(Title = titulo, PathOnClient = titulo + '.pdf', VersionData = pdf, FirstPublishLocationId = sc.Id);
+            insert cv;
+            return [SELECT ContentDocumentId FROM ContentVersion WHERE Id = :cv.Id].ContentDocumentId;
+        } catch (Exception e) { throw techError('Error al finalizar contrato: ' + e.getMessage()); }
+    }
+
+    /**
+     * Punto 14 Fase 2: crea un contrato nuevo a partir de uno Terminado.
+     * copiar = copia datos y partidas; reemplazar = el anterior pasa a Reemplazado y el nuevo lo referencia (ParentServiceContractId).
+     */
+    @AuraEnabled
+    public static Id techCrearNuevoContrato(Id quoteId, Boolean copiar, Boolean reemplazar) {
+        List<ServiceContract> scs = [SELECT Id, Name, AccountId, Pricebook2Id, ApprovalStatus, StartDate, EndDate, First_Service_Date__c, Service_Limit_Date__c,
+                                     Legal_Content__c, Private_Observations__c, Renewal_Observations__c, Description,
+                                     Contract_Creator__c, Contract_Manager__c, Client_Signer__c
+                                     FROM ServiceContract WHERE Quote_Source__c = :quoteId ORDER BY CreatedDate DESC LIMIT 1];
+        if (scs.isEmpty() || scs[0].ApprovalStatus != TECH_CONTRATO_TERMINADO) throw techError('Solo se puede crear un contrato nuevo a partir de uno Terminado.');
+        ServiceContract anterior = scs[0];
+        ServiceContract nuevo = new ServiceContract(Name = anterior.Name, AccountId = anterior.AccountId, Pricebook2Id = anterior.Pricebook2Id,
+                                                    Quote_Source__c = quoteId, ApprovalStatus = 'Borrador');
+        if (copiar == true) {
+            for (String f : new List<String>{ 'StartDate', 'EndDate', 'First_Service_Date__c', 'Service_Limit_Date__c', 'Legal_Content__c',
+                    'Private_Observations__c', 'Renewal_Observations__c', 'Description', 'Contract_Creator__c', 'Contract_Manager__c', 'Client_Signer__c' }) {
+                nuevo.put(f, anterior.get(f));
+            }
+        }
+        if (reemplazar == true) nuevo.ParentServiceContractId = anterior.Id;
+        Savepoint sp = Database.setSavepoint();
+        try {
+            insert nuevo;
+            if (copiar == true) {
+                List<ContractLineItem> clis = new List<ContractLineItem>();
+                for (ContractLineItem c : [SELECT PricebookEntryId, Quantity, UnitPrice, Description, Levantamiento_Tecnico__c, Zonas_a_Tratar__c
+                                           FROM ContractLineItem WHERE ServiceContractId = :anterior.Id]) {
+                    ContractLineItem copia = c.clone(false, true);
+                    copia.ServiceContractId = nuevo.Id;
+                    clis.add(copia);
+                }
+                if (!clis.isEmpty()) insert clis;
+            }
+            if (reemplazar == true) update new ServiceContract(Id = anterior.Id, ApprovalStatus = TECH_CONTRATO_REEMPLAZADO);
+            return nuevo.Id;
+        } catch (Exception e) {
+            Database.rollback(sp);
+            throw techError('Error al crear el contrato nuevo: ' + e.getMessage());
+        }
     }
 
     @AuraEnabled(cacheable=true)

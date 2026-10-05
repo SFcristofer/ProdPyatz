@@ -28,6 +28,8 @@ public with sharing class QuoteContractPDFController {
     public String direccionCliente {get; set;}
     public String contenidoLegal {get; set;}
     public String firmanteNombre {get; set;}
+    public String sustituyeA {get; set;} // Punto 14 Fase 2: No. del contrato reemplazado
+    public Boolean esBorrador {get; set;} // Punto 14: draft=1 imprime marca de agua BORRADOR
     public String firmanteCargo {get; set;}
     public String firmanteCliente {get; set;}
         public String signatureUrl {get; set;}
@@ -96,11 +98,14 @@ public String fechaContrato {get; set;}
         this.atencionNames = this.quoteRecord.Contact?.Name;
 
         Map<String, String> params = ApexPages.currentPage().getParameters();
+        this.esBorrador = params.get('draft') == '1';
         String fileAcc = String.isNotBlank(acc?.Name) ? acc.Name.replaceAll('[^A-Za-z0-9]+', '_') : '';
         // Folio del contrato = ServiceContract.ContractNumber (sin ceros); sin contrato usa el de la cotizacion
-        List<ServiceContract> scs = [SELECT Legal_Content__c, ContractNumber FROM ServiceContract WHERE Quote_Source__c = :this.quoteRecord.Id ORDER BY CreatedDate DESC LIMIT 1];
+        List<ServiceContract> scs = [SELECT Legal_Content__c, ContractNumber, ParentServiceContract.ContractNumber FROM ServiceContract WHERE Quote_Source__c = :this.quoteRecord.Id ORDER BY CreatedDate DESC LIMIT 1];
         String cn = scs.isEmpty() ? null : scs[0].ContractNumber;
         this.numeroContrato = String.isBlank(cn) ? this.quoteNumberShort : (cn.isNumeric() ? String.valueOf(Long.valueOf(cn)) : cn);
+        String pcn = scs.isEmpty() || scs[0].ParentServiceContract == null ? null : scs[0].ParentServiceContract.ContractNumber;
+        this.sustituyeA = String.isBlank(pcn) ? null : (pcn.isNumeric() ? String.valueOf(Long.valueOf(pcn)) : pcn);
         ApexPages.currentPage().getHeaders().put('content-disposition', 'inline; filename="Contrato_' + this.numeroContrato + '_' + fileAcc + '.pdf"');
         this.config = new Map<String, Boolean>();
         List<String> keys = new List<String>{'show_total', 'show_line_prices'};

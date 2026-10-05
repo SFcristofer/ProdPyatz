@@ -24,7 +24,8 @@ public with sharing class TechWorkOrderController {
 
             // AUTO-RECUPERACIÓN DE CONTRATO SI NO SE PASÓ
             if (serviceContractId == null) {
-                List<ServiceContract> scs = [SELECT Id FROM ServiceContract WHERE Quote_Source__c = :targetQuote.Id OR (AccountId = :targetQuote.AccountId AND Name LIKE :('%' + targetQuote.QuoteNumber + '%')) LIMIT 1];
+                String likeQuote = '%' + targetQuote.QuoteNumber + '%';
+                List<ServiceContract> scs = [SELECT Id FROM ServiceContract WHERE (Quote_Source__c = :targetQuote.Id OR (AccountId = :targetQuote.AccountId AND Name LIKE :likeQuote)) AND ApprovalStatus != 'Reemplazado' ORDER BY CreatedDate DESC LIMIT 1];
                 if (!scs.isEmpty()) serviceContractId = scs[0].Id;
             }
 
