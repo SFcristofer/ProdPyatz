@@ -272,11 +272,13 @@
                             <!-- Observaciones Pareadas -->
                             <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-m-bottom_medium">
                                 <label class="slds-form-element__label">Observaciones Privadas:</label>
-                                <lightning-input-rich-text value={observacionesPrivadas} onchange={handleObsChange} data-id="privadas" variant="bottom-toolbar"></lightning-input-rich-text>
+                                <div class="slds-text-align_right"><lightning-button variant="base" label="Seleccionar todo" icon-name="utility:check" data-rte="privadas" onclick={handleSelectAllRte}></lightning-button></div>
+                                <lightning-input-rich-text data-rte="privadas" value={observacionesPrivadas} onchange={handleObsChange} data-id="privadas" variant="bottom-toolbar"></lightning-input-rich-text>
                             </div>
                             <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-m-bottom_medium">
                                 <label class="slds-form-element__label">Observaciones Para la renovación:</label>
-                                <lightning-input-rich-text value={observacionesRenovacion} onchange={handleObsChange} data-id="renovacion" variant="bottom-toolbar"></lightning-input-rich-text>
+                                <div class="slds-text-align_right"><lightning-button variant="base" label="Seleccionar todo" icon-name="utility:check" data-rte="renovacion" onclick={handleSelectAllRte}></lightning-button></div>
+                                <lightning-input-rich-text data-rte="renovacion" value={observacionesRenovacion} onchange={handleObsChange} data-id="renovacion" variant="bottom-toolbar"></lightning-input-rich-text>
                             </div>
 
                             <!-- GESTOR DE PLANTILLAS -->
@@ -293,7 +295,8 @@
                                     
                                     <label class="slds-form-element__label">Contenido Legal del Contrato:</label>
                                     <div class="legal-editor-container">
-                                        <lightning-input-rich-text value={contenidoLegal} onchange={handleContenidoChange} placeholder="El contenido de la plantilla aparecerá aquí..."></lightning-input-rich-text>
+                                        <div class="slds-text-align_right"><lightning-button variant="base" label="Seleccionar todo" icon-name="utility:check" data-rte="legal" onclick={handleSelectAllRte}></lightning-button></div>
+                                        <lightning-input-rich-text data-rte="legal" value={contenidoLegal} onchange={handleContenidoChange} placeholder="El contenido de la plantilla aparecerá aquí..."></lightning-input-rich-text>
                                     </div>
                                 </div>
                             </div>
@@ -302,7 +305,8 @@
                             <div class="slds-col slds-size_1-of-1 slds-m-top_medium">
                                 <div class="slds-box bg-white">
                                     <label class="slds-form-element__label">Descripción/Explicación (desde Presupuesto):</label>
-                                    <lightning-input-rich-text value={introduccionPresupuesto} onchange={handleIntroChange} placeholder="No hay introducción definida en el presupuesto original..."></lightning-input-rich-text>
+                                    <div class="slds-text-align_right"><lightning-button variant="base" label="Seleccionar todo" icon-name="utility:check" data-rte="intro" onclick={handleSelectAllRte}></lightning-button></div>
+                                    <lightning-input-rich-text data-rte="intro" value={introduccionPresupuesto} onchange={handleIntroChange} placeholder="No hay introducción definida en el presupuesto original..."></lightning-input-rich-text>
                                 </div>
                             </div>
                         </div>

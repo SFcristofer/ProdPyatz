@@ -33,7 +33,8 @@
                 b, strong, .detail-inner b, .detail-inner strong { font-family: 'Poppins-Bold', 'Helvetica', 'Arial', sans-serif; font-weight: bold; }
                 .detail-inner i, .detail-inner em { font-style: italic; }
                 .detail-inner u { text-decoration: underline; }
-                .detail-inner p { margin: 2pt 0; }
+                .rich-block, .warranty-block { font-size:9pt; line-height:1.15; }
+                .detail-inner p, .rich-block p, .warranty-block p { margin:4pt 0; }
                 .detail-inner h1 { font-size: 16pt; font-weight: bold; margin-bottom: 4pt; }
                 .detail-inner h2 { font-size: 13pt; font-weight: bold; margin-bottom: 3pt; }
                 .detail-inner h3 { font-size: 11pt; font-weight: bold; margin-bottom: 2pt; }

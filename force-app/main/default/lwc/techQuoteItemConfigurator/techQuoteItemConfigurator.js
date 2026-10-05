@@ -24,6 +24,23 @@ export default class TechQuoteItemConfigurator extends LightningElement {
         }, 0);
     }
 
+    // Selecciona todo el contenido del editor de descripcion
+    handleSelectAllRte() {
+        const rte = this.template.querySelector('lightning-input-rich-text');
+        if (!rte) return;
+        rte.focus();
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
+        setTimeout(() => {
+            // El cursor queda dentro del area editable de Quill; se seleccionan todos sus hijos
+            const sel = window.getSelection();
+            const node = sel && sel.anchorNode;
+            const el = node && (node.nodeType === 1 ? node : node.parentElement);
+            const editable = el && el.closest('.ql-editor, [contenteditable="true"]');
+            if (editable) sel.selectAllChildren(editable);
+            else document.execCommand('selectAll');
+        }, 50);
+    }
+
     @api recordId;
     @api opportunityId;
     @api accountId; 

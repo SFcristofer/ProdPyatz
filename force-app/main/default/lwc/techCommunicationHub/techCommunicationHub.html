@@ -304,7 +304,8 @@
                         </div>
 
                     <div class="slds-m-top_medium rich-text-container">
-                        <lightning-input-rich-text
+                        <div class="slds-text-align_right"><lightning-button variant="base" label="Seleccionar todo" icon-name="utility:check" data-rte="body" onclick={handleSelectAllRte}></lightning-button></div>
+                        <lightning-input-rich-text data-rte="body"
                             value={emailBody}
                             onchange={handleBodyChange}
                             placeholder="Escriba su mensaje aquí..."

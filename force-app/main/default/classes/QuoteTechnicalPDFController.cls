@@ -135,7 +135,7 @@ public with sharing class QuoteTechnicalPDFController {
                 if (!qli.Descripcion_Detallada__c.contains('<')) {
                     qli.Descripcion_Detallada__c = formatPlainTextToHtml(qli.Descripcion_Detallada__c);
                 } else {
-                    qli.Descripcion_Detallada__c = fixListStyles(qli.Descripcion_Detallada__c);
+                    qli.Descripcion_Detallada__c = fixParagraphStyles(fixListStyles(qli.Descripcion_Detallada__c));
                 }
             }
         }
@@ -231,7 +231,8 @@ public with sharing class QuoteTechnicalPDFController {
         // Quita style inline de <p>, <div> y <span> para eliminar letter-spacing del editor rico
         r = r.replaceAll('(?i)<p(\\s[^>]*)?\\s+style="[^"]*"([^>]*)>', '<p$1$2>');
         r = r.replaceAll('(?i)<div(\\s[^>]*)?\\s+style="[^"]*"([^>]*)>', '<div$1$2>');
-        r = r.replaceAll('(?i)<span(\\s[^>]*)?\\s+style="[^"]*"([^>]*)>', '<span$1$2>');
+        // En el resto solo se quita letter-spacing/line-height: se respeta el tamaño elegido en el editor
+        r = r.replaceAll('(?i)(letter-spacing|line-height)\\s*:[^;"]*;?', '');
         // Márgenes uniformes sin justify
         r = r.replaceAll('(?i)<p([^>]*)>', '<p$1 style="margin:4pt 0; padding:0;">');
         return r;

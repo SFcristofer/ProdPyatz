@@ -178,6 +178,23 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
         }, 0);
     }
 
+    // Selecciona todo el contenido del editor indicado en data-rte
+    handleSelectAllRte(event) {
+        const rte = this.template.querySelector(`lightning-input-rich-text[data-rte="${event.currentTarget.dataset.rte}"]`);
+        if (!rte) return;
+        rte.focus();
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
+        setTimeout(() => {
+            // El cursor queda dentro del area editable de Quill; se seleccionan todos sus hijos
+            const sel = window.getSelection();
+            const node = sel && sel.anchorNode;
+            const el = node && (node.nodeType === 1 ? node : node.parentElement);
+            const editable = el && el.closest('.ql-editor, [contenteditable="true"]');
+            if (editable) sel.selectAllChildren(editable);
+            else document.execCommand('selectAll');
+        }, 50);
+    }
+
     connectedCallback() {
         loadStyle(this, TECH_RTE_CSS).catch(e => console.error('tech_RichTextEditor', e));
         if (this.opportunityId) this.parentOpportunityId = this.opportunityId;
@@ -368,6 +385,8 @@ export default class TechQuoteEditor extends NavigationMixin(LightningElement) {
                     const nextStepInt = parseInt(this.currentStep) + 1;
                     if (nextStepInt === 4) {
                         this.pdfUrl = `/apex/QuoteTechnicalPDF?id=${this.recordId}&t=${Date.now()}`;
+                        // Tambien en pestaña nueva; si el navegador la bloquea queda el boton "Abrir en ventana nueva"
+                        window.open(this.pdfUrl, '_blank');
                     }
                     this.currentStep = nextStepInt.toString();
                     if (this.currentStep !== '4') {

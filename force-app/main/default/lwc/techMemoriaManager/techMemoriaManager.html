@@ -138,7 +138,8 @@
                             <p class="slds-text-align_center slds-text-color_weak">Redacta aquí la memoria técnica para la solución seleccionada.</p>
                         </div>
 
-                        <lightning-input-rich-text
+                        <div class="slds-text-align_right"><lightning-button variant="base" label="Seleccionar todo" icon-name="utility:check" data-rte="memoria" onclick={handleSelectAllRte}></lightning-button></div>
+                        <lightning-input-rich-text data-rte="memoria"
                             value={memoriaText}
                             onchange={handleTextChange}
                             class="rich-editor"

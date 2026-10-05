@@ -56,6 +56,23 @@ export default class TechSolutionCosting extends LightningElement {
         this.groupedSolutions = [...this.groupedSolutions];
     }
 
+    // Selecciona todo el contenido del editor indicado en data-rte
+    handleSelectAllRte(event) {
+        const rte = this.template.querySelector(`lightning-input-rich-text[data-rte="${event.currentTarget.dataset.rte}"]`);
+        if (!rte) return;
+        rte.focus();
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
+        setTimeout(() => {
+            // El cursor queda dentro del area editable de Quill; se seleccionan todos sus hijos
+            const sel = window.getSelection();
+            const node = sel && sel.anchorNode;
+            const el = node && (node.nodeType === 1 ? node : node.parentElement);
+            const editable = el && el.closest('.ql-editor, [contenteditable="true"]');
+            if (editable) sel.selectAllChildren(editable);
+            else document.execCommand('selectAll');
+        }, 50);
+    }
+
     handleObsChange(event) {
         this.commObs = event.target.value;
     }

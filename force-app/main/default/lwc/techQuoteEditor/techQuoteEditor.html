@@ -142,8 +142,11 @@
                                     </div>
                                 </div>
                                 <div class="slds-m-top_medium">
-                                    <p class="slds-text-title_bold slds-m-bottom_x-small">Cuerpo de la Introducción:</p>
-                                    <lightning-input-rich-text class="tech-rte" onfocus={handleRteFocus} value={introduccion} onblur={handleIntroChange} variant="bottom-toolbar"></lightning-input-rich-text>
+                                    <div class="slds-grid slds-grid_align-spread slds-m-bottom_x-small">
+                                        <p class="slds-text-title_bold">Cuerpo de la Introducción:</p>
+                                        <lightning-button variant="base" label="Seleccionar todo" icon-name="utility:check" data-rte="intro" onclick={handleSelectAllRte}></lightning-button>
+                                    </div>
+                                    <lightning-input-rich-text class="tech-rte" data-rte="intro" onfocus={handleRteFocus} value={introduccion} onblur={handleIntroChange} variant="bottom-toolbar"></lightning-input-rich-text>
                                 </div>
                             </div>
                         </div>
@@ -346,7 +349,8 @@
                         </lightning-button-menu>
                     </div>
                     <div class="slds-p-around_large">
-                        <lightning-input-rich-text class="tech-rte" onfocus={handleRteFocus} value={warranty} onblur={handleWarrantyChange} variant="bottom-toolbar"></lightning-input-rich-text>
+                        <div class="slds-text-align_right"><lightning-button variant="base" label="Seleccionar todo" icon-name="utility:check" data-rte="warranty" onclick={handleSelectAllRte}></lightning-button></div>
+                        <lightning-input-rich-text class="tech-rte" data-rte="warranty" onfocus={handleRteFocus} value={warranty} onblur={handleWarrantyChange} variant="bottom-toolbar"></lightning-input-rich-text>
                     </div>
                 </div>
 
@@ -376,7 +380,8 @@
                                         </template>
                                     </lightning-button-menu>
                                 </div>
-                                <lightning-input-rich-text class="tech-rte" onfocus={handleRteFocus} value={observacionesPago} onblur={handleObservacionesPagoChange} variant="bottom-toolbar"></lightning-input-rich-text>
+                                <div class="slds-text-align_right"><lightning-button variant="base" label="Seleccionar todo" icon-name="utility:check" data-rte="pago" onclick={handleSelectAllRte}></lightning-button></div>
+                                <lightning-input-rich-text class="tech-rte" data-rte="pago" onfocus={handleRteFocus} value={observacionesPago} onblur={handleObservacionesPagoChange} variant="bottom-toolbar"></lightning-input-rich-text>
                             </div>
                         </div>
                     </div>

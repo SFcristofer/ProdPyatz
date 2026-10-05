@@ -46,7 +46,8 @@
                         Redactar Nota Técnica
                     </h3>
                     <lightning-input label="Título de la Nota" value={noteTitle} onchange={handleNoteTitleChange} placeholder="Ej: Minuta de llamada técnica..." class="slds-m-bottom_small"></lightning-input>
-                    <lightning-input-rich-text value={noteContent} onchange={handleNoteContentChange} placeholder="Escriba los detalles aquí..."></lightning-input-rich-text>
+                    <div class="slds-text-align_right"><lightning-button variant="base" label="Seleccionar todo" icon-name="utility:check" data-rte="nota" onclick={handleSelectAllRte}></lightning-button></div>
+                    <lightning-input-rich-text data-rte="nota" value={noteContent} onchange={handleNoteContentChange} placeholder="Escriba los detalles aquí..."></lightning-input-rich-text>
                     <div class="slds-m-top_medium slds-text-align_right">
                         <lightning-button label="Cancelar" onclick={handleCancelAction} class="slds-m-right_small"></lightning-button>
                         <lightning-button label="Guardar Nota" variant="brand" icon-name="utility:save" onclick={handleSaveNote} disabled={isNoteEmpty}></lightning-button>

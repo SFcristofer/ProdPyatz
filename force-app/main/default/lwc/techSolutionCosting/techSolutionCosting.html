@@ -54,7 +54,8 @@
                             <!-- Observaciones de Costeo (Editable) -->
                             <div class="costing-input slds-p-around_medium">
                                 <h3 class="section-title">Observaciones Comerciales</h3>
-                                <lightning-input-rich-text
+                                <div class="slds-text-align_right"><lightning-button variant="base" label="Seleccionar todo" icon-name="utility:check" data-rte="obs" onclick={handleSelectAllRte}></lightning-button></div>
+                                <lightning-input-rich-text data-rte="obs"
                                     value={commObs}
                                     onchange={handleObsChange}
                                     placeholder="Redacte aquí notas sobre precios, descuentos o condiciones especiales..."

@@ -131,6 +131,7 @@
                                             </div>
                                         </div>
                                         <template if:false={isPreviewMode}>
+                                            <div class="slds-text-align_right"><lightning-button variant="base" label="Seleccionar todo" icon-name="utility:check" onclick={handleSelectAllRte}></lightning-button></div>
                                             <lightning-input-rich-text
                                                 class="tech-rte"
                                                 onfocus={handleRteFocus}
